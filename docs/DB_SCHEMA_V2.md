@@ -46,7 +46,7 @@
 ### `user_stats` — 分類: MVP必須
 | 項目 | 内容 |
 |---|---|
-| 役割 | 4ステータス（知力/体力/活力/魅力）の現在値 |
+| 役割 | 4ステータス（知力/筋力/活力/魅力）の現在値。※カラム名は `intelligence`/`strength`/`vitality`/`charm`（`strength`＝筋力でそのまま） |
 | 主なカラム | id, user_id, intelligence, strength, vitality, charm, created_at, updated_at |
 | カラム型方針 | ステータス=int（上限値の扱いはサーバ計算側で制御） |
 | PK | id (uuid) |
@@ -140,14 +140,20 @@
 ### `user_missions` — 分類: MVP必須
 | 項目 | 内容 |
 |---|---|
-| 役割 | ユーザー別ミッション割当・進捗 |
-| 主なカラム | id, user_id, mission_id, status, assigned_date, started_at, completed_at, expires_at, created_at, updated_at |
-| カラム型方針 | status=enum/text, assigned_date=date, **started_at/completed_at/expires_at=timestamptz（旧date修正）** |
+| 役割 | ユーザー別ミッション割当・進捗。**デイリーミッション3件とセルフミッションを同一テーブルで扱う**（専用 `daily_missions` テーブルはMVPでは増やさない） |
+| 主なカラム | id, user_id, mission_id, **mission_source**, **app_date**, **slot_no**, status, **completed_counted**, started_at, completed_at, expires_at, created_at, updated_at |
+| カラム型方針 | status=enum/text, **mission_source=enum/text（`daily` / `self`）**, **app_date=date（朝5時切替後の「アプリ日付」。深夜帯を前日扱いにするための論理日付）**, **slot_no=int（dailyは1〜3、selfはnull）**, **completed_counted=boolean（報酬付与済みか＝二重カウント防止フラグ）**, started_at/completed_at/expires_at=timestamptz |
 | PK | id (uuid) |
 | FK | user_id→auth.users.id, mission_id→missions.id |
-| UNIQUE | (user_id, mission_id, assigned_date)（同日重複配布防止） |
-| インデックス | (user_id, status), (user_id, assigned_date) |
-| RLS | 本人のみ。statusの確定/報酬反映はサーバ経由 |
+| UNIQUE | **daily用: (user_id, app_date, slot_no)（デイリー3枠の重複配布防止）**。selfミッションは slot_no=null のため本UNIQUEの対象外（部分UNIQUE想定／§X要レビュー） |
+| インデックス | (user_id, app_date), (user_id, status), (user_id, mission_source, app_date) |
+| RLS | 本人のみ。statusの確定/報酬反映・completed_counted更新はサーバ経由 |
+
+> **デイリーミッション要件の表現方法**:
+> - `mission_source='daily'` ＋ `slot_no ∈ {1,2,3}` ＋ `app_date` で「その日のデイリー3件」を一意に表す。
+> - `app_date` は**朝5時切替**後の論理日付（例: 0:00〜4:59は前日の `app_date`）。日付境界の判定はサーバ側で行う。
+> - `mission_source='self'` はユーザーが任意に追加するセルフミッション（slot_no=null、回数制限なし）。
+> - 報酬の二重付与は `completed_counted` フラグ＋ `score_logs` の冪等キー（§4・⑤）で二重に防止する。
 
 ### `mission_logs` — 分類: MVP必須
 | 項目 | 内容 |
@@ -157,9 +163,11 @@
 | カラム型方針 | **started_at/ended_at=timestamptz, duration_minutes=int（旧time修正）**, is_suspicious=boolean |
 | PK | id (uuid) |
 | FK | user_id→auth.users.id, mission_id→missions.id, user_mission_id→user_missions.id |
-| UNIQUE | （任意）(user_mission_id) ＝1回の実行単位で要レビュー |
-| インデックス | (user_id, created_at desc), mission_id |
+| UNIQUE | **設けない**。`(user_mission_id)` をUNIQUEにするとセルフミッションの複数回記録・再記録ができなくなるため。**報酬の二重付与防止は `mission_logs` 側ではなく `score_logs.mission_log_id` のUNIQUE／冪等キーで担保する**（§4・⑤方針） |
+| インデックス | (user_id, created_at desc), mission_id, user_mission_id |
 | RLS | 本人select/insert可。ただし**報酬確定・is_suspicious判定はサーバ**。証跡画像URLはStorage側RLSと連動 |
+
+> `mission_logs` は「実行の記録」を素直に複数許容する（同一ミッションの再挑戦・複数回記録に対応）。スコアの二重加算は `score_logs`（§4）で防ぐ。
 
 ---
 
@@ -173,9 +181,11 @@
 | カラム型方針 | 各amount/delta=bigint(整数), reason=enum/text |
 | PK | id (uuid) |
 | FK | user_id→auth.users.id, mission_log_id→mission_logs.id, season_id→seasons.id |
-| UNIQUE | （任意）mission_log_id（二重加算防止＝要レビュー） |
+| UNIQUE | **`mission_log_id`（または冪等キー `idempotency_key`）をUNIQUEにし、報酬の二重加算を防止する**。`mission_logs` 側ではUNIQUEを設けず（§3）、報酬付与の一意性はこの `score_logs` 層で担保する |
 | インデックス | (user_id, created_at desc), season_id |
 | RLS | 本人select可。**insert/updateはサーバ専用（クライアント直接書き込み禁止）** |
+
+> **報酬二重付与の防止は二段構え**: ①`user_missions.completed_counted`（付与済みフラグ）②`score_logs.mission_log_id`（または冪等キー）のUNIQUE。サーバ計算（§S）はこの冪等性を前提に「同じ実行に対して二重加点しない」。`mission_log_id` を加点単位とするか別の冪等キーを使うかは §X 要レビュー。
 
 ### `seasons` — 分類: MVP必須（公開マスタ）
 | 項目 | 内容 |
@@ -192,14 +202,25 @@
 ### `season_user_scores` — 分類: MVP必須（ランキングの主役・改ざん厳禁）
 | 項目 | 内容 |
 |---|---|
-| 役割 | シーズン×ユーザーの累計スコア/当日Pt/現在順位/リーグ（**即時更新でランキングの主テーブル**） |
-| 主なカラム | id, user_id, season_id, season_point, today_point, current_rank, league, university_id, faculty_id, updated_at, created_at |
-| カラム型方針 | season_point/today_point=bigint, current_rank=int, league=enum/text。university_id/faculty_idは絞り込み高速化のため非正規化保持（要レビュー） |
+| 役割 | シーズン×ユーザーの累計スコア/当日Pt/リーグ（**即時更新でランキングの主テーブル**）。**順位は保存せずオンデマンド算出を原則とする** |
+| 主なカラム | id, user_id, season_id, season_point, today_point, **last_scored_at**, league, university_id, faculty_id, current_rank(任意・キャッシュ), rank_updated_at(任意), updated_at, created_at |
+| カラム型方針 | season_point/today_point=bigint, **last_scored_at=timestamptz（同点タイブレーク用＝そのスコアに到達した最終加点時刻）**, league=enum/text。university_id/faculty_idは絞り込み高速化のため非正規化保持（要レビュー） |
 | PK | id (uuid) |
 | FK | user_id→auth.users.id, season_id→seasons.id, university_id→universities.id, faculty_id→faculties.id |
 | UNIQUE | (user_id, season_id) |
-| インデックス | **(season_id, season_point desc)**, (season_id, university_id, season_point desc), (season_id, faculty_id, season_point desc) ＝上位N/近傍/学部別の高速化 |
+| インデックス | **(season_id, season_point desc, last_scored_at asc, user_id asc)**（同点ルール準拠の並び）, (season_id, university_id, season_point desc, last_scored_at asc), (season_id, faculty_id, season_point desc, last_scored_at asc) ＝上位N/近傍/学部別の高速化 |
 | RLS | 公開部分は select 可（`show_on_ranking`尊重）。**書き込みはサーバ専用** |
+
+> **順位（current_rank）の扱い — 重要**:
+> - **`season_point` は即時更新するが、`current_rank` は常時の真実として保存しない。** 順位をSP更新のたびに全ユーザー再計算すると、自分の加点で他人の順位も動き、書き込みが重くなるため。
+> - **現在順位は API/RPC でオンデマンド算出**する（同点ルール準拠の `count(*)+1` 等、§R）。
+> - `current_rank` / `rank_updated_at` 列を残す場合は、**「正確な真実ではなくキャッシュ（最後にバッチ/閲覧時に算出した近似値）」と明示**する。表示は基本オンデマンド値を優先し、キャッシュは補助に留める。
+
+> **同点（タイブレーク）ルール — ランキング全体で統一**:
+> 1. `season_point DESC`
+> 2. `last_scored_at ASC`（同点なら先に到達した人が上位＝`reached_at` と同義。本設計では `last_scored_at` を採用）
+> 3. `user_id ASC`（最終決定打）
+> この順序を、上位N・近傍ウィンドウ・フレンド・snapshot 確定の**すべてで共通**に用いる。
 
 ---
 
@@ -293,12 +314,12 @@
 | 項目 | 内容 |
 |---|---|
 | 役割 | 協賛店舗マスタ（B2B2Cの送客先） |
-| 主なカラム | id, name, category, description, latitude, longitude, address, university_id, is_active, listed_from, listed_until, created_at, updated_at |
-| カラム型方針 | 位置=numeric(緯度経度) or text(距離表示用), 期間=timestamptz/date, boolean |
+| 主なカラム | id, name, category, description, latitude, longitude, address, university_id, is_active, listed_from, listed_until, **image_url**, **opening_hours**, **map_url**, **instagram_url**, **display_order**, created_at, updated_at |
+| カラム型方針 | 位置=numeric(緯度経度) or text(距離表示用), 期間=timestamptz/date, boolean。**（表示用・任意）image_url=text(public-assetsの画像), opening_hours=text or jsonb(曜日別営業時間), map_url=text(地図リンク), instagram_url=text(SNS導線), display_order=int(一覧の並び順)** |
 | PK | id (uuid) |
 | FK | university_id→universities.id（スコープ用・nullable可） |
 | UNIQUE | （任意）name＋大学スコープ |
-| インデックス | (university_id, is_active), category |
+| インデックス | (university_id, is_active), category, display_order |
 | RLS | 全認証ユーザー select 可（有効店舗）。書き込みは管理者/サーバのみ |
 
 ### `coupons` — 分類: MVP必須（公開マスタ）
@@ -363,10 +384,15 @@
 
 | バケット | 分類 | 役割 | 公開/非公開 | アクセス方針 |
 |---|---|---|---|---|
-| `avatars` | MVP必須 | プロフィール画像 | 公開 or 署名URL | 本人のみアップロード/更新。読み取りは公開（または署名URL） |
-| `mission-evidence` | MVP必須 | ミッション証跡画像 | **非公開** | 本人＋サーバ（不正検知/レビュー）のみアクセス。署名URL経由配信。`mission_logs.evidence_image_url`と連動 |
+| `avatars` | MVP必須 | ユーザーのプロフィール画像（**ユーザーがアップロードする個人画像**） | 公開 or 署名URL | 本人のみアップロード/更新。読み取りは公開（または署名URL） |
+| `mission-evidence` | MVP必須 | ミッション証跡画像（**個人の非公開記録**） | **非公開** | 本人＋サーバ（不正検知/レビュー）のみアクセス。署名URL経由配信。`mission_logs.evidence_image_url`と連動 |
+| `public-assets` | MVP必須 | **運営が管理する公開固定画像**：店舗画像、店舗ロゴ、ミッションカテゴリ画像、アプリ内固定画像（バナー/アイコン等） | **公開（読み取り）** | 読み取りは全員可。**書き込み（アップロード/更新/削除）は管理者/サーバのみ**。`stores.image_url`, `mission_categories.icon_url` 等が参照 |
 
-> 画像URLをDBに保持する列（`avatar_url`, `evidence_image_url`, `mission_categories.icon_url`）はStorageのパス/署名URLを指す。証跡画像は他人に見えないようバケットRLSで保護。
+> **3バケットの用途を明確に分離する**:
+> - `avatars` … ユーザー個人がアップロードする公開プロフィール画像。
+> - `mission-evidence` … ユーザー個人の**非公開**証跡。他人に見えてはいけない。
+> - `public-assets` … **運営が用意する公開固定画像**（店舗/カテゴリ/ロゴ/アプリ内素材）。ユーザーは書き込み不可。
+> 画像URLをDBに保持する列（`avatar_url`→avatars, `evidence_image_url`→mission-evidence, `mission_categories.icon_url`／`stores.image_url`→public-assets）は、対応バケットのパス/URLを指す。証跡画像は他人に見えないようバケットRLSで保護。
 
 ---
 
@@ -374,15 +400,16 @@
 
 MVPは **「体感リアルタイムランキング」** を満たす。以下をすべて満たす設計とする。
 
-1. **即時更新**: ミッション達成後、サーバ計算（§S）の一部として `season_user_scores`（season_point / today_point / current_rank）を**即時更新**する。
-2. **自分の現在順位**: `season_user_scores.current_rank`（または同一スコープでのオンデマンド順位算出）で取得できる。
+1. **即時更新（スコアのみ）**: ミッション達成後、サーバ計算（§S）の一部として `season_user_scores`（**season_point / today_point / last_scored_at**）を**即時更新**する。**`current_rank` は即時更新の対象にしない**（他ユーザー順位の連鎖再計算を避ける）。
+2. **自分の現在順位**: **API/RPCでオンデマンド算出**する（同一スコープで「自分より上位の人数 + 1」を同点ルール準拠でカウント）。`current_rank` 列は保存する場合も**キャッシュ（近似）**であり、真実はオンデマンド値。
 3. **自分の前後5〜10人**: 自分のスコアを基準に、同一スコープ（全体/大学/学部）で上下の近傍ウィンドウを取得できる。
-4. **上位50人**: 同一スコープで `season_point desc` の上位50件を取得できる。
-5. **フレンドランキング**: `friendships(status=accepted)` の相手＋自分を `season_user_scores` と join し降順で取得できる。
+4. **上位50人**: 同一スコープで `season_point desc`（＋同点ルール）の上位50件を取得できる。
+5. **フレンドランキング**: `friendships(status=accepted)` の相手＋自分を `season_user_scores` と join し、同点ルール準拠の降順で取得できる。
 6. **`ranking_snapshots` の位置づけ**: **MVPでは必須ではない**。週間/月間の**確定ランキング**、及び**大規模化後の集計負荷軽減（キャッシュ）**のための**補助**とする。リアルタイム表示は `season_user_scores` 直読みで賄う。
+- **同点（タイブレーク）ルール（全ランキング共通）**: ①`season_point DESC` ②`last_scored_at ASC`（先に到達した人が上位）③`user_id ASC`。上位N・近傍・フレンド・snapshotすべてで統一。
 - スコープ切替: 全体 / 大学(university_id) / 学部(faculty_id)。
 - 公開可否: `user_settings.show_on_ranking` を尊重。
-- 高速化: §4 `season_user_scores` のインデックス（`(season_id, season_point desc)` 等）で上位N/近傍を効率取得。全件ソートをクライアントにさせない。
+- 高速化: §4 `season_user_scores` のインデックス（`(season_id, season_point desc, last_scored_at asc, user_id asc)` 等）で上位N/近傍を効率取得。全件ソートをクライアントにさせない。
 
 ---
 
@@ -393,9 +420,10 @@ MVPは **「体感リアルタイムランキング」** を満たす。以下�
 | 対象 | 更新トリガ | 更新先 |
 |---|---|---|
 | EXP / レベル | ミッション達成・ボーナス | profiles.total_exp / profiles.level |
-| スコア / SP / コイン | ミッション達成・報酬・クーポン消費 | profiles.total_score / season_user_scores.season_point / profiles.coin_balance |
+| スコア / SP / コイン | ミッション達成・報酬・クーポン消費 | profiles.total_score / season_user_scores.season_point・last_scored_at / profiles.coin_balance |
 | 4ステータス | ミッション達成 | user_stats.intelligence/strength/vitality/charm |
-| 現在順位 / リーグ | スコア更新時 | season_user_scores.current_rank / league |
+| 現在順位 | 算出はオンデマンド（保存しない）／キャッシュ更新時はバッチ | season_user_scores.current_rank（キャッシュのみ・任意） |
+| リーグ | スコア/シーズン更新時 | season_user_scores.league |
 | 称号解放 | 解放条件達成 | user_titles（acquired付与） |
 | クーポン利用確定 | 店頭提示検証 | coupon_redemptions.status=redeemed |
 | 不正フラグ | 異常検知 | mission_logs.is_suspicious |
@@ -408,7 +436,7 @@ MVPは **「体感リアルタイムランキング」** を満たす。以下�
 ## §C. 分類サマリ（一覧）
 
 ### MVP必須
-profiles / user_stats / user_settings / universities / faculties / university_verifications / mission_categories / missions / user_missions / mission_logs / score_logs / seasons / season_user_scores / titles / user_titles / stores / coupons / coupon_redemptions / （Storage）avatars / mission-evidence
+profiles / user_stats / user_settings / universities / faculties / university_verifications / mission_categories / missions / user_missions（daily＋self統合・§3） / mission_logs / score_logs / seasons / season_user_scores / titles / user_titles / stores / coupons / coupon_redemptions / （Storage）avatars / mission-evidence / public-assets
 
 ### P1必須（MVP後半）/ Phase1.5
 - **P1必須**: friendships、フレンドランキング設計（season_user_scores直読みで実現）、ranking_snapshots（週間/月間確定の補助）
@@ -429,5 +457,9 @@ chat / teams / events / advanced_notifications（高度配信） / store_admin�
 - friendships の双方向正規化／ブロック状態の持ち方。
 - coupon_redemptions の重複利用UNIQUEキーと店頭提示の検証方式（QR/ワンタイム/店舗操作）。
 - ランキング近傍/上位N取得の具体クエリとインデックス、スケール時のsnapshot移行設計。
+- `user_missions` の部分UNIQUE（daily: (user_id, app_date, slot_no) を slot_no NOT NULL に限定）と、`app_date` の朝5時切替境界をサーバのどこで判定するか。
+- `current_rank` をキャッシュ列として残すか完全にオンデマンドにするか（キャッシュ更新頻度・整合性）。
+- 同点ルールの基準時刻を `last_scored_at`（スコア到達時刻）にするか `reached_at`（別途定義）にするか。
+- 報酬冪等性の単位（`score_logs.mission_log_id` UNIQUE か別の `idempotency_key` か）と `completed_counted` との役割分担。
 
 > 本書はMVPテーブル設計の**ドラフト**。`CREATE TABLE`/`ALTER`/RLSポリシーSQL/マイグレーションは含まず、レビュー合意後の別タスクで実装する。
