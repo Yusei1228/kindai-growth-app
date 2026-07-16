@@ -82,12 +82,14 @@ export interface CouponStore {
 }
 
 export interface UserState {
-  name: string
+  userId: string // 匿名UUID（localStorage）
+  registered: boolean // ニックネーム登録済みか
+  name: string // ニックネーム
   level: number
   exp: number
   streak: number // 連続日数
   totalDays: number // 累計達成日数
-  sp: number // シーズンPt（青いダイヤ・上部表示）
+  sp: number // 累計スコア（total_score・ランキング基準）
   points: number // ポイント（緑のP・クーポン用）
   stats: Stats
   dailyRewardAvailable: boolean
@@ -96,6 +98,7 @@ export interface UserState {
 export interface AppState {
   user: UserState
   missions: Mission[]
+  missionsDate: string // missions を生成した app_date
   logs: ActivityLog[]
   friends: Friend[]
   ranking: RankUser[]

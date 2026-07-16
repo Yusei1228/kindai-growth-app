@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../store'
 import { PageHead } from '../components/ui'
+import { DAILY_REWARD } from '../data/dailyPool'
 import type { Route } from '../App'
 
 export function ReviewScreen({
@@ -16,26 +17,23 @@ export function ReviewScreen({
   notify: (m: string) => void
   onLevelUp: (lv: number) => void
 }) {
-  const { state, completeMission } = useApp()
+  const { state, completeDaily } = useApp()
   const mission = state.missions.find((m) => m.id === missionId)!
   const [rating, setRating] = useState(4)
   const [comment, setComment] = useState('')
-
-  const overshoot = Math.max(0, minutes - mission.targetMinutes)
-  const timeBonus = Math.round(overshoot * 1.5)
-  const base = mission.reward.sp * 10 // 表示用のポイント換算（演出）
-  const totalPt = base + timeBonus * 10
 
   const now = new Date()
   const start = new Date(now.getTime() - minutes * 60000)
   const hhmm = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 
   const submit = () => {
-    const res = completeMission({ missionId, minutes, rating, comment })
+    const res = completeDaily({ missionId, minutes, rating, comment })
     if (res.leveledUp) {
       onLevelUp(res.newLevel)
+    } else if (res.dailyBonus) {
+      notify(`3件達成ボーナス！ スコア +${res.gainedSP} 🎉`)
     } else {
-      notify('記録しました！報酬を獲得 🎉')
+      notify(`記録しました！ スコア +${res.gainedSP} / EXP +${DAILY_REWARD.exp} 🎉`)
     }
     go({ name: 'daily' })
   }
@@ -54,9 +52,10 @@ export function ReviewScreen({
         <div style={{ borderTop: '1px solid var(--line)', marginTop: 8, paddingTop: 8 }}>
           <div className="bold" style={{ fontSize: 13, marginBottom: 6 }}>獲得報酬</div>
           <div className="reward-grid" style={{ background: 'transparent', padding: 0 }}>
-            <div><span className="k">基本報酬</span><span className="v">{base} pt</span></div>
-            <div><span className="k">時間ボーナス</span><span className="v">+{timeBonus * 10} pt</span></div>
-            <div style={{ gridColumn: '1 / -1' }}><span className="k">合計</span><span className="v" style={{ color: 'var(--blue-600)' }}>{totalPt} pt</span></div>
+            <div><span className="k">スコア</span><span className="v" style={{ color: 'var(--blue-600)' }}>+{DAILY_REWARD.sp}</span></div>
+            <div><span className="k">EXP</span><span className="v">+{DAILY_REWARD.exp}</span></div>
+            <div><span className="k">{mission.reward.stat}</span><span className="v">+{DAILY_REWARD.statAmount}</span></div>
+            <div><span className="k">3件達成ボーナス</span><span className="v">+50</span></div>
           </div>
         </div>
       </div>

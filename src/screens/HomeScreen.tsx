@@ -119,7 +119,7 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
           <div className="sub">今日のやることを確認</div>
           <div className="arrow">›</div>
         </button>
-        <button className="mission-cta cta-green" onClick={() => go({ name: 'daily' })}>
+        <button className="mission-cta cta-green" onClick={() => go({ name: 'self' })}>
           <div className="ttl">🎯 セルフミッション</div>
           <div className="sub">自分の目標に挑戦</div>
           <div className="arrow">›</div>

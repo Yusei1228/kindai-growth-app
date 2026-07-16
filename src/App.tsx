@@ -1,8 +1,10 @@
 import { useState, useCallback } from 'react'
 import { useApp } from './store'
 import { Toast } from './components/ui'
+import { NicknameScreen } from './screens/NicknameScreen'
 import { HomeScreen } from './screens/HomeScreen'
 import { DailyMissionScreen } from './screens/DailyMissionScreen'
+import { SelfMissionScreen } from './screens/SelfMissionScreen'
 import { TimerScreen } from './screens/TimerScreen'
 import { ReviewScreen } from './screens/ReviewScreen'
 import { RankingScreen } from './screens/RankingScreen'
@@ -14,6 +16,7 @@ import { BottomNav, type Tab } from './components/BottomNav'
 export type Route =
   | { name: 'home' }
   | { name: 'daily' }
+  | { name: 'self' }
   | { name: 'timer'; missionId: string }
   | { name: 'review'; missionId: string; minutes: number }
   | { name: 'ranking' }
@@ -24,6 +27,7 @@ export type Route =
 const TAB_OF: Partial<Record<Route['name'], Tab>> = {
   home: 'home',
   daily: 'home',
+  self: 'home',
   timer: 'home',
   review: 'home',
   ranking: 'ranking',
@@ -41,6 +45,19 @@ export function App() {
   const go = useCallback((r: Route) => setRoute(r), [])
   const notify = useCallback((m: string) => setToast(m), [])
 
+  // ニックネーム未登録なら登録画面を全画面表示
+  if (!state.user.registered) {
+    return (
+      <div className="app-shell">
+        <div className="phone">
+          <div className="screen-scroll">
+            <NicknameScreen />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const onTab = (t: Tab) => {
     if (t === 'home') go({ name: 'home' })
     if (t === 'ranking') go({ name: 'ranking' })
@@ -56,6 +73,9 @@ export function App() {
       break
     case 'daily':
       screen = <DailyMissionScreen go={go} />
+      break
+    case 'self':
+      screen = <SelfMissionScreen go={go} notify={notify} onLevelUp={setLevelUp} />
       break
     case 'timer':
       screen = <TimerScreen missionId={route.missionId} go={go} />
