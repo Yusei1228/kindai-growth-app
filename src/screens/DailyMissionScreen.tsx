@@ -1,5 +1,6 @@
 import { useApp } from '../store'
 import { PageHead } from '../components/ui'
+import { DAILY_REWARD } from '../data/dailyPool'
 import type { Route } from '../App'
 import type { Mission } from '../data/types'
 
@@ -63,7 +64,21 @@ function MissionCard({ m, go }: { m: Mission; go: (r: Route) => void }) {
       <button
         className="btn-primary"
         disabled={m.done}
-        onClick={() => go({ name: 'timer', missionId: m.id })}
+        onClick={() =>
+          go({
+            name: 'timer',
+            mission: {
+              kind: 'daily',
+              missionId: m.id,
+              title: m.title,
+              category: m.category,
+              targetMinutes: m.targetMinutes,
+              rewardSp: DAILY_REWARD.sp,
+              rewardExp: DAILY_REWARD.exp,
+              statAmount: DAILY_REWARD.statAmount,
+            },
+          })
+        }
       >
         {m.done ? '達成済み' : 'チャレンジ'}
       </button>

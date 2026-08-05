@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { useApp } from '../store'
 import { PageHead } from '../components/ui'
 import type { Route } from '../App'
+import type { ActiveMission } from '../data/types'
 
-export function TimerScreen({ missionId, go }: { missionId: string; go: (r: Route) => void }) {
-  const { state } = useApp()
-  const mission = state.missions.find((m) => m.id === missionId)!
+export function TimerScreen({ mission, go }: { mission: ActiveMission; go: (r: Route) => void }) {
   const [seconds, setSeconds] = useState(0)
   const [running, setRunning] = useState(false)
   const ref = useRef<number | null>(null)
@@ -28,24 +26,24 @@ export function TimerScreen({ missionId, go }: { missionId: string; go: (r: Rout
 
   const targetSec = mission.targetMinutes * 60
   const pct = Math.min(100, (seconds / targetSec) * 100)
+  const back: Route = mission.kind === 'daily' ? { name: 'daily' } : { name: 'self' }
 
   const finish = () => {
     setRunning(false)
-    // 経過分（最低1分はカウント、デモでは秒も切り上げ）
     const minutes = Math.max(1, Math.round(seconds / 60))
-    go({ name: 'review', missionId, minutes })
+    go({ name: 'review', mission, minutes })
   }
 
   return (
     <>
-      <PageHead title="ミッション実行中" onBack={() => go({ name: 'daily' })} action={<span className="back" style={{ visibility: 'hidden' }} />} />
+      <PageHead title="ミッション実行中" onBack={() => go(back)} action={<span className="back" style={{ visibility: 'hidden' }} />} />
 
       <div className="timer-card">
         <h3 style={{ margin: '0 0 8px' }}>{mission.title}</h3>
         <div className="muted" style={{ fontSize: 13 }}>カテゴリー: {mission.category}</div>
         <div className="muted" style={{ fontSize: 13 }}>目標時間: {mission.targetMinutes}分</div>
         <div style={{ borderTop: '1px solid var(--line)', marginTop: 10, paddingTop: 10, fontSize: 12, color: 'var(--ink-soft)' }}>
-          報酬: EXP +{mission.reward.exp} / SP +{mission.reward.sp} / コイン +{mission.reward.coins} / {mission.reward.stat} +{mission.reward.statAmount}
+          報酬: スコア +{mission.rewardSp} / EXP +{mission.rewardExp} / ステータス +{mission.statAmount}
         </div>
       </div>
 
@@ -66,7 +64,7 @@ export function TimerScreen({ missionId, go }: { missionId: string; go: (r: Rout
         <button className="btn-ghost" onClick={() => setRunning((r) => !r)}>{running ? '一時停止' : 'スタート'}</button>
         <button className="btn-ghost" onClick={() => { setRunning(false); setSeconds(0) }}>リセット</button>
       </div>
-      <p className="hint center">※ デモでは経過秒数を分に換算してスコアに反映します</p>
+      <p className="hint center">※ デモでは経過秒数を分に換算して記録します</p>
     </>
   )
 }

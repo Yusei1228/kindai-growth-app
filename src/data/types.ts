@@ -38,6 +38,18 @@ export interface Mission {
   done: boolean
 }
 
+/** タイマー/レビュー画面に渡す「実行中ミッション」情報（デイリー・セルフ共通） */
+export interface ActiveMission {
+  kind: 'daily' | 'self'
+  missionId?: string // daily のみ（達成マーク・ボーナス判定用）
+  title: string
+  category: Category
+  targetMinutes: number
+  rewardSp: number
+  rewardExp: number
+  statAmount: number
+}
+
 /** 実行ログ（振り返り・ランキング集計の元データ） */
 export interface ActivityLog {
   id: string

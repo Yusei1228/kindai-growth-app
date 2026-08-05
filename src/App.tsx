@@ -12,13 +12,14 @@ import { ReflectionScreen } from './screens/ReflectionScreen'
 import { MyPageScreen } from './screens/MyPageScreen'
 import { RewardsScreen } from './screens/RewardsScreen'
 import { BottomNav, type Tab } from './components/BottomNav'
+import type { ActiveMission } from './data/types'
 
 export type Route =
   | { name: 'home' }
   | { name: 'daily' }
   | { name: 'self' }
-  | { name: 'timer'; missionId: string }
-  | { name: 'review'; missionId: string; minutes: number }
+  | { name: 'timer'; mission: ActiveMission }
+  | { name: 'review'; mission: ActiveMission; minutes: number }
   | { name: 'ranking' }
   | { name: 'reflection' }
   | { name: 'mypage' }
@@ -75,15 +76,15 @@ export function App() {
       screen = <DailyMissionScreen go={go} />
       break
     case 'self':
-      screen = <SelfMissionScreen go={go} notify={notify} onLevelUp={setLevelUp} />
+      screen = <SelfMissionScreen go={go} />
       break
     case 'timer':
-      screen = <TimerScreen missionId={route.missionId} go={go} />
+      screen = <TimerScreen mission={route.mission} go={go} />
       break
     case 'review':
       screen = (
         <ReviewScreen
-          missionId={route.missionId}
+          mission={route.mission}
           minutes={route.minutes}
           go={go}
           notify={notify}
