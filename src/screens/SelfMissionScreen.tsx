@@ -1,20 +1,32 @@
 import { useState } from 'react'
+import { useApp } from '../store'
 import { PageHead } from '../components/ui'
-import { SELF_PRESETS, SELF_REWARD, CATEGORIES } from '../data/selfMissions'
+import { SELF_PRESETS, selfReward, CATEGORIES } from '../data/selfMissions'
 import { CATEGORY_TO_STAT, type Category } from '../data/types'
 import type { Route } from '../App'
 
-export function SelfMissionScreen({ go }: { go: (r: Route) => void }) {
+export function SelfMissionScreen({
+  go,
+  notify,
+  onLevelUp,
+}: {
+  go: (r: Route) => void
+  notify: (m: string) => void
+  onLevelUp: (lv: number) => void
+}) {
+  const { completeSelf } = useApp()
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState<Category>('勉強')
   const [minutes, setMinutes] = useState(15)
+
+  const rw = selfReward(minutes)
 
   const selectPreset = (t: string, c: Category) => {
     setTitle(t)
     setCategory(c)
   }
 
-  const start = () => {
+  const startTimer = () => {
     go({
       name: 'timer',
       mission: {
@@ -22,11 +34,19 @@ export function SelfMissionScreen({ go }: { go: (r: Route) => void }) {
         title: title.trim() || 'セルフミッション',
         category,
         targetMinutes: minutes,
-        rewardSp: SELF_REWARD.sp,
-        rewardExp: SELF_REWARD.exp,
-        statAmount: SELF_REWARD.statAmount,
+        rewardSp: rw.sp,
+        rewardExp: rw.exp,
+        statAmount: rw.statAmount,
       },
     })
+  }
+
+  // タイマーを使わず、選んだ目標時間でそのまま記録
+  const quickComplete = () => {
+    const res = completeSelf({ title, category, minutes, comment: '' })
+    if (res.leveledUp) onLevelUp(res.newLevel)
+    else notify(`記録しました！ スコア +${res.gainedSP} 🎉`)
+    go({ name: 'home' })
   }
 
   return (
@@ -34,7 +54,7 @@ export function SelfMissionScreen({ go }: { go: (r: Route) => void }) {
       <PageHead title="セルフミッション" onBack={() => go({ name: 'home' })} />
 
       <p className="hint" style={{ marginTop: 4 }}>
-        自分の努力を選ぶ（または自由入力）→ タイマーで実行 → レビューで記録します。
+        自分の努力を選ぶ（または自由入力）→ タイマーで実行、または今すぐ記録できます。
       </p>
 
       <div className="section-title">よく使うミッション</div>
@@ -84,7 +104,7 @@ export function SelfMissionScreen({ go }: { go: (r: Route) => void }) {
         ))}
       </div>
 
-      <div className="section-title">目標時間（タイマーの目安）</div>
+      <div className="section-title">取り組む時間</div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         {[5, 15, 30, 60].map((m) => (
           <button
@@ -102,12 +122,16 @@ export function SelfMissionScreen({ go }: { go: (r: Route) => void }) {
       </div>
 
       <div className="section-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span className="muted" style={{ fontSize: 13 }}>達成すると</span>
-        <span className="bold" style={{ color: 'var(--blue-600)' }}>スコア +{SELF_REWARD.sp} / EXP +{SELF_REWARD.exp} / {CATEGORY_TO_STAT[category]} +{SELF_REWARD.statAmount}</span>
+        <span className="muted" style={{ fontSize: 13 }}>{minutes}分で達成すると</span>
+        <span className="bold" style={{ color: 'var(--blue-600)' }}>スコア +{rw.sp} / EXP +{rw.exp} / {CATEGORY_TO_STAT[category]} +{rw.statAmount}</span>
       </div>
+      <p className="hint" style={{ marginTop: 4 }}>※ タイマーを使う場合は、実際に計測した時間でスコアが決まります（長く取り組むほど加算・120分で上限）。</p>
 
-      <button className="btn-primary" style={{ marginTop: 12 }} disabled={!title.trim()} onClick={start}>
-        タイマーを開始する
+      <button className="btn-primary" style={{ marginTop: 8 }} disabled={!title.trim()} onClick={startTimer}>
+        ⏱ タイマーを開始する
+      </button>
+      <button className="btn-ghost" style={{ marginTop: 10 }} disabled={!title.trim()} onClick={quickComplete}>
+        タイマーを使わずに記録する（{minutes}分）
       </button>
     </>
   )

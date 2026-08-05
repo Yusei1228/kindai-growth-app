@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useApp } from '../store'
 import { PageHead } from '../components/ui'
 import { CATEGORY_TO_STAT, type ActiveMission } from '../data/types'
+import { selfReward } from '../data/selfMissions'
 import type { Route } from '../App'
 
 export function ReviewScreen({
@@ -26,6 +27,12 @@ export function ReviewScreen({
   const hhmm = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
   const stat = CATEGORY_TO_STAT[mission.category]
 
+  // セルフは実際の計測時間で報酬が決まる（デイリーは固定）
+  const reward =
+    mission.kind === 'self'
+      ? selfReward(minutes)
+      : { sp: mission.rewardSp, exp: mission.rewardExp, statAmount: mission.statAmount }
+
   const submit = () => {
     const res =
       mission.kind === 'daily' && mission.missionId
@@ -37,7 +44,7 @@ export function ReviewScreen({
     } else if (res.dailyBonus) {
       notify(`3件達成ボーナス！ スコア +${res.gainedSP} 🎉`)
     } else {
-      notify(`記録しました！ スコア +${res.gainedSP} / EXP +${mission.rewardExp} 🎉`)
+      notify(`記録しました！ スコア +${res.gainedSP} / EXP +${reward.exp} 🎉`)
     }
     go({ name: mission.kind === 'daily' ? 'daily' : 'home' })
   }
@@ -56,9 +63,9 @@ export function ReviewScreen({
         <div style={{ borderTop: '1px solid var(--line)', marginTop: 8, paddingTop: 8 }}>
           <div className="bold" style={{ fontSize: 13, marginBottom: 6 }}>獲得報酬</div>
           <div className="reward-grid" style={{ background: 'transparent', padding: 0 }}>
-            <div><span className="k">スコア</span><span className="v" style={{ color: 'var(--blue-600)' }}>+{mission.rewardSp}</span></div>
-            <div><span className="k">EXP</span><span className="v">+{mission.rewardExp}</span></div>
-            <div><span className="k">{stat}</span><span className="v">+{mission.statAmount}</span></div>
+            <div><span className="k">スコア</span><span className="v" style={{ color: 'var(--blue-600)' }}>+{reward.sp}</span></div>
+            <div><span className="k">EXP</span><span className="v">+{reward.exp}</span></div>
+            <div><span className="k">{stat}</span><span className="v">+{reward.statAmount}</span></div>
             {mission.kind === 'daily' && <div><span className="k">3件達成ボーナス</span><span className="v">+50</span></div>}
           </div>
         </div>

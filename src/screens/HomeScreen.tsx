@@ -37,8 +37,8 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
           </div>
         </div>
         <div className="row gap8" style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
-          <div className="pill"><GemIcon /> {u.sp.toLocaleString()} <span className="plus">＋</span></div>
-          <div className="pill"><PointIcon /> {u.points.toLocaleString()} <span className="plus">＋</span></div>
+          <div className="pill"><GemIcon /> {u.sp.toLocaleString()} <span style={{ fontSize: 11, color: 'var(--ink-soft)', fontWeight: 800 }}>スコア</span></div>
+          <div className="pill"><PointIcon /> {u.points.toLocaleString()} <span style={{ fontSize: 11, color: 'var(--ink-soft)', fontWeight: 800 }}>P</span></div>
         </div>
       </div>
 
@@ -126,13 +126,13 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
         </button>
       </div>
 
-      {/* イベントバナー */}
-      <div className="event-banner">
-        <div className="event-tag">🌿 イベント開催中!</div>
-        <div className="event-ttl">新緑のチャレンジ</div>
-        <div className="event-sub">目標達成で限定アイテムをGET!</div>
-        <div className="event-left">あと {state.challengeDaysLeft}日 ›</div>
-      </div>
+      {/* ランキング導線バナー */}
+      <button className="event-banner" onClick={() => go({ name: 'ranking' })} style={{ width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer' }}>
+        <div className="event-tag">🏆 検証キャンペーン実施中</div>
+        <div className="event-ttl">努力を記録してランキングへ</div>
+        <div className="event-sub">デイリー＋セルフでスコアを貯めて上位を目指そう</div>
+        <div className="event-left">順位を見る ›</div>
+      </button>
     </>
   )
 }

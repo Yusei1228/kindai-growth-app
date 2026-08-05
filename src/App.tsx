@@ -76,7 +76,7 @@ export function App() {
       screen = <DailyMissionScreen go={go} />
       break
     case 'self':
-      screen = <SelfMissionScreen go={go} />
+      screen = <SelfMissionScreen go={go} notify={notify} onLevelUp={setLevelUp} />
       break
     case 'timer':
       screen = <TimerScreen mission={route.mission} go={go} />

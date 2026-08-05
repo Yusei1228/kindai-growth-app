@@ -43,7 +43,8 @@ export function TimerScreen({ mission, go }: { mission: ActiveMission; go: (r: R
         <div className="muted" style={{ fontSize: 13 }}>カテゴリー: {mission.category}</div>
         <div className="muted" style={{ fontSize: 13 }}>目標時間: {mission.targetMinutes}分</div>
         <div style={{ borderTop: '1px solid var(--line)', marginTop: 10, paddingTop: 10, fontSize: 12, color: 'var(--ink-soft)' }}>
-          報酬: スコア +{mission.rewardSp} / EXP +{mission.rewardExp} / ステータス +{mission.statAmount}
+          報酬{mission.kind === 'self' ? '（目安）' : ''}: スコア +{mission.rewardSp} / EXP +{mission.rewardExp} / ステータス +{mission.statAmount}
+          {mission.kind === 'self' && <><br />※ 実際に計測した時間でスコアが決まります</>}
         </div>
       </div>
 

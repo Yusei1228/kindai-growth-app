@@ -17,21 +17,27 @@ interface PoolItem {
 
 // 4カテゴリをバランスよく用意（勉強=知力 / 運動=体力 / 生活習慣=活力 / 振り返り=魅力）
 const POOL: PoolItem[] = [
-  { id: 'p01', title: '勉強を10分する', category: '勉強', targetMinutes: 10 },
+  // 勉強（知力）
+  { id: 'p01', title: '勉強・課題を10分する', category: '勉強', targetMinutes: 10 },
   { id: 'p02', title: '英単語を15個おぼえる', category: '勉強', targetMinutes: 10 },
-  { id: 'p03', title: '授業の復習を15分', category: '勉強', targetMinutes: 15 },
+  { id: 'p03', title: '授業ノートを見返す', category: '勉強', targetMinutes: 10 },
   { id: 'p04', title: '読書を10分する', category: '勉強', targetMinutes: 10 },
-  { id: 'p05', title: 'ストレッチを5分する', category: '運動', targetMinutes: 5 },
-  { id: 'p06', title: '腕立て・腹筋を10回', category: '運動', targetMinutes: 5 },
-  { id: 'p07', title: '20分ウォーキング', category: '運動', targetMinutes: 20 },
-  { id: 'p08', title: '階段を使って移動する', category: '運動', targetMinutes: 5 },
-  { id: 'p09', title: '朝、決めた時間に起きる', category: '生活習慣', targetMinutes: 1 },
-  { id: 'p10', title: '水を1.5L以上飲む', category: '生活習慣', targetMinutes: 1 },
-  { id: 'p11', title: '机まわりを片付ける', category: '生活習慣', targetMinutes: 10 },
-  { id: 'p12', title: '今日の予定を立てる', category: '生活習慣', targetMinutes: 5 },
-  { id: 'p13', title: '今日の振り返りを書く', category: '振り返り', targetMinutes: 5 },
-  { id: 'p14', title: '感謝したことを1つ書く', category: '振り返り', targetMinutes: 3 },
-  { id: 'p15', title: '明日の目標を決める', category: '振り返り', targetMinutes: 3 },
+  { id: 'p05', title: '資格・テスト勉強を15分', category: '勉強', targetMinutes: 15 },
+  // 運動（体力）
+  { id: 'p06', title: 'ストレッチを5分する', category: '運動', targetMinutes: 5 },
+  { id: 'p07', title: '腕立て・腹筋を各10回', category: '運動', targetMinutes: 5 },
+  { id: 'p08', title: '20分歩く', category: '運動', targetMinutes: 20 },
+  { id: 'p09', title: '階段を使って移動する', category: '運動', targetMinutes: 5 },
+  { id: 'p10', title: '軽く筋トレする', category: '運動', targetMinutes: 10 },
+  // 生活習慣（活力）
+  { id: 'p11', title: '決めた時間に起きる', category: '生活習慣', targetMinutes: 1 },
+  { id: 'p12', title: 'こまめに水分をとる', category: '生活習慣', targetMinutes: 1 },
+  { id: 'p13', title: '机まわりを片付ける', category: '生活習慣', targetMinutes: 10 },
+  { id: 'p14', title: '今日の予定を立てる', category: '生活習慣', targetMinutes: 5 },
+  // 振り返り（魅力）
+  { id: 'p15', title: '今日の出来事を振り返る', category: '振り返り', targetMinutes: 5 },
+  { id: 'p16', title: '感謝したことを1つ書く', category: '振り返り', targetMinutes: 3 },
+  { id: 'p17', title: '明日の目標を決める', category: '振り返り', targetMinutes: 3 },
 ]
 
 function mulberry32(seed: number): () => number {

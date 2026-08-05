@@ -3,7 +3,7 @@ import type { AppState, Category, Mission, RankUser } from './data/types'
 import { CATEGORY_TO_STAT, expForLevel } from './data/types'
 import { seedState } from './data/seed'
 import { pickDailyMissions, DAILY_REWARD } from './data/dailyPool'
-import { SELF_REWARD } from './data/selfMissions'
+import { selfReward, SELF_COINS } from './data/selfMissions'
 import { appDate } from './lib/appDate'
 import { getUserId } from './lib/session'
 import { registerProfile, syncStats, logMission } from './lib/api'
@@ -193,6 +193,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const completeSelf: Store['completeSelf'] = ({ title, category, minutes, comment }) => {
       let result: CompleteResult = { leveledUp: false, newLevel: state.user.level, gainedSP: 0, dailyBonus: false }
       const cleanTitle = title.trim() || 'セルフミッション'
+      const rw = selfReward(minutes) // 実行時間に応じてスコア/EXP/ステータスが変動
       setState((prev) => {
         const { next, result: r } = applyReward(prev, {
           type: 'self',
@@ -201,14 +202,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           minutes,
           comment,
           rating: 0,
-          sp: SELF_REWARD.sp,
-          exp: SELF_REWARD.exp,
-          coins: SELF_REWARD.coins,
-          statAmount: SELF_REWARD.statAmount,
+          sp: rw.sp,
+          exp: rw.exp,
+          coins: SELF_COINS,
+          statAmount: rw.statAmount,
           allDailyBonus: false,
         })
         result = r
-        pushToDb(next, 'self', cleanTitle, category, SELF_REWARD.sp, SELF_REWARD.exp)
+        pushToDb(next, 'self', cleanTitle, category, rw.sp, rw.exp)
         return next
       })
       return result
