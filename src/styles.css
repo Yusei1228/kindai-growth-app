@@ -358,3 +358,88 @@ textarea {
 
 .section-title { font-size: 14px; font-weight: 800; margin: 18px 2px 4px; color: var(--ink); }
 .hint { font-size: 11px; color: var(--ink-soft); margin-top: 8px; line-height: 1.6; }
+
+/* ============================================================
+   UI POLISH PASS — スマホゲーム級の質感（方向性・レイアウトは維持）
+   既存ルールをソース順で上書き・強化する追加レイヤー
+   ============================================================ */
+:root {
+  --grad-blue: linear-gradient(135deg, #3b7bff 0%, #2455d6 55%, #1e3fae 100%);
+  --grad-green: linear-gradient(135deg, #34d27a 0%, #22c55e 55%, #15a34a 100%);
+  --edge-blue: #16307e;
+  --edge-green: #0f7a37;
+  --shadow-pop: 0 10px 24px rgba(15, 23, 42, 0.16);
+}
+
+body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+/* 押せる要素の共通トランジション */
+.btn-primary, .btn-ghost, .mission-cta, .pill, .icon-btn, .rail-ico,
+.chest-box, .fac-chip, .tab-row button, .nav-item, .avatar-tile, .coupon .cbtn, .event-banner {
+  transition: transform 0.09s ease, box-shadow 0.09s ease, filter 0.09s ease;
+}
+
+/* プライマリボタン：立体エッジ＋光沢＋押下 */
+.btn-primary {
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0) 46%),
+    var(--grad-blue);
+  border-radius: 16px;
+  box-shadow: 0 4px 0 var(--edge-blue), 0 10px 20px rgba(30, 63, 174, 0.32);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+  letter-spacing: 0.3px;
+}
+.btn-primary:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--edge-blue), 0 4px 10px rgba(30, 63, 174, 0.28); }
+.btn-primary:disabled { background-image: none; background: #cbd5e1; box-shadow: 0 3px 0 #94a3b8; text-shadow: none; }
+
+/* ゴーストボタン：うっすら立体 */
+.btn-ghost { border: 1px solid #dbe4ef; box-shadow: 0 2px 0 #e6edf6, 0 5px 12px rgba(15, 23, 42, 0.06); border-radius: 14px; }
+.btn-ghost:active { transform: translateY(2px); box-shadow: 0 1px 0 #e6edf6; }
+
+/* ミッションCTA：立体エッジ＋光沢オーバーレイ */
+.mission-cta { border-radius: 20px; position: relative; overflow: hidden; }
+.mission-cta::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.30), rgba(255, 255, 255, 0) 44%);
+}
+.mission-cta > * { position: relative; z-index: 1; }
+.cta-blue { background: var(--grad-blue); box-shadow: 0 5px 0 var(--edge-blue), 0 12px 22px rgba(30, 63, 174, 0.30); }
+.cta-green { background: var(--grad-green); box-shadow: 0 5px 0 var(--edge-green), 0 12px 22px rgba(21, 163, 74, 0.28); }
+.mission-cta:active { transform: translateY(3px); filter: saturate(1.05); }
+.mission-cta .ttl { text-shadow: 0 1px 2px rgba(0, 0, 0, 0.22); }
+
+/* 通貨ピル：内側ハイライト＋縁 */
+.pill { border: 1px solid rgba(255, 255, 255, 0.9); box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12), inset 0 1px 0 #fff; }
+
+/* 丸アイコン・サイドレール・宝箱：立体感＋押下 */
+.icon-btn { box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12), inset 0 1px 0 #fff; }
+.icon-btn:active { transform: translateY(2px); }
+.rail-ico { box-shadow: 0 6px 14px rgba(15, 23, 42, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.35); }
+.rail-btn:active .rail-ico { transform: translateY(2px); }
+.chest-box { box-shadow: var(--shadow-pop), inset 0 1px 0 #fff; border: 1px solid rgba(255, 255, 255, 0.9); }
+.chest-box:active { transform: translateY(2px); }
+
+/* レベル・ステータスの数字を強調 */
+.lvl-tag { box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.15); }
+.hero-lvl { text-shadow: 0 1px 1px rgba(255, 255, 255, 0.6); box-shadow: var(--shadow-pop); }
+.stat-ring { border: 1px solid #eef2f8; }
+.stat-ring .sr-val { text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85); }
+.sr-wrap { filter: drop-shadow(0 2px 4px rgba(15, 23, 42, 0.10)); }
+
+/* セグメントタブ・学部チップ */
+.tab-row button.active { box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12); }
+.fac-chip:active { transform: translateY(1px); }
+.fac-chip.active { box-shadow: 0 3px 8px rgba(37, 99, 235, 0.30); }
+
+/* ボトムナビ：4等分・アクティブを持ち上げる */
+.bottom-nav { grid-template-columns: repeat(4, 1fr); box-shadow: 0 -6px 20px rgba(15, 23, 42, 0.08); }
+.nav-item .ni-ico { transition: transform 0.12s ease; }
+.nav-item.active .ni-ico { transform: translateY(-2px) scale(1.12); }
+.nav-item.active .ni-label { font-weight: 800; }
+
+/* ランキング行：立体カード */
+.rank-row { border: 1px solid #eef2f8; }
+.rank-row.me { box-shadow: 0 4px 12px rgba(37, 99, 235, 0.18); }
+
+/* バナー押下 */
+.event-banner:active { transform: translateY(2px); }

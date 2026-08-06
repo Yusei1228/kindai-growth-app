@@ -67,7 +67,6 @@ export function App() {
     if (t === 'ranking') go({ name: 'ranking' })
     if (t === 'reflection') go({ name: 'reflection' })
     if (t === 'mypage') go({ name: 'mypage' })
-    if (t === 'menu') notify('メニューはMVP対象外です')
   }
 
   let screen: React.ReactNode = null
