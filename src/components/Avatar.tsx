@@ -1,5 +1,44 @@
-/** 設計画像のキャラクターを模したスタイライズSVGアバター（街背景＋人物） */
+import { useState } from 'react'
+
+// public/hero-avatar.png / public/mini-avatar.png を置くと、その画像が使われます。
+// 無い場合は下の簡易SVGアバターに自動フォールバックします。
+
+/** ヒーローアバター（画像があれば画像、無ければSVG） */
 export function HeroAvatar() {
+  const [failed, setFailed] = useState(false)
+  if (!failed) {
+    return (
+      <img
+        src="/hero-avatar.png"
+        alt="アバター"
+        className="hero-img"
+        style={{ objectFit: 'cover' }}
+        onError={() => setFailed(true)}
+      />
+    )
+  }
+  return <HeroAvatarSVG />
+}
+
+/** 小さい丸アバター（画像があれば画像、無ければSVG） */
+export function MiniAvatar() {
+  const [failed, setFailed] = useState(false)
+  if (!failed) {
+    return (
+      <img
+        src="/mini-avatar.png"
+        alt="プロフィール"
+        className="avatar-sm"
+        style={{ objectFit: 'cover' }}
+        onError={() => setFailed(true)}
+      />
+    )
+  }
+  return <MiniAvatarSVG />
+}
+
+/** 設計画像のキャラクターを模したスタイライズSVGアバター（街背景＋人物） */
+function HeroAvatarSVG() {
   return (
     <svg viewBox="0 0 300 400" className="hero-img" preserveAspectRatio="xMidYMid slice" role="img" aria-label="アバター">
       <defs>
@@ -74,8 +113,8 @@ export function HeroAvatar() {
   )
 }
 
-/** 小さい丸アバター（プロフィール用） */
-export function MiniAvatar() {
+/** 小さい丸アバター（プロフィール用・SVGフォールバック） */
+function MiniAvatarSVG() {
   return (
     <svg className="avatar-sm" viewBox="0 0 56 56" role="img" aria-label="プロフィール">
       <rect width="56" height="56" rx="16" fill="#dbeafe" />
