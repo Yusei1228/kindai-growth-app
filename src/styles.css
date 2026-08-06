@@ -451,3 +451,32 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .chest-box .t { font-size: 10px; line-height: 1.2; }
 .chest-box .chest-emoji { font-size: 26px; }
 .side-rail { right: 0; left: auto; top: 50%; bottom: auto; transform: translateY(-50%); gap: 10px; }
+
+/* 縦スペースを活かして画像を最大化＋下の余白を詰める */
+.screen-scroll { padding-bottom: 74px; }
+.hero-card { margin-top: 12px; }
+.hero-img { aspect-ratio: 5 / 8; }         /* 3/4 → 縦長に。キャラをより大きく表示 */
+.stats-ring-row { margin-top: 14px; }
+.mission-cta-row { margin-top: 14px; }
+.event-banner { margin-top: 12px; margin-bottom: 2px; }
+
+/* ヒーローカードのプレミアム額装（質感アップ・方向性は維持） */
+.hero-card {
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
+  box-shadow:
+    0 16px 36px rgba(37, 99, 235, 0.20),
+    0 4px 12px rgba(15, 23, 42, 0.12),
+    inset 0 0 0 3px rgba(255, 255, 255, 0.7);
+}
+.hero-img { box-shadow: inset 0 2px 8px rgba(15, 23, 42, 0.10); }
+/* カード右の縦ドットインジケータ（モック準拠の装飾） */
+.hero-card { position: relative; }
+.hero-card::after {
+  content: ''; position: absolute; top: 50%; right: 8px; transform: translateY(-50%);
+  width: 5px; height: 44px;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.95) 40%, transparent 42%);
+  background-size: 5px 9px; background-repeat: repeat-y;
+  filter: drop-shadow(0 1px 1px rgba(15,23,42,0.35));
+  pointer-events: none;
+}
