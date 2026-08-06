@@ -7,6 +7,7 @@ import { selfReward, SELF_COINS } from './data/selfMissions'
 import { appDate } from './lib/appDate'
 import { getUserId } from './lib/session'
 import { registerProfile, syncStats, logMission } from './lib/api'
+import { normalizeAvatar } from './data/avatars'
 
 const STORAGE_KEY = 'kindai-growth-state-v2'
 
@@ -25,6 +26,7 @@ function loadState(): AppState {
     s.missionsDate = today
     s.user.dailyRewardAvailable = true
   }
+  s.user.avatar = normalizeAvatar(s.user.avatar) // 旧データにavatarが無い場合の補正
   return s
 }
 
@@ -54,6 +56,8 @@ interface Store {
   expToNext: number
   /** ニックネーム登録（UUID発行・profiles/user_stats作成） */
   register: (nickname: string) => void
+  /** アバター画像を変更（localStorageに保存） */
+  setAvatar: (file: string) => void
   /** デイリーミッション達成 */
   completeDaily: (p: CompleteDailyPayload) => CompleteResult
   /** セルフミッション達成 */
@@ -164,6 +168,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       registerProfile(userId, nickname.trim())
     }
 
+    const setAvatar: Store['setAvatar'] = (file) => {
+      setState((prev) => ({ ...prev, user: { ...prev.user, avatar: normalizeAvatar(file) } }))
+    }
+
     const completeDaily: Store['completeDaily'] = ({ missionId, minutes, rating, comment }) => {
       const mission = state.missions.find((m) => m.id === missionId)
       let result: CompleteResult = { leveledUp: false, newLevel: state.user.level, gainedSP: 0, dailyBonus: false }
@@ -257,7 +265,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setState(loadState())
     }
 
-    return { state, expToNext, register, completeDaily, completeSelf, claimDailyReward, redeemCoupon, rankingWith, friendRanking, reset }
+    return { state, expToNext, register, setAvatar, completeDaily, completeSelf, claimDailyReward, redeemCoupon, rankingWith, friendRanking, reset }
   }, [state])
 
   return <Ctx.Provider value={store}>{children}</Ctx.Provider>

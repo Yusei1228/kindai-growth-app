@@ -60,11 +60,12 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
         </div>
       </div>
 
-      {/* ヒーローアバターカード */}
+      {/* ヒーローアバターカード（タップでアバター変更） */}
       <div style={{ position: 'relative' }}>
-        <div className="hero-card">
+        <div className="hero-card" onClick={() => go({ name: 'avatar' })} style={{ cursor: 'pointer' }}>
           <HeroAvatar />
           <div className="hero-lvl">🛡️ Lv.{u.level}</div>
+          <div className="avatar-edit-badge">🖉 タップで変更</div>
         </div>
 
         {/* 左：デイリー報酬宝箱 */}

@@ -7,6 +7,7 @@ export const seedState: AppState = {
     userId: '',
     registered: false,
     name: '',
+    avatar: 'hero-avatar.png',
     level: 1,
     exp: 0,
     streak: 0,

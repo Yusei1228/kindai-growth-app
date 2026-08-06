@@ -1,18 +1,19 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useApp } from '../store'
 
-// public/hero-avatar.png / public/mini-avatar.png を置くと、その画像が使われます。
-// 無い場合は下の簡易SVGアバターに自動フォールバックします。
+// 選択中のアバター画像（state.user.avatar）を public/ から表示。
+// 画像が無い/読み込み失敗時は簡易SVGアバターに自動フォールバック。
 
-// アバター画像は public/hero-avatar.png の1枚でOK。
-// 大画像は上寄せ、丸アイコンは顔まわりが出るように上寄せクロップする。
-
-/** ヒーローアバター（画像があれば画像、無ければSVG） */
+/** ヒーローアバター（選択中の画像、無ければSVG） */
 export function HeroAvatar() {
+  const { state } = useApp()
+  const src = '/' + state.user.avatar
   const [failed, setFailed] = useState(false)
+  useEffect(() => setFailed(false), [src]) // 画像切り替え時に再試行
   if (!failed) {
     return (
       <img
-        src="/hero-avatar.png"
+        src={src}
         alt="アバター"
         className="hero-img"
         style={{ objectFit: 'cover', objectPosition: 'center top' }}
@@ -23,13 +24,16 @@ export function HeroAvatar() {
   return <HeroAvatarSVG />
 }
 
-/** 小さい丸アバター（大画像と同じファイルの顔まわりを表示、無ければSVG） */
+/** 小さい丸アバター（選択中の画像の顔まわり、無ければSVG） */
 export function MiniAvatar() {
+  const { state } = useApp()
+  const src = '/' + state.user.avatar
   const [failed, setFailed] = useState(false)
+  useEffect(() => setFailed(false), [src])
   if (!failed) {
     return (
       <img
-        src="/hero-avatar.png"
+        src={src}
         alt="プロフィール"
         className="avatar-sm"
         style={{ objectFit: 'cover', objectPosition: 'center 12%' }}

@@ -3,6 +3,7 @@ import { useApp } from './store'
 import { Toast } from './components/ui'
 import { NicknameScreen } from './screens/NicknameScreen'
 import { HomeScreen } from './screens/HomeScreen'
+import { AvatarSelectScreen } from './screens/AvatarSelectScreen'
 import { DailyMissionScreen } from './screens/DailyMissionScreen'
 import { SelfMissionScreen } from './screens/SelfMissionScreen'
 import { TimerScreen } from './screens/TimerScreen'
@@ -16,6 +17,7 @@ import type { ActiveMission } from './data/types'
 
 export type Route =
   | { name: 'home' }
+  | { name: 'avatar' }
   | { name: 'daily' }
   | { name: 'self' }
   | { name: 'timer'; mission: ActiveMission }
@@ -27,6 +29,7 @@ export type Route =
 
 const TAB_OF: Partial<Record<Route['name'], Tab>> = {
   home: 'home',
+  avatar: 'home',
   daily: 'home',
   self: 'home',
   timer: 'home',
@@ -74,6 +77,9 @@ export function App() {
       break
     case 'daily':
       screen = <DailyMissionScreen go={go} />
+      break
+    case 'avatar':
+      screen = <AvatarSelectScreen go={go} notify={notify} />
       break
     case 'self':
       screen = <SelfMissionScreen go={go} notify={notify} onLevelUp={setLevelUp} />

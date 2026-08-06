@@ -97,6 +97,7 @@ export interface UserState {
   userId: string // 匿名UUID（localStorage）
   registered: boolean // ニックネーム登録済みか
   name: string // ニックネーム
+  avatar: string // 選択中のアバター画像ファイル名（public/直下）
   level: number
   exp: number
   streak: number // 連続日数
