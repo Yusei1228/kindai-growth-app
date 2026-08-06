@@ -22,7 +22,7 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
   const claim = () => {
     if (u.dailyRewardAvailable) {
       claimDailyReward()
-      notify('デイリー報酬を受け取りました！ SP+50 / P+30')
+      notify('ログインボーナスを受け取りました！ スコア+50 / P+30')
     }
   }
 
@@ -68,10 +68,10 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
           <div className="avatar-edit-badge">🖉 タップで変更</div>
         </div>
 
-        {/* 左：デイリー報酬宝箱 */}
+        {/* 左：ログインボーナス */}
         <div className="reward-chest">
           <div className="chest-box" onClick={claim}>
-            <div className="t">デイリー報酬</div>
+            <div className="t">ログインボーナス</div>
             <div className="chest-emoji">{u.dailyRewardAvailable ? '🎁' : '✅'}</div>
             <div className={'chest-cta' + (u.dailyRewardAvailable ? '' : ' chest-claimed')}>
               {u.dailyRewardAvailable ? '受け取り可能!' : '受取済み'}

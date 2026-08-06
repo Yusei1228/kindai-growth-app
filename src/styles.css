@@ -443,3 +443,11 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 
 /* バナー押下 */
 .event-banner:active { transform: translateY(2px); }
+
+/* ホーム：左右4ボタンをキャラ/他要素に重ねない配置に調整 */
+.hero-card { width: 60%; max-width: 210px; }
+.reward-chest { left: 0; right: auto; top: 50%; bottom: auto; transform: translateY(-50%); }
+.chest-box { width: 60px; padding: 8px 4px; }
+.chest-box .t { font-size: 10px; line-height: 1.2; }
+.chest-box .chest-emoji { font-size: 26px; }
+.side-rail { right: 0; left: auto; top: 50%; bottom: auto; transform: translateY(-50%); gap: 10px; }
