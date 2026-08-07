@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import type { AppState, Category, Mission, RankUser } from './data/types'
+import type { AppState, Category, Mission, RankUser, SelfMission, StatKey } from './data/types'
 import { CATEGORY_TO_STAT, expForLevel } from './data/types'
 import { seedState } from './data/seed'
 import { pickDailyMissions, DAILY_REWARD } from './data/dailyPool'
-import { selfReward, SELF_COINS } from './data/selfMissions'
+import { selfMissionReward, SELF_COINS } from './data/selfMissions'
 import { appDate } from './lib/appDate'
 import { getUserId } from './lib/session'
 import { registerProfile, syncStats, logMission } from './lib/api'
@@ -38,10 +38,10 @@ interface CompleteDailyPayload {
 }
 
 interface CompleteSelfPayload {
-  title: string
-  category: Category
+  mission: SelfMission
   minutes: number
   comment: string
+  rating?: number
 }
 
 interface CompleteResult {
@@ -95,13 +95,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         sp: number
         exp: number
         coins: number
-        statAmount: number
+        statBoosts: Partial<Record<StatKey, number>>
         markMissionId?: string
         allDailyBonus: boolean
       },
     ): { next: AppState; result: CompleteResult } {
       const u = { ...prev.user, stats: { ...prev.user.stats } }
-      const stat = CATEGORY_TO_STAT[opts.category]
 
       let gainedSP = opts.sp
       let gainedExp = opts.exp
@@ -120,7 +119,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       u.sp += gainedSP
       u.exp += gainedExp
       u.points += opts.coins
-      u.stats[stat] = Math.min(100, u.stats[stat] + opts.statAmount)
+      for (const [k, amt] of Object.entries(opts.statBoosts)) {
+        const key = k as StatKey
+        u.stats[key] = Math.min(100, u.stats[key] + (amt ?? 0))
+      }
 
       // レベルアップ（複数レベル繰り上がり対応）
       let leveled = false
@@ -187,7 +189,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           sp: DAILY_REWARD.sp,
           exp: DAILY_REWARD.exp,
           coins: DAILY_REWARD.coins,
-          statAmount: DAILY_REWARD.statAmount,
+          statBoosts: { [CATEGORY_TO_STAT[mission.category]]: DAILY_REWARD.statAmount },
           markMissionId: missionId,
           allDailyBonus: true,
         })
@@ -198,26 +200,27 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return result
     }
 
-    const completeSelf: Store['completeSelf'] = ({ title, category, minutes, comment }) => {
+    const completeSelf: Store['completeSelf'] = ({ mission, minutes, comment, rating = 0 }) => {
       let result: CompleteResult = { leveledUp: false, newLevel: state.user.level, gainedSP: 0, dailyBonus: false }
-      const cleanTitle = title.trim() || 'セルフミッション'
-      const rw = selfReward(minutes) // 実行時間に応じてスコア/EXP/ステータスが変動
+      const rw = selfMissionReward(mission, minutes) // 時間比例（timed=false は固定）
+      const statBoosts: Partial<Record<StatKey, number>> = {}
+      for (const s of mission.stats) statBoosts[s] = rw.statAmount
       setState((prev) => {
         const { next, result: r } = applyReward(prev, {
           type: 'self',
-          title: cleanTitle,
-          category,
+          title: mission.title,
+          category: mission.category,
           minutes,
           comment,
-          rating: 0,
+          rating,
           sp: rw.sp,
           exp: rw.exp,
           coins: SELF_COINS,
-          statAmount: rw.statAmount,
+          statBoosts,
           allDailyBonus: false,
         })
         result = r
-        pushToDb(next, 'self', cleanTitle, category, rw.sp, rw.exp)
+        pushToDb(next, 'self', mission.title, mission.category, rw.sp, rw.exp)
         return next
       })
       return result

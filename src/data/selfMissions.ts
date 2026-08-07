@@ -1,39 +1,28 @@
-// ===== セルフミッション（自分で選ぶ／作る）=====
-// 実行時間に応じてスコアが変わる簡易仕様（長く取り組むほど加算・上限あり）。
+// ===== セルフミッション（8種）=====
+// 「ミッション選択」画面に並ぶ8項目。時間比例でEXP/SPを付与（timed=false は固定・タイマー無し）。
 
-import type { Category } from './types'
+import type { SelfMission } from './types'
 
-/** 即完了時のデフォルト目安時間（分） */
-export const SELF_DEFAULT_MINUTES = 15
 export const SELF_COINS = 3
 
-/** 実行時間(分)→ スコア/EXP/ステータス上昇量（1〜120分でスケール、それ以上は頭打ち） */
-export function selfReward(minutes: number): { sp: number; exp: number; statAmount: number } {
-  const m = Math.max(1, Math.min(120, Math.round(minutes)))
-  const sp = 10 + m // 5分→15 / 15分→25 / 30分→40 / 60分→70 / 120分→130
-  const exp = Math.round(sp * 0.7) // EXPはスコアの約7割
-  const statAmount = m >= 60 ? 3 : m >= 30 ? 2 : 1
-  return { sp, exp, statAmount }
-}
-
-export interface SelfPreset {
-  title: string
-  category: Category
-  emoji: string
-}
-
-export const SELF_PRESETS: SelfPreset[] = [
-  { title: '勉強', category: '勉強', emoji: '📘' },
-  { title: '読書', category: '勉強', emoji: '📖' },
-  { title: '課題・レポート', category: '勉強', emoji: '📝' },
-  { title: '筋トレ', category: '運動', emoji: '💪' },
-  { title: 'ランニング', category: '運動', emoji: '🏃' },
-  { title: 'ストレッチ', category: '運動', emoji: '🧘' },
-  { title: '早寝・早起き', category: '生活習慣', emoji: '🌅' },
-  { title: '片付け・掃除', category: '生活習慣', emoji: '🧹' },
-  { title: '自炊する', category: '生活習慣', emoji: '🍳' },
-  { title: '日記を書く', category: '振り返り', emoji: '✍️' },
-  { title: '瞑想する', category: '振り返り', emoji: '🌿' },
+export const SELF_MISSIONS: SelfMission[] = [
+  { id: 'kintore', title: '筋トレ', emoji: '💪', category: '運動', exp30: 40, sp30: 20, stats: ['体力', '活力'], timed: true },
+  { id: 'running', title: 'ランニング', emoji: '🏃', category: '運動', exp30: 38, sp30: 19, stats: ['体力', '活力'], timed: true },
+  { id: 'reading', title: '読書', emoji: '📖', category: '勉強', exp30: 30, sp30: 15, stats: ['知力', '活力'], timed: true },
+  { id: 'study', title: '勉強', emoji: '📘', category: '勉強', exp30: 40, sp30: 20, stats: ['知力', '活力'], timed: true },
+  { id: 'life', title: '生活習慣', emoji: '⚡', category: '生活習慣', exp30: 25, sp30: 15, stats: ['活力', '魅力'], timed: true },
+  { id: 'diary', title: '日記を書く', emoji: '✍️', category: '振り返り', exp30: 20, sp30: 10, stats: ['活力', '知力'], timed: false },
+  { id: 'stretch', title: 'ストレッチ・瞑想', emoji: '🧘', category: '運動', exp30: 25, sp30: 15, stats: ['体力', '活力'], timed: true },
+  { id: 'social', title: '交流・挑戦', emoji: '🤝', category: '振り返り', exp30: 20, sp30: 10, stats: ['魅力'], timed: false },
 ]
 
-export const CATEGORIES: Category[] = ['勉強', '運動', '生活習慣', '振り返り']
+/** 実行時間(分)に応じた報酬。timed=false は固定（30分基準）。上限120分。 */
+export function selfMissionReward(m: SelfMission, minutes: number): { sp: number; exp: number; statAmount: number } {
+  const t = m.timed ? Math.max(1, Math.min(120, Math.round(minutes) || 30)) : 30
+  const factor = m.timed ? t / 30 : 1
+  return {
+    sp: Math.round(m.sp30 * factor),
+    exp: Math.round(m.exp30 * factor),
+    statAmount: t >= 60 ? 3 : t >= 30 ? 2 : 1, // 各ステータスへの上昇量
+  }
+}

@@ -494,6 +494,23 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 }
 .tm-finish:disabled { background-image: none; background: #cbd5e1; box-shadow: 0 3px 0 #94a3b8; cursor: default; }
 
+/* ミッション選択（8カード） */
+.ms-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.ms-card {
+  position: relative; text-align: left; background: #fff; border: 1px solid var(--line);
+  border-radius: 16px; padding: 14px 12px; cursor: pointer; box-shadow: var(--shadow-sm);
+  transition: transform 0.09s ease, box-shadow 0.09s ease;
+}
+.ms-card:active { transform: translateY(2px); box-shadow: var(--shadow-md); }
+.ms-arrow { position: absolute; top: 10px; right: 12px; color: var(--ink-soft); font-weight: 900; font-size: 16px; }
+.ms-title { font-weight: 800; font-size: 15px; padding-right: 14px; }
+.ms-rate { font-size: 11px; color: var(--ink-soft); margin-top: 8px; }
+.ms-reward { font-size: 12px; color: var(--ink-soft); font-weight: 700; margin-top: 2px; }
+.ms-stats { display: flex; align-items: center; flex-wrap: wrap; margin-top: 8px; font-size: 11px; font-weight: 700; color: var(--ink); }
+.ms-stat { display: inline-flex; align-items: center; gap: 4px; }
+.ms-sq { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+.ms-dot-sep { color: var(--ink-soft); margin: 0 4px; }
+
 /* ============================================================
    背景シーン（青空・雲・街並み）＋レイヤリング
    ============================================================ */

@@ -38,13 +38,27 @@ export interface Mission {
   done: boolean
 }
 
+/** セルフミッションの定義（8種・2ステータス・時間比例報酬） */
+export interface SelfMission {
+  id: string
+  title: string
+  emoji: string
+  category: Category // ログ・アイコン用の代表カテゴリ
+  exp30: number // 30分あたりのEXP
+  sp30: number // 30分あたりのSP（スコア）
+  stats: StatKey[] // 上昇するステータス（1〜2種）
+  timed: boolean // false = タイマーを飛ばしてレビューへ
+}
+
 /** タイマー/レビュー画面に渡す「実行中ミッション」情報（デイリー・セルフ共通） */
 export interface ActiveMission {
   kind: 'daily' | 'self'
   missionId?: string // daily のみ（達成マーク・ボーナス判定用）
+  self?: SelfMission // self のみ（報酬モデル）
   title: string
   category: Category
-  targetMinutes: number
+  targetMinutes: number // タイマーの目標時間（0=自由/カウントアップ）
+  // daily 用の固定報酬（self は self から算出）
   rewardSp: number
   rewardExp: number
   statAmount: number

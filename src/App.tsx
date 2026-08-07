@@ -41,9 +41,18 @@ const TAB_OF: Partial<Record<Route['name'], Tab>> = {
   rewards: 'mypage',
 }
 
+function initialRoute(): Route {
+  const h = typeof window !== 'undefined' ? window.location.hash.replace(/^#/, '') : ''
+  if (h === 'self') return { name: 'self' }
+  if (h === 'ranking') return { name: 'ranking' }
+  if (h === 'mypage') return { name: 'mypage' }
+  if (h === 'reflection') return { name: 'reflection' }
+  return { name: 'home' }
+}
+
 export function App() {
   const { state } = useApp()
-  const [route, setRoute] = useState<Route>({ name: 'home' })
+  const [route, setRoute] = useState<Route>(initialRoute)
   const [toast, setToast] = useState<string | null>(null)
   const [levelUp, setLevelUp] = useState<number | null>(null)
 
@@ -83,7 +92,7 @@ export function App() {
       screen = <AvatarSelectScreen go={go} notify={notify} />
       break
     case 'self':
-      screen = <SelfMissionScreen go={go} notify={notify} onLevelUp={setLevelUp} />
+      screen = <SelfMissionScreen go={go} />
       break
     case 'timer':
       screen = <TimerScreen mission={route.mission} go={go} />
