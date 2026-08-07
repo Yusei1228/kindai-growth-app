@@ -37,6 +37,15 @@ export function SceneBackground() {
         <filter id="cloudBlur" x="-20%" y="-20%" width="140%" height="140%">
           <feGaussianBlur stdDeviation="5" />
         </filter>
+        <linearGradient id="haze" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#ffffff" stopOpacity="0" />
+          <stop offset="0.5" stopColor="#ffffff" stopOpacity="0.55" />
+          <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
+        </linearGradient>
+        <radialGradient id="vignette" cx="0.5" cy="0.42" r="0.75">
+          <stop offset="0.6" stopColor="#0f172a" stopOpacity="0" />
+          <stop offset="1" stopColor="#0f172a" stopOpacity="0.14" />
+        </radialGradient>
       </defs>
 
       {/* 空 */}
@@ -51,6 +60,9 @@ export function SceneBackground() {
         <rect x="330" y="500" width="52" height="136" rx="3" />
         <rect x="386" y="520" width="54" height="116" rx="3" />
       </g>
+
+      {/* 横方向の大気ヘイズ（遠近感） */}
+      <rect x="0" y="430" width="430" height="150" fill="url(#haze)" />
 
       {/* 近景ビル群 */}
       <g>
@@ -108,6 +120,8 @@ export function SceneBackground() {
         <ellipse cx="300" cy="70" rx="54" ry="20" opacity="0.85" />
         <ellipse cx="372" cy="168" rx="40" ry="15" opacity="0.8" />
         <ellipse cx="112" cy="228" rx="44" ry="15" opacity="0.75" />
+        <ellipse cx="330" cy="300" rx="38" ry="13" opacity="0.6" />
+        <ellipse cx="60" cy="360" rx="42" ry="14" opacity="0.55" />
       </g>
 
       {/* キラキラ */}
@@ -121,6 +135,8 @@ export function SceneBackground() {
 
       {/* 上部の可読性スクリム（ヘッダー文字を見やすく） */}
       <rect width="430" height="170" fill="url(#topScrim)" />
+      {/* 全体のビネット（縁を締めて立体感） */}
+      <rect width="430" height="900" fill="url(#vignette)" />
     </svg>
   )
 }
