@@ -1,9 +1,24 @@
 import { useState } from 'react'
 import { useApp } from '../store'
 import { PageHead } from '../components/ui'
-import { SELF_PRESETS, selfReward, CATEGORIES } from '../data/selfMissions'
+import { selfReward } from '../data/selfMissions'
 import { CATEGORY_TO_STAT, type Category } from '../data/types'
 import type { Route } from '../App'
+
+const CATS: { key: Category; emoji: string; label: string }[] = [
+  { key: '勉強', emoji: '📘', label: '勉強' },
+  { key: '運動', emoji: '🏃', label: '運動' },
+  { key: '生活習慣', emoji: '⚡', label: '生活習慣' },
+  { key: '振り返り', emoji: '✨', label: '振り返り' },
+]
+
+// 目標時間（分）。0 = 自由（タイマーは計測のみ）
+const TIMES: { min: number; label: string }[] = [
+  { min: 10, label: '10分' },
+  { min: 30, label: '30分' },
+  { min: 60, label: '60分' },
+  { min: 0, label: '自由' },
+]
 
 export function SelfMissionScreen({
   go,
@@ -15,35 +30,31 @@ export function SelfMissionScreen({
   onLevelUp: (lv: number) => void
 }) {
   const { completeSelf } = useApp()
-  const [title, setTitle] = useState('')
   const [category, setCategory] = useState<Category>('勉強')
-  const [minutes, setMinutes] = useState(15)
+  const [minutes, setMinutes] = useState(30)
+  const [content, setContent] = useState('')
 
-  const rw = selfReward(minutes)
-
-  const selectPreset = (t: string, c: Category) => {
-    setTitle(t)
-    setCategory(c)
-  }
+  const title = content.trim() || category
+  const rw = minutes > 0 ? selfReward(minutes) : null
 
   const startTimer = () => {
     go({
       name: 'timer',
       mission: {
         kind: 'self',
-        title: title.trim() || 'セルフミッション',
+        title,
         category,
-        targetMinutes: minutes,
-        rewardSp: rw.sp,
-        rewardExp: rw.exp,
-        statAmount: rw.statAmount,
+        targetMinutes: minutes, // 0 = 自由
+        rewardSp: rw?.sp ?? 0,
+        rewardExp: rw?.exp ?? 0,
+        statAmount: rw?.statAmount ?? 1,
       },
     })
   }
 
-  // タイマーを使わず、選んだ目標時間でそのまま記録
+  // タイマーを使わず、選んだ目標時間でそのまま記録（自由の場合は15分扱い）
   const quickComplete = () => {
-    const res = completeSelf({ title, category, minutes, comment: '' })
+    const res = completeSelf({ title, category, minutes: minutes > 0 ? minutes : 15, comment: '' })
     if (res.leveledUp) onLevelUp(res.newLevel)
     else notify(`記録しました！ スコア +${res.gainedSP} 🎉`)
     go({ name: 'home' })
@@ -53,86 +64,47 @@ export function SelfMissionScreen({
     <>
       <PageHead title="セルフミッション" onBack={() => go({ name: 'home' })} />
 
-      <p className="hint" style={{ marginTop: 4 }}>
-        自分の努力を選ぶ（または自由入力）→ タイマーで実行、または今すぐ記録できます。
-      </p>
+      <div className="section-card" style={{ marginTop: 8 }}>
+        <div className="bold center" style={{ fontSize: 17 }}>セルフミッションを始める</div>
+        <div className="muted center" style={{ fontSize: 12, marginTop: 4 }}>自分の目標を設定して、タイマーで取り組もう！</div>
 
-      <div className="section-title">よく使うミッション</div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-        {SELF_PRESETS.map((p) => {
-          const active = title === p.title && category === p.category
-          return (
-            <button
-              key={p.title}
-              onClick={() => selectPreset(p.title, p.category)}
-              style={{
-                border: active ? '1px solid var(--blue-600)' : '1px solid var(--line)',
-                background: active ? 'var(--blue-50)' : '#fff',
-                color: active ? 'var(--blue-700)' : 'var(--ink)',
-                borderRadius: 999, padding: '9px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer',
-              }}
-            >
-              {p.emoji} {p.title}
+        <div className="field-label">カテゴリを選ぶ</div>
+        <div className="cat-grid">
+          {CATS.map((c) => (
+            <button key={c.key} className={'cat-tile' + (category === c.key ? ' active' : '')} onClick={() => setCategory(c.key)}>
+              <span className="cat-emoji">{c.emoji}</span>
+              <span className="cat-name">{c.label}</span>
+              <span className="cat-stat">{CATEGORY_TO_STAT[c.key]}+</span>
             </button>
-          )
-        })}
+          ))}
+        </div>
+
+        <div className="field-label">目標時間を選ぶ</div>
+        <div className="chip-row">
+          {TIMES.map((t) => (
+            <button key={t.label} className={'time-chip' + (minutes === t.min ? ' active' : '')} onClick={() => setMinutes(t.min)}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="field-label">取り組む内容（任意）</div>
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value.slice(0, 100))}
+          placeholder="例）英語の長文を読む、腕立て伏せをする など"
+          style={{ minHeight: 84 }}
+        />
+        <div className="muted" style={{ fontSize: 11, textAlign: 'right', marginTop: 2 }}>{content.length} / 100</div>
+
+        <div className="info-note">
+          ⓘ タイマー終了後、成果を記録して報酬や進捗を獲得できます。
+          {rw ? `（目安：スコア+${rw.sp} / EXP+${rw.exp} / ${CATEGORY_TO_STAT[category]}+${rw.statAmount}）` : '（取り組んだ時間に応じて加算）'}
+        </div>
       </div>
 
-      <div className="section-title">内容（自由入力）</div>
-      <input
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="例：TOEICの勉強、ジムで筋トレ"
-        maxLength={30}
-        style={{ width: '100%', border: '1px solid var(--line)', borderRadius: 12, padding: '12px', fontSize: 15, fontFamily: 'inherit', background: '#f8fafc' }}
-      />
-
-      <div className="section-title">カテゴリー（伸びるステータス）</div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        {CATEGORIES.map((c) => (
-          <button
-            key={c}
-            onClick={() => setCategory(c)}
-            style={{
-              flex: 1, border: category === c ? '1px solid var(--blue-600)' : '1px solid var(--line)',
-              background: category === c ? 'var(--blue-600)' : '#fff', color: category === c ? '#fff' : 'var(--ink-soft)',
-              borderRadius: 12, padding: '10px 4px', fontSize: 12, fontWeight: 800, cursor: 'pointer',
-            }}
-          >
-            {c}<br /><span style={{ fontSize: 10, opacity: 0.85 }}>{CATEGORY_TO_STAT[c]}+</span>
-          </button>
-        ))}
-      </div>
-
-      <div className="section-title">取り組む時間</div>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        {[5, 15, 30, 60].map((m) => (
-          <button
-            key={m}
-            onClick={() => setMinutes(m)}
-            style={{
-              border: minutes === m ? '1px solid var(--blue-600)' : '1px solid var(--line)',
-              background: minutes === m ? 'var(--blue-50)' : '#fff', color: minutes === m ? 'var(--blue-700)' : 'var(--ink)',
-              borderRadius: 999, padding: '8px 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer',
-            }}
-          >
-            {m}分
-          </button>
-        ))}
-      </div>
-
-      <div className="section-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span className="muted" style={{ fontSize: 13 }}>{minutes}分で達成すると</span>
-        <span className="bold" style={{ color: 'var(--blue-600)' }}>スコア +{rw.sp} / EXP +{rw.exp} / {CATEGORY_TO_STAT[category]} +{rw.statAmount}</span>
-      </div>
-      <p className="hint" style={{ marginTop: 4 }}>※ タイマーを使う場合は、実際に計測した時間でスコアが決まります（長く取り組むほど加算・120分で上限）。</p>
-
-      <button className="btn-primary" style={{ marginTop: 8 }} disabled={!title.trim()} onClick={startTimer}>
-        ⏱ タイマーを開始する
-      </button>
-      <button className="btn-ghost" style={{ marginTop: 10 }} disabled={!title.trim()} onClick={quickComplete}>
-        タイマーを使わずに記録する（{minutes}分）
-      </button>
+      <button className="btn-primary" style={{ marginTop: 12 }} onClick={startTimer}>⏱ タイマー開始</button>
+      <button className="btn-ghost" style={{ marginTop: 10 }} onClick={quickComplete}>タイマーを使わずに記録する</button>
     </>
   )
 }

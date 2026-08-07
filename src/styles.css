@@ -445,6 +445,56 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .event-banner:active { transform: translateY(2px); }
 
 /* ============================================================
+   セルフミッション / タイマー（ワイヤーフレーム準拠）
+   ============================================================ */
+.field-label { font-size: 13px; font-weight: 800; color: var(--ink); margin: 16px 0 8px; }
+
+.cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.cat-tile {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  border: 1px solid var(--line); background: #fff; border-radius: 14px; padding: 10px 2px 8px;
+  cursor: pointer; transition: transform 0.09s ease, box-shadow 0.09s ease, border-color 0.09s ease;
+}
+.cat-tile .cat-emoji { font-size: 22px; }
+.cat-tile .cat-name { font-size: 12px; font-weight: 800; color: var(--ink); }
+.cat-tile .cat-stat { font-size: 10px; font-weight: 700; color: var(--ink-soft); }
+.cat-tile.active { border-color: var(--blue-600); background: var(--blue-50); box-shadow: 0 3px 8px rgba(37, 99, 235, 0.18); }
+.cat-tile.active .cat-stat { color: var(--blue-700); }
+.cat-tile:active { transform: translateY(1px); }
+
+.chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.time-chip {
+  flex: 1; min-width: 64px; border: 1px solid var(--line); background: #fff; color: var(--ink);
+  border-radius: 12px; padding: 10px 8px; font-size: 14px; font-weight: 800; cursor: pointer;
+  transition: transform 0.09s ease, box-shadow 0.09s ease;
+}
+.time-chip.active { border-color: var(--blue-600); background: var(--blue-600); color: #fff; box-shadow: 0 3px 8px rgba(37, 99, 235, 0.25); }
+.time-chip:active { transform: translateY(1px); }
+
+.info-note {
+  background: #f1f5fb; border-radius: 12px; padding: 11px 12px; margin-top: 14px;
+  font-size: 12px; color: var(--ink-soft); line-height: 1.6;
+}
+
+/* タイマー */
+.tm-ico { width: 46px; height: 46px; border-radius: 14px; background: var(--blue-50); display: grid; place-items: center; font-size: 22px; flex: none; }
+.tm-time { font-size: 46px; font-weight: 900; letter-spacing: 2px; font-variant-numeric: tabular-nums; margin: 6px 0 2px; color: var(--ink); }
+.tm-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+.tm-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  border-radius: 16px; padding: 14px 8px; cursor: pointer; border: none;
+  transition: transform 0.09s ease, box-shadow 0.09s ease;
+}
+.tm-btn:active { transform: translateY(2px); }
+.tm-pause { background: #fff; border: 1px solid var(--line); color: var(--ink); box-shadow: 0 2px 0 #e6edf6; }
+.tm-finish {
+  color: #fff;
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0) 46%), var(--grad-blue);
+  box-shadow: 0 4px 0 var(--edge-blue), 0 8px 16px rgba(30, 63, 174, 0.30);
+}
+.tm-finish:disabled { background-image: none; background: #cbd5e1; box-shadow: 0 3px 0 #94a3b8; cursor: default; }
+
+/* ============================================================
    背景シーン（青空・雲・街並み）＋レイヤリング
    ============================================================ */
 .scene-bg {
