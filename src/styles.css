@@ -444,6 +444,36 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 /* バナー押下 */
 .event-banner:active { transform: translateY(2px); }
 
+/* ============================================================
+   背景シーン（青空・雲・街並み）＋レイヤリング
+   ============================================================ */
+.scene-bg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  z-index: 0; pointer-events: none; display: block;
+}
+.phone > .screen-scroll { position: relative; z-index: 1; }
+.phone > .bottom-nav { z-index: 3; }
+
+/* 雲がゆっくり流れる */
+.scene-clouds { animation: cloudDrift 48s ease-in-out infinite alternate; }
+@keyframes cloudDrift {
+  from { transform: translateX(-10px); }
+  to { transform: translateX(16px); }
+}
+
+/* キラキラの明滅 */
+.scene-bg .spark { animation: sparkTwinkle 3.4s ease-in-out infinite; }
+@keyframes sparkTwinkle {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene-clouds, .scene-bg .spark { animation: none; }
+}
+
+/* 背景の上でヘッダー文字を読みやすく＋立体感 */
+.phone > .screen-scroll .row.between:first-child .bold { text-shadow: 0 1px 3px rgba(255, 255, 255, 0.65); }
+
 /* ホーム：左右4ボタンをキャラ/他要素に重ねない配置に調整 */
 .hero-card { width: 60%; max-width: 210px; }
 .reward-chest { left: 0; right: auto; top: 50%; bottom: auto; transform: translateY(-50%); }

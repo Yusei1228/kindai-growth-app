@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { useApp } from './store'
 import { Toast } from './components/ui'
 import { NicknameScreen } from './screens/NicknameScreen'
+import { SceneBackground } from './components/SceneBackground'
 import { HomeScreen } from './screens/HomeScreen'
 import { AvatarSelectScreen } from './screens/AvatarSelectScreen'
 import { DailyMissionScreen } from './screens/DailyMissionScreen'
@@ -54,6 +55,7 @@ export function App() {
     return (
       <div className="app-shell">
         <div className="phone">
+          <SceneBackground />
           <div className="screen-scroll">
             <NicknameScreen />
           </div>
@@ -116,6 +118,7 @@ export function App() {
   return (
     <div className="app-shell">
       <div className="phone">
+        <SceneBackground />
         <div className="screen-scroll" key={route.name}>
           {screen}
         </div>
