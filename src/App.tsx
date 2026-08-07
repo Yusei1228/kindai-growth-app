@@ -1,8 +1,12 @@
 import { useState, useCallback } from 'react'
 import { useApp } from './store'
 import { Toast } from './components/ui'
+import { NicknameScreen } from './screens/NicknameScreen'
+import { SceneBackground } from './components/SceneBackground'
 import { HomeScreen } from './screens/HomeScreen'
+import { AvatarSelectScreen } from './screens/AvatarSelectScreen'
 import { DailyMissionScreen } from './screens/DailyMissionScreen'
+import { SelfMissionScreen } from './screens/SelfMissionScreen'
 import { TimerScreen } from './screens/TimerScreen'
 import { ReviewScreen } from './screens/ReviewScreen'
 import { RankingScreen } from './screens/RankingScreen'
@@ -10,12 +14,15 @@ import { ReflectionScreen } from './screens/ReflectionScreen'
 import { MyPageScreen } from './screens/MyPageScreen'
 import { RewardsScreen } from './screens/RewardsScreen'
 import { BottomNav, type Tab } from './components/BottomNav'
+import type { ActiveMission } from './data/types'
 
 export type Route =
   | { name: 'home' }
+  | { name: 'avatar' }
   | { name: 'daily' }
-  | { name: 'timer'; missionId: string }
-  | { name: 'review'; missionId: string; minutes: number }
+  | { name: 'self' }
+  | { name: 'timer'; mission: ActiveMission }
+  | { name: 'review'; mission: ActiveMission; minutes: number }
   | { name: 'ranking' }
   | { name: 'reflection' }
   | { name: 'mypage' }
@@ -23,7 +30,9 @@ export type Route =
 
 const TAB_OF: Partial<Record<Route['name'], Tab>> = {
   home: 'home',
+  avatar: 'home',
   daily: 'home',
+  self: 'home',
   timer: 'home',
   review: 'home',
   ranking: 'ranking',
@@ -41,12 +50,25 @@ export function App() {
   const go = useCallback((r: Route) => setRoute(r), [])
   const notify = useCallback((m: string) => setToast(m), [])
 
+  // ニックネーム未登録なら登録画面を全画面表示
+  if (!state.user.registered) {
+    return (
+      <div className="app-shell">
+        <div className="phone">
+          <SceneBackground />
+          <div className="screen-scroll">
+            <NicknameScreen />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const onTab = (t: Tab) => {
     if (t === 'home') go({ name: 'home' })
     if (t === 'ranking') go({ name: 'ranking' })
     if (t === 'reflection') go({ name: 'reflection' })
     if (t === 'mypage') go({ name: 'mypage' })
-    if (t === 'menu') notify('メニューはMVP対象外です')
   }
 
   let screen: React.ReactNode = null
@@ -57,13 +79,19 @@ export function App() {
     case 'daily':
       screen = <DailyMissionScreen go={go} />
       break
+    case 'avatar':
+      screen = <AvatarSelectScreen go={go} notify={notify} />
+      break
+    case 'self':
+      screen = <SelfMissionScreen go={go} notify={notify} onLevelUp={setLevelUp} />
+      break
     case 'timer':
-      screen = <TimerScreen missionId={route.missionId} go={go} />
+      screen = <TimerScreen mission={route.mission} go={go} />
       break
     case 'review':
       screen = (
         <ReviewScreen
-          missionId={route.missionId}
+          mission={route.mission}
           minutes={route.minutes}
           go={go}
           notify={notify}
@@ -90,6 +118,7 @@ export function App() {
   return (
     <div className="app-shell">
       <div className="phone">
+        <SceneBackground />
         <div className="screen-scroll" key={route.name}>
           {screen}
         </div>

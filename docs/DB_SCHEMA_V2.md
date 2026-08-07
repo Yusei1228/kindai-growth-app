@@ -18,7 +18,8 @@
 | **ユーザー識別** | `user_id uuid = auth.users.id` に一本化。独自`users`テーブルは廃止（`§6`）。 |
 | **日時** | 監査列 `created_at` / `updated_at` は `timestamptz`（既定 `now()`）。日付系も原則 timestamptz（暦日のみ意味を持つ列は `date`）。 |
 | **種別** | enum もしくは CHECK 付き `text`（旧 `bytea` を排除）。 |
-| **通貨/ポイント** | 整数（最小単位）。浮動小数（double）禁止。 |
+| **通貨（コイン）** | 整数（最小単位）。浮動小数（double）禁止。**通貨名は「コイン」に統一**（`ポイント`は原則使わない。`coupons.cost_points` は将来 `cost_coins` へ寄せる方針＝§8）。 |
+| **ステータス（×10整数）** | `user_stats`・`score_logs` のステータス値/deltaは**×10した整数**で保存（表示時÷10）。`STATUS_GROWTH_RULES.md §9`。 |
 | **RLS** | 全テーブル RLS 有効＋明示ポリシー。「ポリシー無しのRLS有効」は禁止（`§7`）。 |
 | **書き込み権限** | スコア/EXP/ステータス/コイン/順位/称号解放はクライアント直接更新禁止。サーバ（RPC/Edge Function）経由のみ（`§14`・本書§S）。 |
 | **`service_role`** | サーバ側のみ。クライアント（Vite/React）に絶対に置かない。 |
@@ -48,7 +49,7 @@
 |---|---|
 | 役割 | 4ステータス（知力/筋力/活力/魅力）の現在値。※カラム名は `intelligence`/`strength`/`vitality`/`charm`（`strength`＝筋力でそのまま） |
 | 主なカラム | id, user_id, intelligence, strength, vitality, charm, created_at, updated_at |
-| カラム型方針 | ステータス=int（上限値の扱いはサーバ計算側で制御） |
+| カラム型方針 | ステータス=int。**【確定】値は×10した整数で保存**（表示 12.3 → 保存 123 ／ 表示 45.0 → 保存 450）。初期20→保存200、最大100→保存1000、最低20→保存200。UIは÷10表示（`STATUS_GROWTH_RULES.md §9` / `GAME_LOGIC.md §8`） |
 | PK | id (uuid) |
 | FK | user_id→auth.users.id |
 | UNIQUE | user_id（1対1） |
@@ -151,8 +152,9 @@
 
 > **デイリーミッション要件の表現方法**:
 > - `mission_source='daily'` ＋ `slot_no ∈ {1,2,3}` ＋ `app_date` で「その日のデイリー3件」を一意に表す。
-> - `app_date` は**朝5時切替**後の論理日付（例: 0:00〜4:59は前日の `app_date`）。日付境界の判定はサーバ側で行う。
-> - `mission_source='self'` はユーザーが任意に追加するセルフミッション（slot_no=null、回数制限なし）。
+> - `app_date` は**JST・朝5時切替**後の論理日付（`app_date =（JST現在時刻−5時間）の日付`。0:00〜4:59は前日）。境界判定はサーバ側（`GAME_LOGIC.md §3.5`）。
+> - `mission_source='self'` はユーザーが任意に追加するセルフミッション（slot_no=null、**記録は回数無制限**）。
+> - **セルフのSP/EXP/ステータス報酬は1日合計300分まで**（同一 `app_date`・同一種別は**当日累積時間の差分**で付与し、分割で得しない）。300分超は記録のみ。**コインはセルフ由来1日+3（時間と別枠）**。日記のSP/EXPは1日2回・文字数ベース。計算はサーバ側（`GAME_LOGIC.md §1/§5/§7`）。
 > - 報酬の二重付与は `completed_counted` フラグ＋ `score_logs` の冪等キー（§4・⑤）で二重に防止する。
 
 ### `mission_logs` — 分類: MVP必須
@@ -178,7 +180,7 @@
 |---|---|
 | 役割 | スコア/EXP/SP/コイン/ステータス増減の履歴（監査・再計算の元） |
 | 主なカラム | id, user_id, mission_log_id, season_id, exp_amount, score_amount, season_point_amount, coin_amount, intelligence_delta, strength_delta, vitality_delta, charm_delta, reason, created_at |
-| カラム型方針 | 各amount/delta=bigint(整数), reason=enum/text |
+| カラム型方針 | 各amount/delta=bigint(整数), reason=enum/text。**【確定】ステータスdelta（`intelligence_delta`等）は×10整数で保存**（例 +2.8→28。計算後×10して四捨五入：+2.84→28／+2.85→29）。100クランプ後の「実際に反映されたdelta」を記録（理論値でない）。SPは5単位丸め済み整数（`GAME_LOGIC.md §1/§8`・`STATUS_GROWTH_RULES.md §9`） |
 | PK | id (uuid) |
 | FK | user_id→auth.users.id, mission_log_id→mission_logs.id, season_id→seasons.id |
 | UNIQUE | **`mission_log_id`（または冪等キー `idempotency_key`）をUNIQUEにし、報酬の二重加算を防止する**。`mission_logs` 側ではUNIQUEを設けず（§3）、報酬付与の一意性はこの `score_logs` 層で担保する |
@@ -325,9 +327,9 @@
 ### `coupons` — 分類: MVP必須（公開マスタ）
 | 項目 | 内容 |
 |---|---|
-| 役割 | クーポン定義（必要ポイント/在庫/有効期間） |
+| 役割 | クーポン定義（必要コイン/在庫/有効期間） |
 | 主なカラム | id, store_id, title, description, cost_points, stock_or_limit, valid_from, valid_until, is_active, created_at, updated_at |
-| カラム型方針 | cost_points=int, stock_or_limit=int(null=無制限), 期間=timestamptz |
+| カラム型方針 | cost_points=int（**交換に必要な「コイン」数**）, stock_or_limit=int(null=無制限), 期間=timestamptz。**【用語統一】通貨名は「コイン」に統一（`GAME_LOGIC.md §5`）。`cost_points` は将来的に `cost_coins` へ寄せる方針**（本段階ではSQL/カラム改名はしない・設計書上の名称統一方針のみ） |
 | PK | id (uuid) |
 | FK | store_id→stores.id |
 | UNIQUE | — |
@@ -344,7 +346,7 @@
 | FK | user_id→auth.users.id, coupon_id→coupons.id, store_id→stores.id |
 | UNIQUE | 重複利用防止キー（例: (user_id, coupon_id) ＝運用ルール確定後。§12） |
 | インデックス | (store_id, redeemed_at)（店舗レポート用）, (user_id, status) |
-| RLS | 本人は自分の引換を参照可。**「取得時のポイント消費」「利用確定（redeemed化）」はサーバ経由のみ**（クライアントから自由にredeemed化できない） |
+| RLS | 本人は自分の引換を参照可。**「取得時のコイン消費」「利用確定（redeemed化）」はサーバ経由のみ**（クライアントから自由にredeemed化できない） |
 
 ---
 

@@ -1,48 +1,57 @@
 import { useState } from 'react'
 import { useApp } from '../store'
 import { PageHead } from '../components/ui'
+import { CATEGORY_TO_STAT, type ActiveMission } from '../data/types'
+import { selfReward } from '../data/selfMissions'
 import type { Route } from '../App'
 
 export function ReviewScreen({
-  missionId,
+  mission,
   minutes,
   go,
   notify,
   onLevelUp,
 }: {
-  missionId: string
+  mission: ActiveMission
   minutes: number
   go: (r: Route) => void
   notify: (m: string) => void
   onLevelUp: (lv: number) => void
 }) {
-  const { state, completeMission } = useApp()
-  const mission = state.missions.find((m) => m.id === missionId)!
+  const { completeDaily, completeSelf } = useApp()
   const [rating, setRating] = useState(4)
   const [comment, setComment] = useState('')
-
-  const overshoot = Math.max(0, minutes - mission.targetMinutes)
-  const timeBonus = Math.round(overshoot * 1.5)
-  const base = mission.reward.sp * 10 // 表示用のポイント換算（演出）
-  const totalPt = base + timeBonus * 10
 
   const now = new Date()
   const start = new Date(now.getTime() - minutes * 60000)
   const hhmm = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  const stat = CATEGORY_TO_STAT[mission.category]
+
+  // セルフは実際の計測時間で報酬が決まる（デイリーは固定）
+  const reward =
+    mission.kind === 'self'
+      ? selfReward(minutes)
+      : { sp: mission.rewardSp, exp: mission.rewardExp, statAmount: mission.statAmount }
 
   const submit = () => {
-    const res = completeMission({ missionId, minutes, rating, comment })
+    const res =
+      mission.kind === 'daily' && mission.missionId
+        ? completeDaily({ missionId: mission.missionId, minutes, rating, comment })
+        : completeSelf({ title: mission.title, category: mission.category, minutes, comment })
+
     if (res.leveledUp) {
       onLevelUp(res.newLevel)
+    } else if (res.dailyBonus) {
+      notify(`3件達成ボーナス！ スコア +${res.gainedSP} 🎉`)
     } else {
-      notify('記録しました！報酬を獲得 🎉')
+      notify(`記録しました！ スコア +${res.gainedSP} / EXP +${reward.exp} 🎉`)
     }
-    go({ name: 'daily' })
+    go({ name: mission.kind === 'daily' ? 'daily' : 'home' })
   }
 
   return (
     <>
-      <PageHead title="レビュー・振り返り" onBack={() => go({ name: 'timer', missionId })} />
+      <PageHead title="レビュー・振り返り" onBack={() => go({ name: 'timer', mission })} />
 
       <div className="section-card">
         <div className="bold" style={{ fontSize: 16 }}>{mission.title}</div>
@@ -54,9 +63,10 @@ export function ReviewScreen({
         <div style={{ borderTop: '1px solid var(--line)', marginTop: 8, paddingTop: 8 }}>
           <div className="bold" style={{ fontSize: 13, marginBottom: 6 }}>獲得報酬</div>
           <div className="reward-grid" style={{ background: 'transparent', padding: 0 }}>
-            <div><span className="k">基本報酬</span><span className="v">{base} pt</span></div>
-            <div><span className="k">時間ボーナス</span><span className="v">+{timeBonus * 10} pt</span></div>
-            <div style={{ gridColumn: '1 / -1' }}><span className="k">合計</span><span className="v" style={{ color: 'var(--blue-600)' }}>{totalPt} pt</span></div>
+            <div><span className="k">スコア</span><span className="v" style={{ color: 'var(--blue-600)' }}>+{reward.sp}</span></div>
+            <div><span className="k">EXP</span><span className="v">+{reward.exp}</span></div>
+            <div><span className="k">{stat}</span><span className="v">+{reward.statAmount}</span></div>
+            {mission.kind === 'daily' && <div><span className="k">3件達成ボーナス</span><span className="v">+50</span></div>}
           </div>
         </div>
       </div>
@@ -82,7 +92,7 @@ export function ReviewScreen({
       </div>
 
       <p className="hint">
-        ・レビュー内容は振り返りとスコア反映に使用されます<br />
+        ・レビュー内容は振り返りに記録されます（スコアは達成時に固定で付与）<br />
         ・長時間記録の場合は確認材料として使用されることがあります
       </p>
 
