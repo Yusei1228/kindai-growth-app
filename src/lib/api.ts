@@ -29,11 +29,23 @@ export interface RankRow {
   totalScore: number
 }
 
-/** プロフィール＋初期ステータスを作成（ニックネーム登録時） */
-export async function registerProfile(userId: string, nickname: string): Promise<void> {
-  if (!supabase) return
-  await supabase.from('profiles').upsert({ id: userId, nickname }, { onConflict: 'id' })
-  await supabase.from('user_stats').upsert(
+/** プロフィールを保証（登録・自己修復共通） */
+async function ensureProfile(userId: string, nickname: string): Promise<boolean> {
+  if (!supabase) return false
+  const { error } = await supabase.from('profiles').upsert({ id: userId, nickname }, { onConflict: 'id' })
+  if (error) {
+    console.warn('[supabase] profiles upsert failed:', error.message)
+    return false
+  }
+  return true
+}
+
+/** プロフィール＋初期ステータス(0pt)を作成（ニックネーム登録時＝即ランキング反映） */
+export async function registerProfile(userId: string, nickname: string): Promise<boolean> {
+  if (!supabase) return false
+  const ok = await ensureProfile(userId, nickname)
+  if (!ok) return false
+  const { error } = await supabase.from('user_stats').upsert(
     {
       user_id: userId,
       level: 1,
@@ -47,12 +59,19 @@ export async function registerProfile(userId: string, nickname: string): Promise
     },
     { onConflict: 'user_id' },
   )
+  if (error) {
+    console.warn('[supabase] user_stats(init) upsert failed:', error.message)
+    return false
+  }
+  return true
 }
 
-/** ステータスをDBへ反映（ミッション達成後） */
-export async function syncStats(userId: string, snap: StatsSnapshot): Promise<void> {
+/** ステータスをDBへ反映（ミッション達成後）。nicknameを渡すと登録漏れを自己修復する */
+export async function syncStats(userId: string, snap: StatsSnapshot, nickname?: string): Promise<void> {
   if (!supabase) return
-  await supabase.from('user_stats').upsert(
+  // プロフィールが無いと外部キー違反になるため、先に保証（自己修復）
+  if (nickname) await ensureProfile(userId, nickname)
+  const { error } = await supabase.from('user_stats').upsert(
     {
       user_id: userId,
       level: snap.level,
@@ -63,6 +82,7 @@ export async function syncStats(userId: string, snap: StatsSnapshot): Promise<vo
     },
     { onConflict: 'user_id' },
   )
+  if (error) console.warn('[supabase] syncStats failed:', error.message)
 }
 
 export interface MissionLogEntry {

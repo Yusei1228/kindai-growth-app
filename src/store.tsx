@@ -79,6 +79,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
   }, [state])
 
+  // 起動時に一度、登録済みユーザーをDBへ反映（登録漏れ・シード状態の自己修復・即ランキング反映）
+  useEffect(() => {
+    const u = state.user
+    if (u.registered && u.userId) {
+      syncStats(u.userId, { level: u.level, exp: u.exp, totalScore: u.sp, stats: u.stats }, u.name)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const store: Store = useMemo(() => {
     const expToNext = expForLevel(state.user.level) - state.user.exp
 
@@ -161,7 +170,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const u = next.user
       if (!u.userId) return
       logMission({ userId: u.userId, missionType: type, missionTitle: title, category, score: sp, exp, appDate: appDate() })
-      syncStats(u.userId, { level: u.level, exp: u.exp, totalScore: u.sp, stats: u.stats })
+      syncStats(u.userId, { level: u.level, exp: u.exp, totalScore: u.sp, stats: u.stats }, u.name)
     }
 
     const register: Store['register'] = (nickname) => {
