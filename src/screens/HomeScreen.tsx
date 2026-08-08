@@ -66,15 +66,15 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
         {/* 右：サイドボタン（高品質・光沢＋立体） */}
         <div className="side-rail">
           <button className="rail-btn" onClick={() => notify('フレンド機能（一覧・招待）は近日公開')}>
-            <span className="rail-ico rail-blue">👥<span className="badge">1</span></span>
+            <span className="rail-ico rail-blue"><IconFriends /><span className="badge">1</span></span>
             <span className="rail-label">フレンド</span>
           </button>
           <button className="rail-btn" onClick={() => go({ name: 'ranking' })}>
-            <span className="rail-ico rail-red">🏛️<span className="badge">1</span></span>
+            <span className="rail-ico rail-red"><IconUniv /><span className="badge">1</span></span>
             <span className="rail-label">大学</span>
           </button>
           <button className="rail-btn" onClick={() => go({ name: 'rewards' })}>
-            <span className="rail-ico rail-green">🎁<span className="badge">2</span></span>
+            <span className="rail-ico rail-green"><IconGift /><span className="badge">2</span></span>
             <span className="rail-label">報酬</span>
           </button>
         </div>
@@ -109,6 +109,41 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
         <div className="event-left">順位を見る ›</div>
       </button>
     </>
+  )
+}
+
+// 右サイドボタン用の白アイコン
+function IconFriends() {
+  return (
+    <svg viewBox="0 0 24 24" fill="#fff" className="rail-glyph" aria-hidden="true">
+      <circle cx="8.5" cy="8" r="3.3" />
+      <circle cx="16.5" cy="9" r="2.7" />
+      <path d="M2.5 18.5c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5V20h-12z" />
+      <path d="M15.2 13c2.6.1 5.3 1.8 5.3 5V20h-3.8v-1.5c0-2-.7-3.7-1.9-5 .1 0 .3 0 .4 0z" />
+    </svg>
+  )
+}
+function IconUniv() {
+  return (
+    <svg viewBox="0 0 24 24" fill="#fff" className="rail-glyph" aria-hidden="true">
+      <path d="M12 2 2.5 6.7V8.5h19V6.7z" />
+      <rect x="4.2" y="9.6" width="2.3" height="8" rx="0.4" />
+      <rect x="8.6" y="9.6" width="2.3" height="8" rx="0.4" />
+      <rect x="13" y="9.6" width="2.3" height="8" rx="0.4" />
+      <rect x="17.4" y="9.6" width="2.3" height="8" rx="0.4" />
+      <rect x="2.5" y="18.4" width="19" height="2.6" rx="0.6" />
+    </svg>
+  )
+}
+function IconGift() {
+  return (
+    <svg viewBox="0 0 24 24" fill="#fff" className="rail-glyph" aria-hidden="true">
+      <rect x="3.5" y="10.5" width="17" height="10.5" rx="1.4" />
+      <rect x="2.3" y="7" width="19.4" height="4.2" rx="1" />
+      <rect x="10.7" y="7" width="2.6" height="14" />
+      <path d="M12 7C11 4 6.8 4.2 6.8 6.6 6.8 8.3 9.8 8.2 12 7z" />
+      <path d="M12 7c1-3 5.2-2.8 5.2-.4C17.2 8.3 14.2 8.2 12 7z" />
+    </svg>
   )
 }
 
