@@ -649,3 +649,36 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .chest-box .t { color: #fff; font-size: 10px; font-weight: 800; line-height: 1.2; text-shadow: 0 1px 3px rgba(15,23,42,0.45); }
 .chest-svg { width: 44px; height: 40px; display: block; margin: 3px auto 1px; filter: drop-shadow(0 2px 4px rgba(15,23,42,0.3)); }
 .chest-prog { color: #fff; font-weight: 900; font-size: 14px; text-shadow: 0 1px 3px rgba(15,23,42,0.5); }
+
+/* ===== 右サイドの高品質ボタン（フレンド/大学/報酬） ===== */
+.rail-ico {
+  width: 54px; height: 54px; border-radius: 50%; position: relative;
+  display: grid; place-items: center; font-size: 23px; color: #fff;
+  border: 2px solid rgba(255,255,255,0.9);
+  box-shadow:
+    0 8px 18px rgba(15,23,42,0.30),
+    inset 0 3px 4px rgba(255,255,255,0.55),
+    inset 0 -5px 8px rgba(0,0,0,0.22);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.28);
+}
+/* 上部の光沢ハイライト */
+.rail-ico::after {
+  content: ''; position: absolute; top: 4px; left: 9px; right: 9px; height: 42%;
+  border-radius: 50% 50% 45% 45%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0));
+  pointer-events: none;
+}
+.rail-blue  { background: radial-gradient(120% 120% at 50% 0%, #7db4ff 0%, #3b7bff 45%, #1e50c8 100%); }
+.rail-red   { background: radial-gradient(120% 120% at 50% 0%, #ff9a9a 0%, #f5555a 45%, #d21f2f 100%); }
+.rail-green { background: radial-gradient(120% 120% at 50% 0%, #8fe6b0 0%, #2ecc71 45%, #12a150 100%); }
+.rail-btn:active .rail-ico { transform: translateY(2px); box-shadow: 0 3px 8px rgba(15,23,42,0.28), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 6px rgba(0,0,0,0.22); }
+
+/* ラベルを写真背景でも読みやすく（半透明ダークピル） */
+.rail-label {
+  color: #fff !important; font-size: 11px; font-weight: 800;
+  background: rgba(15,23,42,0.45); padding: 2px 9px; border-radius: 999px;
+  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+  box-shadow: 0 2px 5px rgba(15,23,42,0.2);
+}
+/* バッジを少し上質に */
+.rail-ico .badge { box-shadow: 0 2px 5px rgba(15,23,42,0.35), 0 0 0 2px #fff; font-weight: 900; }

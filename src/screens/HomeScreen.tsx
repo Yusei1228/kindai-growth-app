@@ -63,25 +63,19 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
           </button>
         </div>
 
-        {/* 右：サイドボタン */}
+        {/* 右：サイドボタン（高品質・光沢＋立体） */}
         <div className="side-rail">
           <button className="rail-btn" onClick={() => notify('フレンド機能（一覧・招待）は近日公開')}>
-            <span className="rail-ico" style={{ background: 'linear-gradient(135deg,#60a5fa,#2563eb)' }}>👥
-              <span className="badge">1</span>
-            </span>
-            <span>フレンド</span>
+            <span className="rail-ico rail-blue">👥<span className="badge">1</span></span>
+            <span className="rail-label">フレンド</span>
           </button>
           <button className="rail-btn" onClick={() => go({ name: 'ranking' })}>
-            <span className="rail-ico" style={{ background: 'linear-gradient(135deg,#f87171,#dc2626)' }}>🏛️
-              <span className="badge">1</span>
-            </span>
-            <span>大学</span>
+            <span className="rail-ico rail-red">🏛️<span className="badge">1</span></span>
+            <span className="rail-label">大学</span>
           </button>
           <button className="rail-btn" onClick={() => go({ name: 'rewards' })}>
-            <span className="rail-ico" style={{ background: 'linear-gradient(135deg,#34d399,#059669)' }}>🎁
-              <span className="badge">2</span>
-            </span>
-            <span>報酬</span>
+            <span className="rail-ico rail-green">🎁<span className="badge">2</span></span>
+            <span className="rail-label">報酬</span>
           </button>
         </div>
       </div>
