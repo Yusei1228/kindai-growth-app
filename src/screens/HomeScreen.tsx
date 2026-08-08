@@ -49,7 +49,6 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
       {/* ヒーローアバターカード（タップでアバター変更） */}
       <div style={{ position: 'relative' }}>
         <div className="hero-stack">
-          <span className="hero-back hero-back2" aria-hidden="true" />
           <span className="hero-back hero-back1" aria-hidden="true" />
           <div className="hero-card" onClick={() => go({ name: 'avatar' })} style={{ cursor: 'pointer' }}>
             <HeroAvatar />

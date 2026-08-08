@@ -694,5 +694,5 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
   box-shadow: 0 14px 30px rgba(15,23,42,0.20);
 }
 .hero-back { position: absolute; left: 0; right: 0; top: 0; bottom: 0; border-radius: 16px; background: #fff; }
-.hero-back1 { transform: translate(5px, 8px) rotate(2.2deg); background: #fbfdff; box-shadow: 0 10px 22px rgba(15,23,42,0.14); }
-.hero-back2 { transform: translate(-4px, 15px) rotate(-2.6deg); background: #eef3fb; box-shadow: 0 8px 18px rgba(15,23,42,0.10); }
+/* 参考写真どおり控えめに1枚だけ重ねる */
+.hero-back1 { transform: translate(7px, 7px) rotate(2deg); background: #f6f9ff; box-shadow: 0 10px 22px rgba(15,23,42,0.14); }
