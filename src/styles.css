@@ -444,6 +444,18 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 /* バナー押下 */
 .event-banner:active { transform: translateY(2px); }
 
+/* ステータスを枠なしで背景になじませる（元デザイン準拠） */
+.stats-row { margin-top: 10px; }
+.stat { background: transparent; box-shadow: none; border: none; padding: 4px 2px; }
+.stat .ico {
+  width: 42px; height: 42px; font-size: 20px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.20);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+}
+.stat .v { font-size: 20px; text-shadow: 0 1px 3px rgba(255, 255, 255, 0.95), 0 0 3px rgba(255, 255, 255, 0.85); }
+.stat .max { color: var(--ink-soft); text-shadow: 0 1px 2px rgba(255, 255, 255, 0.95); }
+.stat .nm { color: var(--ink); text-shadow: 0 1px 3px rgba(255, 255, 255, 0.95); }
+
 /* ============================================================
    セルフミッション / タイマー（ワイヤーフレーム準拠）
    ============================================================ */
@@ -555,7 +567,7 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 /* 縦スペースを活かして画像を最大化＋下の余白を詰める */
 .screen-scroll { padding-bottom: 74px; }
 .hero-card { margin-top: 12px; }
-.hero-img { aspect-ratio: 5 / 8; }         /* 3/4 → 縦長に。キャラをより大きく表示 */
+.hero-img { aspect-ratio: 9 / 16; }        /* さらに縦長にしてキャラを大きく */
 .stats-ring-row { margin-top: 14px; }
 .mission-cta-row { margin-top: 14px; }
 .event-banner { margin-top: 12px; margin-bottom: 2px; }

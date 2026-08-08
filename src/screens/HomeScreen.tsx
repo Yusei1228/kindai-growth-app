@@ -2,7 +2,6 @@ import { useApp } from '../store'
 import { expForLevel } from '../data/types'
 import { GemIcon, PointIcon } from '../components/ui'
 import { HeroAvatar, MiniAvatar } from '../components/Avatar'
-import { StatRing } from '../components/StatRing'
 import type { Route } from '../App'
 
 export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m: string) => void }) {
@@ -13,10 +12,10 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
   const remaining = Math.max(0, need - u.exp)
 
   const stats = [
-    { key: '体力', val: u.stats.体力, ico: '❤️', color: '#ec4899' },
-    { key: '知力', val: u.stats.知力, ico: '📘', color: '#2563eb' },
-    { key: '活力', val: u.stats.活力, ico: '⚡', color: '#f59e0b' },
-    { key: '魅力', val: u.stats.魅力, ico: '✨', color: '#d946ef' },
+    { key: '体力', val: u.stats.体力, ico: '❤️', cls: 'ico-tairyoku' },
+    { key: '知力', val: u.stats.知力, ico: '📘', cls: 'ico-chiryoku' },
+    { key: '活力', val: u.stats.活力, ico: '⚡', cls: 'ico-katsuryoku' },
+    { key: '魅力', val: u.stats.魅力, ico: '✨', cls: 'ico-miryoku' },
   ]
 
   const claim = () => {
@@ -102,10 +101,15 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
         </div>
       </div>
 
-      {/* ステータス4種（ワイヤーフレーム準拠のリングゲージ） */}
-      <div className="stats-ring-row">
+      {/* ステータス4種（枠なし・背景になじむアイコン＋数値） */}
+      <div className="stats-row">
         {stats.map((s) => (
-          <StatRing key={s.key} label={s.key} value={s.val} emoji={s.ico} color={s.color} />
+          <div className="stat" key={s.key}>
+            <div className={'ico ' + s.cls}>{s.ico}</div>
+            <div className="v">{s.val}</div>
+            <div className="max">/100</div>
+            <div className="nm">{s.key}</div>
+          </div>
         ))}
       </div>
 
