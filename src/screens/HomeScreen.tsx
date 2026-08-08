@@ -28,35 +28,23 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
 
   return (
     <>
-      {/* 上部：通貨ピル */}
-      <div className="row between" style={{ marginTop: 14 }}>
-        <div className="row gap8">
-          <MiniAvatar />
-          <div>
-            <div className="bold" style={{ fontSize: 20, lineHeight: 1.1 }}>{u.name}</div>
+      {/* 上部：コンパクトなプロフィールヘッダー（アイコン・レベル・連続・EXP・通貨を1枚に集約） */}
+      <div className="home-header">
+        <MiniAvatar />
+        <div className="hh-main">
+          <div className="hh-name-row">
+            <span className="hh-name">{u.name}</span>
             <span className="lvl-tag">Lv.{u.level}</span>
           </div>
-        </div>
-        <div className="row gap8" style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
-          <div className="pill"><GemIcon /> {u.sp.toLocaleString()} <span style={{ fontSize: 11, color: 'var(--ink-soft)', fontWeight: 800 }}>スコア</span></div>
-          <div className="pill"><PointIcon /> {u.points.toLocaleString()} <span style={{ fontSize: 11, color: 'var(--ink-soft)', fontWeight: 800 }}>P</span></div>
-        </div>
-      </div>
-
-      {/* EXPバー + ストリーク */}
-      <div className="profile-card" style={{ marginTop: 12 }}>
-        <div style={{ flex: 1 }}>
-          <div className="row between">
-            <span className="streak-chip">🔥 連続 {u.streak}日</span>
-            <span className="muted" style={{ fontSize: 12 }}>あと {remaining.toLocaleString()} EXP</span>
+          <div className="hh-sub">
+            <span className="streak-chip">🔥 連続{u.streak}日</span>
+            <span className="muted" style={{ fontSize: 11 }}>あと {remaining.toLocaleString()} EXP</span>
           </div>
           <div className="exp-bar"><i style={{ width: expPct + '%' }} /></div>
         </div>
-        <div className="row gap6" style={{ marginLeft: 12 }}>
-          <button className="icon-btn" onClick={() => notify('メッセージはMVP対象外です')}>✉️</button>
-          <button className="icon-btn" onClick={claim} style={{ position: 'relative' }}>
-            🎁{u.dailyRewardAvailable && <span className="badge">1</span>}
-          </button>
+        <div className="hh-cur">
+          <div className="pill hh-pill"><GemIcon /> {u.sp.toLocaleString()}</div>
+          <div className="pill hh-pill"><PointIcon /> {u.points.toLocaleString()}</div>
         </div>
       </div>
 

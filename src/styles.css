@@ -562,7 +562,23 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .side-rail { right: 0; left: auto; top: 50%; bottom: auto; transform: translateY(-50%); gap: 10px; }
 
 /* 縦スペースを活かして画像を最大化＋下の余白を詰める */
-.screen-scroll { padding-bottom: 74px; }
+/* 上部はスマホのカメラ/時刻/バッテリー領域（セーフエリア）分の余白を確保 */
+.screen-scroll { padding-bottom: 74px; padding-top: calc(env(safe-area-inset-top, 0px) + 14px); }
+
+/* コンパクトなプロフィールヘッダー */
+.home-header {
+  display: flex; align-items: center; gap: 10px;
+  background: #fff; border-radius: 20px; padding: 10px 12px;
+  box-shadow: var(--shadow-md); margin-top: 2px;
+}
+.home-header .avatar-sm { width: 46px; height: 46px; flex: none; }
+.hh-main { flex: 1; min-width: 0; }
+.hh-name-row { display: flex; align-items: center; gap: 6px; }
+.hh-name { font-weight: 800; font-size: 16px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+.hh-sub { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 4px 0 5px; }
+.hh-sub .streak-chip { font-size: 12px; }
+.hh-cur { display: flex; flex-direction: column; gap: 5px; flex: none; }
+.hh-pill { padding: 5px 9px; font-size: 13px; gap: 5px; }
 .hero-card { margin-top: 12px; }
 .hero-img { aspect-ratio: 9 / 16; }        /* さらに縦長にしてキャラを大きく */
 .stats-ring-row { margin-top: 14px; }
