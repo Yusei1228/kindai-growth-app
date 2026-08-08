@@ -699,9 +699,9 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 /* 参考写真どおり控えめに1枚だけ重ねる */
 .hero-back1 { transform: translate(7px, 7px) rotate(2deg); background: #f6f9ff; box-shadow: 0 10px 22px rgba(15,23,42,0.14); }
 
-/* 白縁を細くした分の余白を詰めて再バランス */
+/* 白縁を細くした分の余白を詰めて再バランス＋四辺の縁を16pxに統一 */
 .hero-stack { margin-top: 10px; }
-.hero-stack .hero-img { aspect-ratio: 0.5; }
+.hero-stack .hero-img { aspect-ratio: 0.508; }
 .stats-ring-row { margin-top: 12px; }
 .mission-cta-row { margin-top: 12px; }
-.event-banner { margin-top: 12px; }
+.event-banner { margin-top: 12px; margin-bottom: 4px; }
