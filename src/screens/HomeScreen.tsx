@@ -6,11 +6,12 @@ import { StatRing } from '../components/StatRing'
 import type { Route } from '../App'
 
 export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m: string) => void }) {
-  const { state, claimDailyReward } = useApp()
+  const { state } = useApp()
   const u = state.user
   const need = expForLevel(u.level)
   const expPct = Math.min(100, Math.round((u.exp / need) * 100))
   const remaining = Math.max(0, need - u.exp)
+  const dailyDone = state.missions.filter((m) => m.done).length // デイリーボーナス進捗 X/3
 
   const stats = [
     { key: '体力', val: u.stats.体力, ico: '❤️', color: '#ec4899' },
@@ -19,18 +20,11 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
     { key: '魅力', val: u.stats.魅力, ico: '✨', color: '#d946ef' },
   ]
 
-  const claim = () => {
-    if (u.dailyRewardAvailable) {
-      claimDailyReward()
-      notify('ログインボーナスを受け取りました！ スコア+50 / P+30')
-    }
-  }
-
   return (
     <>
-      {/* 上部：コンパクトなプロフィールヘッダー（アイコン・レベル・連続・EXP・通貨を1枚に集約） */}
+      {/* 上部：透明（グラス）プロフィールヘッダー */}
       <div className="home-header">
-        <MiniAvatar />
+        <div className="hh-avatar"><MiniAvatar /></div>
         <div className="hh-main">
           <div className="hh-name-row">
             <span className="hh-name">{u.name}</span>
@@ -38,13 +32,17 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
           </div>
           <div className="hh-sub">
             <span className="streak-chip">🔥 連続{u.streak}日</span>
-            <span className="muted" style={{ fontSize: 11 }}>あと {remaining.toLocaleString()} EXP</span>
+            <span className="hh-exp-txt">あと {remaining.toLocaleString()} EXP</span>
           </div>
           <div className="exp-bar"><i style={{ width: expPct + '%' }} /></div>
         </div>
         <div className="hh-cur">
-          <div className="pill hh-pill"><GemIcon /> {u.sp.toLocaleString()}</div>
-          <div className="pill hh-pill"><PointIcon /> {u.points.toLocaleString()}</div>
+          <button className="pill hh-pill" onClick={() => notify('ミッション達成でスコアが増えます')}>
+            <GemIcon /> {u.sp.toLocaleString()} <span className="hh-plus" style={{ background: 'var(--blue-500)' }}>＋</span>
+          </button>
+          <button className="pill hh-pill" onClick={() => notify('ミッション達成でポイントが増えます')}>
+            <PointIcon /> {u.points.toLocaleString()} <span className="hh-plus" style={{ background: 'var(--green-500)' }}>＋</span>
+          </button>
         </div>
       </div>
 
@@ -56,15 +54,13 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
           <div className="avatar-edit-badge">🖉 タップで変更</div>
         </div>
 
-        {/* 左：ログインボーナス */}
+        {/* 左：デイリーボーナス（宝箱・進捗X/3） */}
         <div className="reward-chest">
-          <div className="chest-box" onClick={claim}>
-            <div className="t">ログインボーナス</div>
-            <div className="chest-emoji">{u.dailyRewardAvailable ? '🎁' : '✅'}</div>
-            <div className={'chest-cta' + (u.dailyRewardAvailable ? '' : ' chest-claimed')}>
-              {u.dailyRewardAvailable ? '受け取り可能!' : '受取済み'}
-            </div>
-          </div>
+          <button className="chest-box" onClick={() => go({ name: 'daily' })}>
+            <div className="t">デイリーボーナス</div>
+            <ChestIcon open={dailyDone >= 3} />
+            <div className="chest-prog">{dailyDone}/3</div>
+          </button>
         </div>
 
         {/* 右：サイドボタン */}
@@ -119,5 +115,33 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
         <div className="event-left">順位を見る ›</div>
       </button>
     </>
+  )
+}
+
+// 宝箱アイコン（デイリーボーナス用）
+function ChestIcon({ open }: { open: boolean }) {
+  return (
+    <svg viewBox="0 0 48 42" className="chest-svg" role="img" aria-label="宝箱">
+      <defs>
+        <linearGradient id="chestBody" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#f6c04a" />
+          <stop offset="1" stopColor="#d98a24" />
+        </linearGradient>
+        <linearGradient id="chestLid" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#ffd873" />
+          <stop offset="1" stopColor="#f2b03c" />
+        </linearGradient>
+      </defs>
+      {open && <circle cx="24" cy="8" r="5" fill="#fff3b0" opacity="0.9" />}
+      {/* 本体 */}
+      <rect x="6" y="18" width="36" height="20" rx="4" fill="url(#chestBody)" stroke="#a9691a" strokeWidth="1.5" />
+      {/* フタ */}
+      <path d={open ? 'M6 18 Q24 -2 42 18 L42 12 Q24 -6 6 12 Z' : 'M6 18 Q24 4 42 18 L42 20 L6 20 Z'} fill="url(#chestLid)" stroke="#a9691a" strokeWidth="1.5" />
+      {/* 金具バンド */}
+      <rect x="21" y={open ? 8 : 12} width="6" height="26" fill="#b9791f" opacity="0.85" />
+      {/* 錠前 */}
+      <rect x="21" y="24" width="6" height="8" rx="1.5" fill="#7a4e12" />
+      <circle cx="24" cy="26.5" r="2.1" fill="#ffe9a8" />
+    </svg>
   )
 }
