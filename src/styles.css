@@ -689,10 +689,19 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 /* ===== 中央カードをトランプが重なった立体スタックに ===== */
 .hero-stack { position: relative; width: 60%; max-width: 210px; margin: 14px auto 0; }
 .hero-stack .hero-card { width: 100%; max-width: none; margin: 0; position: relative;
-  /* シンプルに：淡い縁＋自然な影のみ */
+  /* シンプルに：白い縁を細く＋自然な影のみ */
   background: #fff; border: 1px solid rgba(255,255,255,0.9);
+  padding: 5px; border-radius: 14px;
   box-shadow: 0 14px 30px rgba(15,23,42,0.20);
 }
+.hero-stack .hero-img { border-radius: 10px; }
 .hero-back { position: absolute; left: 0; right: 0; top: 0; bottom: 0; border-radius: 16px; background: #fff; }
 /* 参考写真どおり控えめに1枚だけ重ねる */
 .hero-back1 { transform: translate(7px, 7px) rotate(2deg); background: #f6f9ff; box-shadow: 0 10px 22px rgba(15,23,42,0.14); }
+
+/* 白縁を細くした分の余白を詰めて再バランス */
+.hero-stack { margin-top: 10px; }
+.hero-stack .hero-img { aspect-ratio: 0.5; }
+.stats-ring-row { margin-top: 12px; }
+.mission-cta-row { margin-top: 12px; }
+.event-banner { margin-top: 12px; }
