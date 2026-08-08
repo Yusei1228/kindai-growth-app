@@ -518,6 +518,9 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
   position: absolute; inset: 0; width: 100%; height: 100%;
   z-index: 0; pointer-events: none; display: block;
 }
+.scene-img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+.scene-scrim { position: absolute; top: 0; left: 0; right: 0; height: 150px; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.30), rgba(255, 255, 255, 0)); }
 .phone > .screen-scroll { position: relative; z-index: 1; }
 .phone > .bottom-nav { z-index: 3; }
 

@@ -1,8 +1,21 @@
-// アプリ全体の背景シーン（青空・雲・太陽光・キャンパスの街並み・木々・キラキラ）
-// ホーム画面モックの世界観を、UIカードの背後に敷く固定レイヤーとして表現。
-// 立体感: 空の後退グラデ → 遠景ビル → 近景ビル/時計塔 → 木々 → 手前の広場、の奥行き構成。
+// アプリ全体の背景。public/bg-campus.jpg があればその実画像、無ければ下のSVGシーンにフォールバック。
+import { useState } from 'react'
 
 export function SceneBackground() {
+  const [failed, setFailed] = useState(false)
+  if (!failed) {
+    return (
+      <div className="scene-bg" aria-hidden="true">
+        <img src="/bg-campus.webp" className="scene-img" alt="" onError={() => setFailed(true)} />
+        <div className="scene-scrim" />
+      </div>
+    )
+  }
+  return <SceneSVG />
+}
+
+// 実画像が無い場合のSVG背景（青空・雲・街並み・木々・キラキラ）
+function SceneSVG() {
   return (
     <svg className="scene-bg" viewBox="0 0 430 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <defs>
