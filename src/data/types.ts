@@ -34,6 +34,7 @@ export interface Mission {
   title: string
   category: Category
   targetMinutes: number
+  timed: boolean // true=時間指定タイマー / false=タイマー無し（感想入力へ）
   reward: Reward
   done: boolean
 }
@@ -55,6 +56,7 @@ export interface ActiveMission {
   kind: 'daily' | 'self'
   missionId?: string // daily のみ（達成マーク・ボーナス判定用）
   self?: SelfMission // self のみ（報酬モデル）
+  timed?: boolean // false=タイマー無しで直接レビューへ
   title: string
   category: Category
   targetMinutes: number // タイマーの目標時間（0=自由/カウントアップ）

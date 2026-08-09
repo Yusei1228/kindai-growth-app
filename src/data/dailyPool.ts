@@ -13,31 +13,33 @@ interface PoolItem {
   title: string
   category: Category
   targetMinutes: number
+  timed: boolean // true=時間指定タイマー / false=タイマー無し（感想入力へ）
 }
 
 // 4カテゴリをバランスよく用意（勉強=知力 / 運動=体力 / 生活習慣=活力 / 振り返り=魅力）
+// timed:true は「その時間ちょうどのカウントダウン」、false はタイマー無しで感想入力へ
 const POOL: PoolItem[] = [
   // 勉強（知力）
-  { id: 'p01', title: '勉強・課題を10分する', category: '勉強', targetMinutes: 10 },
-  { id: 'p02', title: '英単語を15個おぼえる', category: '勉強', targetMinutes: 10 },
-  { id: 'p03', title: '授業ノートを見返す', category: '勉強', targetMinutes: 10 },
-  { id: 'p04', title: '読書を10分する', category: '勉強', targetMinutes: 10 },
-  { id: 'p05', title: '資格・テスト勉強を15分', category: '勉強', targetMinutes: 15 },
+  { id: 'p01', title: '勉強・課題を10分する', category: '勉強', targetMinutes: 10, timed: true },
+  { id: 'p02', title: '英単語を15個おぼえる', category: '勉強', targetMinutes: 0, timed: false },
+  { id: 'p03', title: '授業ノートを見返す', category: '勉強', targetMinutes: 0, timed: false },
+  { id: 'p04', title: '読書を10分する', category: '勉強', targetMinutes: 10, timed: true },
+  { id: 'p05', title: '資格・テスト勉強を15分', category: '勉強', targetMinutes: 15, timed: true },
   // 運動（体力）
-  { id: 'p06', title: 'ストレッチを5分する', category: '運動', targetMinutes: 5 },
-  { id: 'p07', title: '腕立て・腹筋を各10回', category: '運動', targetMinutes: 5 },
-  { id: 'p08', title: '20分歩く', category: '運動', targetMinutes: 20 },
-  { id: 'p09', title: '階段を使って移動する', category: '運動', targetMinutes: 5 },
-  { id: 'p10', title: '軽く筋トレする', category: '運動', targetMinutes: 10 },
+  { id: 'p06', title: 'ストレッチを5分する', category: '運動', targetMinutes: 5, timed: true },
+  { id: 'p07', title: '腕立て・腹筋を各10回', category: '運動', targetMinutes: 0, timed: false },
+  { id: 'p08', title: '20分歩く', category: '運動', targetMinutes: 20, timed: true },
+  { id: 'p09', title: '階段を使って移動する', category: '運動', targetMinutes: 0, timed: false },
+  { id: 'p10', title: '軽く筋トレする', category: '運動', targetMinutes: 10, timed: true },
   // 生活習慣（活力）
-  { id: 'p11', title: '決めた時間に起きる', category: '生活習慣', targetMinutes: 1 },
-  { id: 'p12', title: 'こまめに水分をとる', category: '生活習慣', targetMinutes: 1 },
-  { id: 'p13', title: '机まわりを片付ける', category: '生活習慣', targetMinutes: 10 },
-  { id: 'p14', title: '今日の予定を立てる', category: '生活習慣', targetMinutes: 5 },
+  { id: 'p11', title: '決めた時間に起きる', category: '生活習慣', targetMinutes: 0, timed: false },
+  { id: 'p12', title: 'こまめに水分をとる', category: '生活習慣', targetMinutes: 0, timed: false },
+  { id: 'p13', title: '机まわりを片付ける', category: '生活習慣', targetMinutes: 0, timed: false },
+  { id: 'p14', title: '今日の予定を立てる', category: '生活習慣', targetMinutes: 0, timed: false },
   // 振り返り（魅力）
-  { id: 'p15', title: '今日の出来事を振り返る', category: '振り返り', targetMinutes: 5 },
-  { id: 'p16', title: '感謝したことを1つ書く', category: '振り返り', targetMinutes: 3 },
-  { id: 'p17', title: '明日の目標を決める', category: '振り返り', targetMinutes: 3 },
+  { id: 'p15', title: '今日の出来事を振り返る', category: '振り返り', targetMinutes: 0, timed: false },
+  { id: 'p16', title: '感謝したことを1つ書く', category: '振り返り', targetMinutes: 0, timed: false },
+  { id: 'p17', title: '明日の目標を決める', category: '振り返り', targetMinutes: 0, timed: false },
 ]
 
 function mulberry32(seed: number): () => number {
@@ -58,6 +60,7 @@ function toMission(item: PoolItem): Mission {
     title: item.title,
     category: item.category,
     targetMinutes: item.targetMinutes,
+    timed: item.timed,
     reward: { exp: DAILY_REWARD.exp, sp: DAILY_REWARD.sp, coins: DAILY_REWARD.coins, stat, statAmount: DAILY_REWARD.statAmount },
     done: false,
   }

@@ -42,12 +42,28 @@ export function DailyMissionScreen({ go }: { go: (r: Route) => void }) {
 }
 
 function MissionCard({ m, go }: { m: Mission; go: (r: Route) => void }) {
+  const active = {
+    kind: 'daily' as const,
+    missionId: m.id,
+    timed: m.timed,
+    title: m.title,
+    category: m.category,
+    targetMinutes: m.targetMinutes,
+    rewardSp: DAILY_REWARD.sp,
+    rewardExp: DAILY_REWARD.exp,
+    statAmount: DAILY_REWARD.statAmount,
+  }
+  // 時間指定 → その時間ちょうどのタイマーへ / それ以外 → タイマー無しで感想入力へ
+  const start = () => (m.timed ? go({ name: 'timer', mission: active }) : go({ name: 'review', mission: active, minutes: 0 }))
+
   return (
     <div className="mission-item">
       <div className="row between">
         <div>
           <h3>{m.title}</h3>
-          <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>所要時間: {m.targetMinutes}分</div>
+          <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>
+            {m.timed ? `所要時間: ${m.targetMinutes}分（タイマー）` : 'タイマー不要'}
+          </div>
         </div>
         <span className={'status-tag ' + (m.done ? 'status-done' : 'status-todo')}>
           {m.done ? '完了' : '未完了'}
@@ -61,26 +77,8 @@ function MissionCard({ m, go }: { m: Mission; go: (r: Route) => void }) {
         <div><span className="k">{m.reward.stat}</span><span className="v">+{m.reward.statAmount}</span></div>
       </div>
 
-      <button
-        className="btn-primary"
-        disabled={m.done}
-        onClick={() =>
-          go({
-            name: 'timer',
-            mission: {
-              kind: 'daily',
-              missionId: m.id,
-              title: m.title,
-              category: m.category,
-              targetMinutes: m.targetMinutes,
-              rewardSp: DAILY_REWARD.sp,
-              rewardExp: DAILY_REWARD.exp,
-              statAmount: DAILY_REWARD.statAmount,
-            },
-          })
-        }
-      >
-        {m.done ? '達成済み' : 'チャレンジ'}
+      <button className="btn-primary" disabled={m.done} onClick={start}>
+        {m.done ? '達成済み' : m.timed ? 'チャレンジ' : '記録する'}
       </button>
     </div>
   )

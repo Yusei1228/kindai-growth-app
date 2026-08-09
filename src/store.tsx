@@ -21,7 +21,8 @@ function loadState(): AppState {
     s = structuredClone(seedState)
   }
   const today = appDate()
-  if (s.missionsDate !== today || !s.missions?.length) {
+  const oldFormat = s.missions?.some((m) => (m as { timed?: boolean }).timed === undefined)
+  if (s.missionsDate !== today || !s.missions?.length || oldFormat) {
     s.missions = pickDailyMissions(today)
     s.missionsDate = today
     s.user.dailyRewardAvailable = true

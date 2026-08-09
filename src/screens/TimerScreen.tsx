@@ -59,19 +59,23 @@ export function TimerScreen({ mission, go }: { mission: ActiveMission; go: (r: R
         </div>
       </div>
 
-      {/* 目標時間セレクタ（押すとカウントダウンに切替） */}
-      <div className="field-label" style={{ marginBottom: 6 }}>目標時間（押すとカウントダウン）</div>
-      <div className="chip-row">
-        {TARGETS.map((t) => (
-          <button
-            key={t}
-            className={'time-chip' + (target === t ? ' active' : '')}
-            onClick={() => { setTarget(t); finishedRef.current = false }}
-          >
-            {t === 0 ? 'なし' : `${t}分`}
-          </button>
-        ))}
-      </div>
+      {/* 目標時間セレクタはセルフミッションのみ（デイリーは指定時間で固定） */}
+      {mission.kind === 'self' && (
+        <>
+          <div className="field-label" style={{ marginBottom: 6 }}>目標時間（押すとカウントダウン）</div>
+          <div className="chip-row">
+            {TARGETS.map((t) => (
+              <button
+                key={t}
+                className={'time-chip' + (target === t ? ' active' : '')}
+                onClick={() => { setTarget(t); finishedRef.current = false }}
+              >
+                {t === 0 ? 'なし' : `${t}分`}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* 時間表示 */}
       <div className="section-card center" style={{ paddingTop: 18, paddingBottom: 18, marginTop: 12 }}>
