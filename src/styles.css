@@ -876,3 +876,18 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .ms-stat { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 800; color: var(--ink); }
 .ms-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
 .ms-go { align-self: flex-end; font-size: 12px; font-weight: 800; color: var(--blue-600); }
+
+/* ===== セルフ選択：カテゴリ配色＋スクロールなしフィット ===== */
+.ms-card::before { background: linear-gradient(90deg, var(--c1, #60a5fa), var(--c2, #2563eb)); }
+.ms-ico { background: linear-gradient(180deg, var(--c1, #60a5fa), var(--c2, #2563eb)); }
+
+.screen-scroll.self-fit { display: flex; flex-direction: column; overflow: hidden;
+  padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
+.self-fit .ms-grid { flex: 1 1 auto; min-height: 0; grid-template-rows: repeat(4, 1fr); margin-top: 10px; }
+.self-fit .ms-card { min-height: 0; padding: 12px 12px 10px; gap: 4px; justify-content: center; }
+.self-fit .ms-ico { width: 44px; height: 44px; font-size: 22px; border-radius: 13px; }
+.self-fit .ms-title { font-size: 15px; margin-top: 0; }
+.self-fit .ms-reward-pill { padding: 2px 9px; }
+.self-fit .ms-stats { margin-top: 4px; padding-top: 2px; }
+.self-fit .ms-go { display: none; }
+.self-fit .info-note { display: none; }

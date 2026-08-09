@@ -1,9 +1,16 @@
 import { PageHead } from '../components/ui'
 import { SELF_MISSIONS } from '../data/selfMissions'
-import type { ActiveMission, SelfMission, StatKey } from '../data/types'
+import type { ActiveMission, Category, SelfMission, StatKey } from '../data/types'
 import type { Route } from '../App'
 
 const STAT_COLOR: Record<StatKey, string> = { 体力: '#ec4899', 知力: '#2563eb', 活力: '#f59e0b', 魅力: '#d946ef' }
+// 種目カテゴリの配色（色で種類が分かる）
+const CAT_COLOR: Record<Category, { c1: string; c2: string }> = {
+  勉強: { c1: '#60a5fa', c2: '#2563eb' },
+  運動: { c1: '#fb7db3', c2: '#ec4899' },
+  生活習慣: { c1: '#fcd34d', c2: '#f59e0b' },
+  振り返り: { c1: '#e879f9', c2: '#d946ef' },
+}
 
 export function SelfMissionScreen({ go }: { go: (r: Route) => void }) {
   const select = (m: SelfMission) => {
@@ -29,7 +36,12 @@ export function SelfMissionScreen({ go }: { go: (r: Route) => void }) {
 
       <div className="ms-grid">
         {SELF_MISSIONS.map((m) => (
-          <button key={m.id} className="ms-card" onClick={() => select(m)}>
+          <button
+            key={m.id}
+            className="ms-card"
+            style={{ ['--c1' as string]: CAT_COLOR[m.category].c1, ['--c2' as string]: CAT_COLOR[m.category].c2 }}
+            onClick={() => select(m)}
+          >
             <div className="ms-ico">{m.emoji}</div>
             <div className="ms-title">{m.title}</div>
             <div className="ms-reward-pill">EXP {m.exp30} ・ SP {m.sp30}{m.timed ? ' /30分' : ''}</div>
