@@ -30,18 +30,17 @@ export function SelfMissionScreen({ go }: { go: (r: Route) => void }) {
       <div className="ms-grid">
         {SELF_MISSIONS.map((m) => (
           <button key={m.id} className="ms-card" onClick={() => select(m)}>
-            <span className="ms-arrow">›</span>
-            <div className="ms-title">{m.emoji} {m.title}</div>
-            <div className="ms-rate">{m.timed ? '30分あたり' : '1回で'}</div>
-            <div className="ms-reward">EXP: {m.exp30} / SP: {m.sp30}</div>
+            <div className="ms-ico">{m.emoji}</div>
+            <div className="ms-title">{m.title}</div>
+            <div className="ms-reward-pill">EXP {m.exp30} ・ SP {m.sp30}{m.timed ? ' /30分' : ''}</div>
             <div className="ms-stats">
-              {m.stats.map((s, i) => (
-                <span key={s}>
-                  {i > 0 && <span className="ms-dot-sep">・</span>}
-                  <span className="ms-stat"><span className="ms-sq" style={{ background: STAT_COLOR[s] }} />{s}</span>
+              {m.stats.map((s) => (
+                <span key={s} className="ms-stat">
+                  <span className="ms-dot" style={{ background: STAT_COLOR[s] }} />{s}
                 </span>
               ))}
             </div>
+            <span className="ms-go">はじめる ›</span>
           </button>
         ))}
       </div>
