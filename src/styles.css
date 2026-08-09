@@ -770,3 +770,23 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .dm-bonus.done { background: linear-gradient(135deg, #fff2cc, #ffd98a); }
 .dm-bonus-ico { font-size: 26px; }
 .dm-bonus-star { font-size: 24px; }
+
+/* ===== カラーパレット統一：アクション=青 / 報酬=金 / ステータス=4色（データ） ===== */
+/* セルフミッションCTAを青系（スカイ）に統一 */
+.cta-green {
+  background: linear-gradient(135deg, #4db8f5 0%, #2f8fe0 55%, #1f7fd0 100%);
+  box-shadow: 0 5px 0 #1a63a8, 0 12px 22px rgba(31, 127, 208, 0.28);
+}
+/* 右サイド：大学=青、報酬=ゴールド（報酬系は金で統一） */
+.rail-red { background: radial-gradient(120% 120% at 50% 0%, #6ea8ff 0%, #3b6fe0 45%, #1e50c8 100%); }
+.rail-green { background: radial-gradient(120% 120% at 50% 0%, #ffdf8a 0%, #f5b731 45%, #e0921c 100%); }
+.rail-green .rail-glyph { filter: drop-shadow(0 1px 1px rgba(120,70,10,0.35)); }
+
+/* デイリーミッション：カード/アイコン/ボタンを青に統一（カテゴリは絵文字＋文字で表現） */
+.dm-card::before { background: linear-gradient(180deg, #60a5fa, #2563eb); }
+.dm-ico { background: linear-gradient(180deg, #60a5fa, #2563eb); }
+.dm-btn {
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0) 46%), linear-gradient(180deg, #3b7bff, #1e3fae);
+  box-shadow: 0 5px 0 #16307e, 0 10px 20px rgba(30, 63, 174, 0.24);
+}
+.dm-btn:active { box-shadow: 0 1px 0 #16307e, 0 4px 10px rgba(30, 63, 174, 0.2); }
