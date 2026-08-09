@@ -772,10 +772,10 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .dm-bonus-star { font-size: 24px; }
 
 /* ===== カラーパレット統一：アクション=青 / 報酬=金 / ステータス=4色（データ） ===== */
-/* セルフミッションCTAを青系（スカイ）に統一 */
+/* セルフミッションCTAは緑（ユーザー指定で戻す） */
 .cta-green {
-  background: linear-gradient(135deg, #4db8f5 0%, #2f8fe0 55%, #1f7fd0 100%);
-  box-shadow: 0 5px 0 #1a63a8, 0 12px 22px rgba(31, 127, 208, 0.28);
+  background: linear-gradient(135deg, #34d27a 0%, #22c55e 55%, #15a34a 100%);
+  box-shadow: 0 5px 0 #0f7a37, 0 12px 22px rgba(21, 163, 74, 0.28);
 }
 /* 右サイド：大学=青、報酬=ゴールド（報酬系は金で統一） */
 .rail-red { background: radial-gradient(120% 120% at 50% 0%, #6ea8ff 0%, #3b6fe0 45%, #1e50c8 100%); }
@@ -790,3 +790,30 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
   box-shadow: 0 5px 0 #16307e, 0 10px 20px rgba(30, 63, 174, 0.24);
 }
 .dm-btn:active { box-shadow: 0 1px 0 #16307e, 0 4px 10px rgba(30, 63, 174, 0.2); }
+
+/* ===== デイリー達成ボタン：重厚・立体を強化 ===== */
+.dm-btn {
+  padding: 15px; font-size: 16px;
+  border: 1px solid rgba(255,255,255,0.35);
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,0.38), rgba(255,255,255,0.06) 42%, rgba(255,255,255,0) 56%),
+    linear-gradient(180deg, #4f8bff 0%, #2a5fe0 55%, #1e3fae 100%);
+  box-shadow:
+    0 7px 0 #16307e,
+    0 10px 0 #0f2560,
+    0 18px 26px rgba(15,23,42,0.32),
+    inset 0 2px 3px rgba(255,255,255,0.55),
+    inset 0 -5px 9px rgba(0,0,0,0.24);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+}
+.dm-btn:active {
+  transform: translateY(6px);
+  box-shadow:
+    0 1px 0 #16307e,
+    0 3px 0 #0f2560,
+    0 6px 12px rgba(15,23,42,0.26),
+    inset 0 2px 3px rgba(255,255,255,0.45),
+    inset 0 -3px 6px rgba(0,0,0,0.24);
+}
+.dm-btn:disabled { background-image: none; background: #cbd5e1; border-color: rgba(255,255,255,0.4);
+  box-shadow: 0 5px 0 #94a3b8, 0 8px 14px rgba(15,23,42,0.14); text-shadow: none; }
