@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { useApp } from '../store'
 import { PageHead } from '../components/ui'
+import { RewardBurst } from '../components/RewardBurst'
 import { CATEGORY_TO_STAT, type ActiveMission, type StatKey } from '../data/types'
 import { selfMissionReward } from '../data/selfMissions'
 import type { Route } from '../App'
+
+interface BurstData { sp: number; exp: number; stat: string; statAmount: number; bonus: boolean; leveledUp: boolean; newLevel: number; dest: Route }
 
 export function ReviewScreen({
   mission,
@@ -23,6 +26,7 @@ export function ReviewScreen({
   const [focus, setFocus] = useState(3) // 集中度
   const [hard, setHard] = useState(3) // きつさ
   const [comment, setComment] = useState('')
+  const [burst, setBurst] = useState<BurstData | null>(null)
 
   const reward =
     mission.kind === 'self' && mission.self
@@ -38,10 +42,25 @@ export function ReviewScreen({
         ? completeDaily({ missionId: mission.missionId, minutes, rating: focus, comment: memo })
         : completeSelf({ mission: mission.self!, minutes, comment: memo, rating: focus })
 
-    if (res.leveledUp) onLevelUp(res.newLevel)
-    else if (res.dailyBonus) notify(`3件達成ボーナス！ スコア +${res.gainedSP} 🎉`)
-    else notify(`記録しました！ スコア +${res.gainedSP} / EXP +${reward.exp} 🎉`)
-    go({ name: mission.kind === 'daily' ? 'daily' : 'home' })
+    // 達成エフェクトを表示（終了後に遷移・レベルアップ）
+    setBurst({
+      sp: res.gainedSP,
+      exp: reward.exp,
+      stat: stats.join('・'),
+      statAmount: reward.statAmount,
+      bonus: res.dailyBonus,
+      leveledUp: res.leveledUp,
+      newLevel: res.newLevel,
+      dest: { name: mission.kind === 'daily' ? 'daily' : 'home' },
+    })
+  }
+
+  const finishBurst = () => {
+    if (!burst) return
+    const b = burst
+    setBurst(null)
+    if (b.leveledUp) onLevelUp(b.newLevel)
+    go(b.dest)
   }
 
   return (
@@ -75,9 +94,13 @@ export function ReviewScreen({
         </span>
       </div>
 
-      <button className="btn-primary" style={{ marginTop: 12 }} onClick={submit}>
+      <button className="btn-primary" style={{ marginTop: 12 }} onClick={submit} disabled={!!burst}>
         記録して報酬を受け取る
       </button>
+
+      {burst && (
+        <RewardBurst sp={burst.sp} exp={burst.exp} stat={burst.stat} statAmount={burst.statAmount} bonus={burst.bonus} onDone={finishBurst} />
+      )}
     </>
   )
 }
