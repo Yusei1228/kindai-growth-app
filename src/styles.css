@@ -705,3 +705,21 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .stats-ring-row { margin-top: 12px; }
 .mission-cta-row { margin-top: 12px; }
 .event-banner { margin-top: 12px; margin-bottom: 4px; }
+
+/* ===== ステータス：四角枠なし・グラデリング（見やすくスタイリッシュ） ===== */
+.stats-ring-row { background: transparent; border: none; box-shadow: none; padding: 0; margin-top: 12px; gap: 4px; }
+.stat-ring { background: transparent; }
+.sr-wrap { width: 58px; height: 58px; margin: 0 auto; filter: drop-shadow(0 4px 7px rgba(15,23,42,0.24)); }
+.sr-svg { width: 58px; height: 58px; display: block; }
+.sr-emoji { font-size: 20px; }
+.sr-val { font-size: 18px; font-weight: 900; color: var(--ink); margin-top: 2px; text-shadow: 0 1px 3px rgba(255,255,255,0.95), 0 0 3px rgba(255,255,255,0.85); }
+.sr-label { font-size: 11px; font-weight: 800; color: var(--ink); text-shadow: 0 1px 3px rgba(255,255,255,0.95); }
+
+/* ===== ホームはスクロールさせず、中央カードが余白に合わせて伸縮 ===== */
+.screen-scroll.home-fit { display: flex; flex-direction: column; overflow: hidden;
+  padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
+.home-fit .hero-wrap { flex: 1 1 auto; min-height: 0; margin-top: 10px; }
+.home-fit .hero-stack { height: 100%; margin-top: 0; }
+.home-fit .hero-stack .hero-card { height: 100%; }
+.home-fit .hero-stack .hero-img { aspect-ratio: auto; height: 100%; }
+.home-fit .hero-back { top: 0; bottom: 0; height: auto; }

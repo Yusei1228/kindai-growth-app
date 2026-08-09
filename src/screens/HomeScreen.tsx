@@ -14,10 +14,10 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
   const dailyDone = state.missions.filter((m) => m.done).length // デイリーボーナス進捗 X/3
 
   const stats = [
-    { key: '体力', val: u.stats.体力, ico: '❤️', color: '#ec4899' },
-    { key: '知力', val: u.stats.知力, ico: '📘', color: '#2563eb' },
-    { key: '活力', val: u.stats.活力, ico: '⚡', color: '#f59e0b' },
-    { key: '魅力', val: u.stats.魅力, ico: '✨', color: '#d946ef' },
+    { key: '体力', val: u.stats.体力, ico: '❤️', c1: '#f9a8d4', c2: '#ec4899' },
+    { key: '知力', val: u.stats.知力, ico: '📘', c1: '#93c5fd', c2: '#2563eb' },
+    { key: '活力', val: u.stats.活力, ico: '⚡', c1: '#fcd34d', c2: '#f59e0b' },
+    { key: '魅力', val: u.stats.魅力, ico: '✨', c1: '#f0abfc', c2: '#d946ef' },
   ]
 
   return (
@@ -47,7 +47,7 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
       </div>
 
       {/* ヒーローアバターカード（タップでアバター変更） */}
-      <div style={{ position: 'relative' }}>
+      <div className="hero-wrap" style={{ position: 'relative' }}>
         <div className="hero-stack">
           <span className="hero-back hero-back1" aria-hidden="true" />
           <div className="hero-card" onClick={() => go({ name: 'avatar' })} style={{ cursor: 'pointer' }}>
@@ -86,7 +86,7 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
       {/* ステータス4種（枠なしリングゲージ・視覚重視でコンパクト） */}
       <div className="stats-ring-row">
         {stats.map((s) => (
-          <StatRing key={s.key} label={s.key} value={s.val} emoji={s.ico} color={s.color} />
+          <StatRing key={s.key} label={s.key} value={s.val} emoji={s.ico} c1={s.c1} c2={s.c2} />
         ))}
       </div>
 
