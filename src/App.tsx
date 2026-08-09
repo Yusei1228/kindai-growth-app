@@ -44,6 +44,7 @@ const TAB_OF: Partial<Record<Route['name'], Tab>> = {
 function initialRoute(): Route {
   const h = typeof window !== 'undefined' ? window.location.hash.replace(/^#/, '') : ''
   if (h === 'self') return { name: 'self' }
+  if (h === 'daily') return { name: 'daily' }
   if (h === 'ranking') return { name: 'ranking' }
   if (h === 'mypage') return { name: 'mypage' }
   if (h === 'reflection') return { name: 'reflection' }

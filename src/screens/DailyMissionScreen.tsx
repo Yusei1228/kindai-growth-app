@@ -1,25 +1,33 @@
-import { useApp } from '../store'
 import { PageHead } from '../components/ui'
 import { DAILY_REWARD } from '../data/dailyPool'
+import { useApp } from '../store'
 import type { Route } from '../App'
-import type { Mission } from '../data/types'
+import type { Category, Mission } from '../data/types'
+
+const CAT_META: Record<Category, { emoji: string; c1: string; c2: string; edge: string }> = {
+  勉強: { emoji: '📘', c1: '#60a5fa', c2: '#2563eb', edge: '#1e40af' },
+  運動: { emoji: '🏃', c1: '#fb7db3', c2: '#ec4899', edge: '#be185d' },
+  生活習慣: { emoji: '⚡', c1: '#fcd34d', c2: '#f59e0b', edge: '#b45309' },
+  振り返り: { emoji: '✨', c1: '#e879f9', c2: '#d946ef', edge: '#a21caf' },
+}
 
 export function DailyMissionScreen({ go }: { go: (r: Route) => void }) {
   const { state } = useApp()
   const done = state.missions.filter((m) => m.done).length
-  const total = state.missions.length
-  const allDone = done === total
+  const total = state.missions.length || 1
+  const allDone = done === state.missions.length
 
   return (
     <>
       <PageHead title="今日のデイリーミッション" onBack={() => go({ name: 'home' })} />
 
-      <div style={{ marginTop: 6 }}>
+      {/* 進捗 */}
+      <div className="dm-progress">
         <div className="row between">
           <span className="bold" style={{ fontSize: 13 }}>達成状況</span>
-          <span className="bold" style={{ fontSize: 13 }}>{done}/{total}</span>
+          <span className="bold" style={{ fontSize: 13 }}>{done} / {state.missions.length}</span>
         </div>
-        <div className="progress-track" style={{ marginTop: 6 }}>
+        <div className="progress-track" style={{ marginTop: 8 }}>
           <i style={{ width: (done / total) * 100 + '%' }} />
         </div>
       </div>
@@ -28,20 +36,23 @@ export function DailyMissionScreen({ go }: { go: (r: Route) => void }) {
         <MissionCard key={m.id} m={m} go={go} />
       ))}
 
-      <div className="bonus-card">
-        <div>
+      {/* ボーナス */}
+      <div className={'dm-bonus' + (allDone ? ' done' : '')}>
+        <div className="dm-bonus-ico">{allDone ? '🎉' : '🎁'}</div>
+        <div style={{ flex: 1 }}>
           <div className="bold">3つ達成でボーナス</div>
-          <div className="muted" style={{ fontSize: 12 }}>ボーナス報酬: +50pt</div>
+          <div className="muted" style={{ fontSize: 12 }}>
+            {allDone ? 'ボーナス獲得！ スコア +50' : `あと ${state.missions.length - done} つでボーナス +50`}
+          </div>
         </div>
-        <div className="bonus-star" style={allDone ? { background: '#fef3c7', borderColor: '#fbbf24' } : undefined}>
-          {allDone ? '⭐' : '☆'}
-        </div>
+        <div className="dm-bonus-star">{allDone ? '⭐' : '☆'}</div>
       </div>
     </>
   )
 }
 
 function MissionCard({ m, go }: { m: Mission; go: (r: Route) => void }) {
+  const meta = CAT_META[m.category]
   const active = {
     kind: 'daily' as const,
     missionId: m.id,
@@ -53,32 +64,28 @@ function MissionCard({ m, go }: { m: Mission; go: (r: Route) => void }) {
     rewardExp: DAILY_REWARD.exp,
     statAmount: DAILY_REWARD.statAmount,
   }
-  // 時間指定 → その時間ちょうどのタイマーへ / それ以外 → タイマー無しで感想入力へ
   const start = () => (m.timed ? go({ name: 'timer', mission: active }) : go({ name: 'review', mission: active, minutes: 0 }))
+  const styleVars = { ['--c1' as string]: meta.c1, ['--c2' as string]: meta.c2, ['--edge' as string]: meta.edge }
 
   return (
-    <div className="mission-item">
-      <div className="row between">
-        <div>
-          <h3>{m.title}</h3>
-          <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>
-            {m.timed ? `所要時間: ${m.targetMinutes}分（タイマー）` : 'タイマー不要'}
-          </div>
+    <div className="dm-card" style={styleVars}>
+      <div className="dm-top">
+        <div className="dm-ico">{meta.emoji}</div>
+        <div className="dm-main">
+          <h3 className="dm-title">{m.title}</h3>
+          <div className="dm-sub">{m.timed ? `${m.targetMinutes}分 タイマー` : 'タイマー不要'} ・ {m.category}</div>
         </div>
-        <span className={'status-tag ' + (m.done ? 'status-done' : 'status-todo')}>
-          {m.done ? '完了' : '未完了'}
-        </span>
+        <span className={'dm-status ' + (m.done ? 'done' : 'todo')}>{m.done ? '完了' : '未達成'}</span>
       </div>
 
-      <div className="reward-grid">
-        <div><span className="k">EXP</span><span className="v">+{m.reward.exp}</span></div>
-        <div><span className="k">シーズンPt</span><span className="v">+{m.reward.sp}</span></div>
-        <div><span className="k">コイン</span><span className="v">+{m.reward.coins}</span></div>
-        <div><span className="k">{m.reward.stat}</span><span className="v">+{m.reward.statAmount}</span></div>
+      <div className="dm-rewards">
+        <span className="dm-rw">EXP +{m.reward.exp}</span>
+        <span className="dm-rw">スコア +{m.reward.sp}</span>
+        <span className="dm-rw">{m.reward.stat} +{m.reward.statAmount}</span>
       </div>
 
-      <button className="btn-primary" disabled={m.done} onClick={start}>
-        {m.done ? '達成済み' : m.timed ? 'チャレンジ' : '記録する'}
+      <button className="dm-btn" disabled={m.done} onClick={start}>
+        {m.done ? '達成済み' : m.timed ? 'チャレンジする' : '記録する'}<span className="dm-arrow"> ›</span>
       </button>
     </div>
   )
