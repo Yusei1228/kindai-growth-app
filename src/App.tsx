@@ -129,7 +129,7 @@ export function App() {
     <div className="app-shell">
       <div className="phone">
         <SceneBackground />
-        <div className={'screen-scroll' + (route.name === 'home' ? ' home-fit' : '') + (route.name === 'self' ? ' self-fit' : '')} key={route.name}>
+        <div className={'screen-scroll' + (route.name === 'home' ? ' home-fit' : '')} key={route.name}>
           {screen}
         </div>
 
