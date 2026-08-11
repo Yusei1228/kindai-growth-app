@@ -104,17 +104,17 @@ export function RankingScreen({ go }: { go: (r: Route) => void }) {
       <div className="section-card rank-summary">
         <div className="row between">
           <div>
-            <div style={{ fontSize: 12, opacity: 0.9 }}>あなたの順位</div>
-            <div style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.1 }}>
+            <div className="rs-label">あなたの順位</div>
+            <div className="rs-num" style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.1 }}>
               {myRank}<span style={{ fontSize: 15, fontWeight: 700 }}>位 / {total}人中</span>
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 12, opacity: 0.9 }}>上位</div>
-            <div style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.1 }}>{percentile}<span style={{ fontSize: 15, fontWeight: 700 }}>%</span></div>
+            <div className="rs-label">上位</div>
+            <div className="rs-num" style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.1 }}>{percentile}<span style={{ fontSize: 15, fontWeight: 700 }}>%</span></div>
           </div>
         </div>
-        <div style={{ marginTop: 8, fontSize: 13, fontWeight: 700 }}>累計スコア {me.sp.toLocaleString()} pt ・ Lv.{me.level}</div>
+        <div className="rs-sub" style={{ marginTop: 8, fontSize: 13, fontWeight: 700 }}>累計スコア {me.sp.toLocaleString()} pt ・ Lv.{me.level}</div>
       </div>
 
       {/* 表彰台（上位3人） */}

@@ -1069,21 +1069,21 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 }
 
 /* ===== ランキング：夕暮れに馴染む重厚テーマ（すりガラス＋温色＋深い影） ===== */
-/* 自分の順位サマリ：夕暮れグラデ＋金の縁＋厚みのある影 */
+/* 自分の順位サマリ：昼・夕どちらにも馴染む明るいフロストガラス＋金縁＋厚みのある影 */
 .rank-theme .rank-summary {
-  background:
-    linear-gradient(135deg, rgba(58,26,74,0.92) 0%, rgba(124,48,86,0.90) 46%, rgba(196,104,56,0.90) 100%);
-  color: #fff;
-  border: 1px solid rgba(255,214,168,0.55);
+  background: linear-gradient(180deg, rgba(255,252,248,0.90) 0%, rgba(255,244,230,0.86) 100%);
+  color: #3a2416;
+  border: 1.5px solid rgba(242,181,68,0.6);
   border-radius: 20px;
   box-shadow:
-    0 20px 44px rgba(38,12,34,0.48),
-    0 4px 12px rgba(38,12,34,0.30),
-    inset 0 1px 0 rgba(255,255,255,0.28),
-    inset 0 -10px 24px rgba(30,8,24,0.25);
-  text-shadow: 0 1px 2px rgba(0,0,0,0.28);
-  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    0 16px 34px rgba(48,18,38,0.26),
+    0 3px 10px rgba(48,18,38,0.16),
+    inset 0 1px 0 rgba(255,255,255,0.85);
+  -webkit-backdrop-filter: blur(9px); backdrop-filter: blur(9px);
 }
+.rank-theme .rank-summary .rs-label { font-size: 12px; font-weight: 700; color: #8a6a50; }
+.rank-theme .rank-summary .rs-num { color: #c2410c; }
+.rank-theme .rank-summary .rs-sub { color: #5a3d28; }
 
 /* セクション見出し：夕空でも読める明色＋影 */
 .rank-theme .section-title {
