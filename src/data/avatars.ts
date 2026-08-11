@@ -19,8 +19,17 @@ export const AVATARS: AvatarOption[] = [
 
 export const DEFAULT_AVATAR = AVATARS[0].file
 
-/** 保存された値が候補に無ければデフォルトに寄せる */
+// 旧ファイル名（png）→ 現行（webp）への移行マップ。
+// 以前 avatar-2/3 を選んでいたユーザーの保存値を自動で読み替える。
+const LEGACY_RENAME: Record<string, string> = {
+  'avatar-2.png': 'avatar-2.webp',
+  'avatar-3.png': 'avatar-3.webp',
+}
+
+/** 保存された値を現行の候補に正規化する（旧png名は自動移行・不明ならデフォルト） */
 export function normalizeAvatar(file: string | undefined): string {
-  if (file && AVATARS.some((a) => a.file === file)) return file
+  if (!file) return DEFAULT_AVATAR
+  const migrated = LEGACY_RENAME[file] ?? file
+  if (AVATARS.some((a) => a.file === migrated)) return migrated
   return DEFAULT_AVATAR
 }
