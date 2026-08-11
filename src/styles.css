@@ -1067,3 +1067,73 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
   .scene-sunset { animation: none; opacity: 1; }
   .petal { animation: none; display: none; }
 }
+
+/* ===== ランキング：夕暮れに馴染む重厚テーマ（すりガラス＋温色＋深い影） ===== */
+/* 自分の順位サマリ：夕暮れグラデ＋金の縁＋厚みのある影 */
+.rank-theme .rank-summary {
+  background:
+    linear-gradient(135deg, rgba(58,26,74,0.92) 0%, rgba(124,48,86,0.90) 46%, rgba(196,104,56,0.90) 100%);
+  color: #fff;
+  border: 1px solid rgba(255,214,168,0.55);
+  border-radius: 20px;
+  box-shadow:
+    0 20px 44px rgba(38,12,34,0.48),
+    0 4px 12px rgba(38,12,34,0.30),
+    inset 0 1px 0 rgba(255,255,255,0.28),
+    inset 0 -10px 24px rgba(30,8,24,0.25);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.28);
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+}
+
+/* セクション見出し：夕空でも読める明色＋影 */
+.rank-theme .section-title {
+  color: #fff6ec;
+  font-weight: 900;
+  text-shadow: 0 2px 8px rgba(45,16,38,0.60), 0 1px 2px rgba(45,16,38,0.5);
+}
+
+/* 順位行：温かいすりガラス＋厚みのある多層シャドウ＋上面ハイライト */
+.rank-theme .rank-row {
+  background: rgba(255,250,244,0.86);
+  -webkit-backdrop-filter: blur(9px); backdrop-filter: blur(9px);
+  border: 1px solid rgba(255,222,188,0.75);
+  border-radius: 16px;
+  box-shadow:
+    0 12px 26px rgba(48,18,38,0.30),
+    0 2px 6px rgba(48,18,38,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.75);
+}
+.rank-theme .rank-row.me {
+  background: linear-gradient(180deg, rgba(255,247,229,0.96), rgba(255,238,208,0.92));
+  border: 1.5px solid #f2b544;
+  box-shadow:
+    0 14px 30px rgba(120,60,10,0.34),
+    0 0 0 3px rgba(242,181,68,0.22),
+    inset 0 1px 0 rgba(255,255,255,0.85);
+}
+.rank-theme .rank-name { color: #2a1a12; }
+.rank-theme .rank-fac { color: #9a7d68; }
+.rank-theme .rank-no { color: #7c5a3e; }
+/* スコアは夕暮れに合う温色に */
+.rank-theme .rank-sp { color: #c2410c; }
+.rank-theme .rank-sp small { color: #b98a5e; }
+.rank-theme .rank-chevron { color: #b98a5e; }
+
+/* 表彰台：名前/スコアを明色＋影、土台に深い影で重厚に */
+.rank-theme .podium .pname { color: #fff6ec; text-shadow: 0 2px 6px rgba(45,16,38,0.6); }
+.rank-theme .podium .psp { color: #ffe6b3; font-weight: 900; text-shadow: 0 1px 4px rgba(45,16,38,0.6); }
+.rank-theme .podium .rank-av {
+  box-shadow: 0 10px 22px rgba(40,12,30,0.42), 0 0 0 3px rgba(255,236,205,0.55), inset 0 1px 0 rgba(255,255,255,0.4);
+}
+.rank-theme .podium .stand {
+  box-shadow: 0 12px 24px rgba(40,12,30,0.42), inset 0 2px 0 rgba(255,255,255,0.35), inset 0 -8px 16px rgba(0,0,0,0.18);
+}
+
+/* 一覧行アイコンにも軽い縁取りで馴染ませる */
+.rank-theme .rank-row .rank-av { box-shadow: 0 3px 8px rgba(48,18,38,0.25), 0 0 0 2px rgba(255,255,255,0.6); }
+
+/* 補足テキストも夕空で読めるように */
+.rank-theme .hint { color: rgba(255,245,236,0.9); text-shadow: 0 1px 4px rgba(45,16,38,0.55); }
+
+/* ランキングのページタイトルも夕空で読める明色に */
+.rank-theme .page-head h1 { color: #fff6ec; text-shadow: 0 2px 8px rgba(45,16,38,0.6); }

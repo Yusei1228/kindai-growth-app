@@ -97,11 +97,11 @@ export function RankingScreen({ go }: { go: (r: Route) => void }) {
   const openProfile = (r: Row) => go({ name: 'profile', user: r, rank: r.rank, total, isMe: r.isMe })
 
   return (
-    <>
+    <div className="rank-theme">
       <PageHead title="ランキング" />
 
       {/* 自分の順位サマリ */}
-      <div className="section-card" style={{ background: 'linear-gradient(135deg,#2f6bff,#2455d6)', color: '#fff' }}>
+      <div className="section-card rank-summary">
         <div className="row between">
           <div>
             <div style={{ fontSize: 12, opacity: 0.9 }}>あなたの順位</div>
@@ -141,7 +141,7 @@ export function RankingScreen({ go }: { go: (r: Route) => void }) {
       <p className="hint center">
         累計スコア（努力の合計）で全員をランキング。{source === 'local' ? '※現在はローカル表示（Supabase未接続）。' : '近大生みんなで競争中！'} 上を目指して続けよう 💪
       </p>
-    </>
+    </div>
   )
 }
 
