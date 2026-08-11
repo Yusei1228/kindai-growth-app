@@ -8,13 +8,15 @@ export interface AvatarOption {
   label: string
 }
 
+// 除外するアバター番号（ファイルも削除済み）
+const EXCLUDED = new Set([13, 16, 19])
+
 export const AVATARS: AvatarOption[] = [
   { file: 'hero-avatar.png', label: 'アバター1' },
   // avatar-2 以降は public/ に置いた webp。存在しないものは選択画面で自動的に隠れる。
-  ...Array.from({ length: 19 }, (_, i) => {
-    const n = i + 2 // 2〜20
-    return { file: `avatar-${n}.webp`, label: `アバター${n}` }
-  }),
+  ...Array.from({ length: 19 }, (_, i) => i + 2) // 2〜20
+    .filter((n) => !EXCLUDED.has(n))
+    .map((n) => ({ file: `avatar-${n}.webp`, label: `アバター${n}` })),
 ]
 
 export const DEFAULT_AVATAR = AVATARS[0].file
