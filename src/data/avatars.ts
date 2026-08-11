@@ -12,7 +12,7 @@ export interface AvatarOption {
 // ラベルは並び順の連番（アバター1,2,3…）で自動採番する。
 // 女=hero,5,8,11,12,14,15,17,18,20 / 男=2,3,4,6,7,9,10,21,22
 const AVATAR_FILES: string[] = [
-  'avatar-5.webp',    // 女・ピンク
+  'avatar-10.webp',   // 男・灰/白（旧アバター16をアバター1に設定）
   'avatar-2.webp',    // 男・黒
   'hero-avatar.png',  // 女・黒
   'avatar-22.webp',   // 男・白/明
@@ -27,7 +27,7 @@ const AVATAR_FILES: string[] = [
   'avatar-17.webp',   // 女・マルチカラー
   'avatar-9.webp',    // 男・暗/青髪
   'avatar-15.webp',   // 女・黒
-  'avatar-10.webp',   // 男・灰/白
+  'avatar-5.webp',    // 女・ピンク（旧アバター1をここへ）
   'avatar-18.webp',   // 女・黒
   'avatar-21.webp',   // 男・黒
   'avatar-20.webp',   // 女・白/水色
