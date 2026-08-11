@@ -8,24 +8,39 @@ export interface AvatarOption {
   label: string
 }
 
-// 除外するアバター番号（ファイルも削除済み）
-const EXCLUDED = new Set([13, 16, 19])
-
-// 実在するアバターファイルの並び（hero=1枚目 + avatar-2〜20 のうち除外を除く）
+// 表示順：男女を交互にし、派手色（ピンク/マルチカラー/明色）が隣り合わず散らばるように配置。
+// ラベルは並び順の連番（アバター1,2,3…）で自動採番する。
+// 女=hero,5,8,11,12,14,15,17,18,20 / 男=2,3,4,6,7,9,10,21,22
 const AVATAR_FILES: string[] = [
-  'hero-avatar.png',
-  ...Array.from({ length: 19 }, (_, i) => i + 2) // 2〜20
-    .filter((n) => !EXCLUDED.has(n))
-    .map((n) => `avatar-${n}.webp`),
+  'avatar-5.webp',    // 女・ピンク
+  'avatar-2.webp',    // 男・黒
+  'hero-avatar.png',  // 女・黒
+  'avatar-22.webp',   // 男・白/明
+  'avatar-11.webp',   // 女・黒(ゴシック)
+  'avatar-3.webp',    // 男・黒パーカー
+  'avatar-12.webp',   // 女・マルチカラー
+  'avatar-4.webp',    // 男・黒
+  'avatar-14.webp',   // 女・黒/紫
+  'avatar-7.webp',    // 男・茶/ベージュ
+  'avatar-8.webp',    // 女・黒/赤
+  'avatar-6.webp',    // 男・黒/紺
+  'avatar-17.webp',   // 女・マルチカラー
+  'avatar-9.webp',    // 男・暗/青髪
+  'avatar-15.webp',   // 女・黒
+  'avatar-10.webp',   // 男・灰/白
+  'avatar-18.webp',   // 女・黒
+  'avatar-21.webp',   // 男・黒
+  'avatar-20.webp',   // 女・白/水色
 ]
 
-// 表示ラベルは「並び順の連番」にする（ファイル番号の欠番があっても 1,2,3… と詰める）
+// 表示ラベルは「並び順の連番」にする（1,2,3… と詰める）
 export const AVATARS: AvatarOption[] = AVATAR_FILES.map((file, i) => ({
   file,
   label: `アバター${i + 1}`,
 }))
 
-export const DEFAULT_AVATAR = AVATARS[0].file
+// 新規ユーザーの既定アバター（並び順とは独立に固定）
+export const DEFAULT_AVATAR = 'hero-avatar.png'
 
 // 旧ファイル名（png）→ 現行（webp）への移行マップ。
 // 以前 avatar-2/3 を選んでいたユーザーの保存値を自動で読み替える。
