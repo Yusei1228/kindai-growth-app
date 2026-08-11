@@ -10,11 +10,11 @@ export interface AvatarOption {
 
 export const AVATARS: AvatarOption[] = [
   { file: 'hero-avatar.png', label: 'アバター1' },
-  { file: 'avatar-2.png', label: 'アバター2' },
-  { file: 'avatar-3.png', label: 'アバター3' },
-  { file: 'avatar-4.png', label: 'アバター4' },
-  { file: 'avatar-5.png', label: 'アバター5' },
-  { file: 'avatar-6.png', label: 'アバター6' },
+  { file: 'avatar-2.webp', label: 'アバター2' },
+  { file: 'avatar-3.webp', label: 'アバター3' },
+  { file: 'avatar-4.webp', label: 'アバター4' },
+  { file: 'avatar-5.webp', label: 'アバター5' },
+  { file: 'avatar-6.webp', label: 'アバター6' },
 ]
 
 export const DEFAULT_AVATAR = AVATARS[0].file

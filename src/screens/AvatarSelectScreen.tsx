@@ -49,7 +49,7 @@ export function AvatarSelectScreen({ back, notify }: { back: () => void; notify:
       <div className="section-card" style={{ marginTop: 16 }}>
         <div className="bold" style={{ fontSize: 13, marginBottom: 6 }}>アバターを増やすには</div>
         <p className="hint" style={{ margin: 0 }}>
-          アプリの <code>public/</code> フォルダに <code>avatar-2.png</code>, <code>avatar-3.png</code> …
+          アプリの <code>public/</code> フォルダに <code>avatar-4.webp</code>, <code>avatar-5.webp</code> …
           という名前で画像を追加すると、ここに選択肢が増えます（<code>hero-avatar.png</code> が1枚目）。
         </p>
       </div>
