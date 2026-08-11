@@ -172,7 +172,11 @@ export function App() {
   return (
     <div className="app-shell">
       <div className="phone">
-        <SceneBackground image={route.name === 'ranking' || route.name === 'profile' ? '/bg-ranking.webp' : '/bg-campus.webp'} />
+        {(() => {
+          const isSunset = route.name === 'ranking' || route.name === 'profile'
+          // key で昼⇔夕の切替時に再マウントし、フェードアニメを再生
+          return <SceneBackground key={isSunset ? 'sunset' : 'day'} variant={isSunset ? 'ranking' : 'day'} />
+        })()}
         <div className={'screen-scroll' + (route.name === 'home' ? ' home-fit' : '')} key={route.name}>
           {screen}
         </div>

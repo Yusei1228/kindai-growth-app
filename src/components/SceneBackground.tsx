@@ -1,17 +1,66 @@
 // アプリ全体の背景。public/bg-campus.jpg があればその実画像、無ければ下のSVGシーンにフォールバック。
 import { useState } from 'react'
 
-export function SceneBackground({ image = '/bg-campus.webp' }: { image?: string }) {
+// 舞う花びら（軽量CSSアニメ）。固定パラメータで自然にばらけさせる。
+const PETALS = [
+  { left: 6, size: 16, delay: 0, dur: 9, sway: 26, emoji: '🌸' },
+  { left: 18, size: 12, delay: 2.4, dur: 11, sway: -30, emoji: '🍂' },
+  { left: 30, size: 18, delay: 4.1, dur: 8.5, sway: 34, emoji: '🌸' },
+  { left: 42, size: 13, delay: 1.2, dur: 12, sway: -22, emoji: '🌸' },
+  { left: 54, size: 15, delay: 5.6, dur: 10, sway: 30, emoji: '🍂' },
+  { left: 66, size: 11, delay: 3.0, dur: 13, sway: -34, emoji: '🌸' },
+  { left: 76, size: 17, delay: 6.8, dur: 9.5, sway: 24, emoji: '🌸' },
+  { left: 86, size: 13, delay: 0.8, dur: 11.5, sway: -28, emoji: '🍂' },
+  { left: 94, size: 15, delay: 4.8, dur: 8, sway: 20, emoji: '🌸' },
+  { left: 12, size: 10, delay: 7.5, dur: 12.5, sway: 32, emoji: '🌸' },
+  { left: 48, size: 12, delay: 8.2, dur: 10.5, sway: -26, emoji: '🍂' },
+  { left: 70, size: 14, delay: 2.0, dur: 9, sway: 28, emoji: '🌸' },
+]
+
+function Petals() {
+  return (
+    <div className="petals" aria-hidden="true">
+      {PETALS.map((p, i) => (
+        <span
+          key={i}
+          className="petal"
+          style={{
+            left: p.left + '%',
+            fontSize: p.size + 'px',
+            animationDelay: p.delay + 's',
+            animationDuration: p.dur + 's',
+            ['--sway' as string]: p.sway + 'px',
+          }}
+        >
+          {p.emoji}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+export function SceneBackground({ variant = 'day' }: { variant?: 'day' | 'ranking' }) {
   const [failed, setFailed] = useState(false)
-  if (!failed) {
+  if (failed) return <SceneSVG />
+
+  // ランキング：日中(bg-campus)の上に夕焼け(bg-ranking)を数秒かけてフェードイン＋花びら
+  if (variant === 'ranking') {
     return (
       <div className="scene-bg" aria-hidden="true">
-        <img src={image} className="scene-img" alt="" onError={() => setFailed(true)} />
+        <img src="/bg-campus.webp" className="scene-img" alt="" onError={() => setFailed(true)} />
+        <img src="/bg-ranking.webp" className="scene-img scene-sunset" alt="" />
+        <Petals />
         <div className="scene-scrim" />
       </div>
     )
   }
-  return <SceneSVG />
+
+  return (
+    <div className="scene-bg" aria-hidden="true">
+      <img src="/bg-campus.webp" className="scene-img" alt="" onError={() => setFailed(true)} />
+      <div className="scene-scrim" />
+    </div>
+  )
 }
 
 // 実画像が無い場合のSVG背景（青空・雲・街並み・木々・キラキラ）

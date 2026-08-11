@@ -1045,3 +1045,25 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .lb-cell.today { border: 2px solid #f6c65a; background: #fff8ea; box-shadow: 0 0 0 3px rgba(246,198,90,0.25); }
 .lb-cell.milestone { border-color: #f6c65a; }
 .lb-cell.milestone .lb-cell-day { color: #b45309; }
+
+/* ===== 背景：日中→夕焼けクロスフェード＋花びら（ランキング） ===== */
+.scene-bg .scene-img { position: absolute; inset: 0; }
+.scene-sunset { opacity: 0; animation: sunsetFade 4.5s ease-in forwards; }
+@keyframes sunsetFade { from { opacity: 0; } to { opacity: 1; } }
+
+.petals { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
+.petal {
+  position: absolute; top: -8%; opacity: 0; line-height: 1; will-change: transform, opacity;
+  animation-name: petalFall; animation-timing-function: linear; animation-iteration-count: infinite;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.12));
+}
+@keyframes petalFall {
+  0%   { transform: translate3d(0, -10%, 0) rotate(0deg);   opacity: 0; }
+  8%   { opacity: 0.92; }
+  90%  { opacity: 0.92; }
+  100% { transform: translate3d(var(--sway, 24px), 108vh, 0) rotate(340deg); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene-sunset { animation: none; opacity: 1; }
+  .petal { animation: none; display: none; }
+}
