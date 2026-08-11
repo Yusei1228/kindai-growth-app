@@ -11,13 +11,19 @@ export interface AvatarOption {
 // 除外するアバター番号（ファイルも削除済み）
 const EXCLUDED = new Set([13, 16, 19])
 
-export const AVATARS: AvatarOption[] = [
-  { file: 'hero-avatar.png', label: 'アバター1' },
-  // avatar-2 以降は public/ に置いた webp。存在しないものは選択画面で自動的に隠れる。
+// 実在するアバターファイルの並び（hero=1枚目 + avatar-2〜20 のうち除外を除く）
+const AVATAR_FILES: string[] = [
+  'hero-avatar.png',
   ...Array.from({ length: 19 }, (_, i) => i + 2) // 2〜20
     .filter((n) => !EXCLUDED.has(n))
-    .map((n) => ({ file: `avatar-${n}.webp`, label: `アバター${n}` })),
+    .map((n) => `avatar-${n}.webp`),
 ]
+
+// 表示ラベルは「並び順の連番」にする（ファイル番号の欠番があっても 1,2,3… と詰める）
+export const AVATARS: AvatarOption[] = AVATAR_FILES.map((file, i) => ({
+  file,
+  label: `アバター${i + 1}`,
+}))
 
 export const DEFAULT_AVATAR = AVATARS[0].file
 

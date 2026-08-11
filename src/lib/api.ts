@@ -15,6 +15,16 @@ export function statsToDb(stats: Stats) {
   }
 }
 
+/** DBカラム → アプリ内ステータス */
+export function statsFromDb(r: { strength?: number; intelligence?: number; vitality?: number; charm?: number }): Stats {
+  return {
+    体力: r.strength ?? 0,
+    知力: r.intelligence ?? 0,
+    活力: r.vitality ?? 0,
+    魅力: r.charm ?? 0,
+  }
+}
+
 export interface StatsSnapshot {
   level: number
   exp: number
@@ -27,12 +37,17 @@ export interface RankRow {
   nickname: string
   level: number
   totalScore: number
+  avatar?: string | null
+  exp?: number
+  stats?: Stats
 }
 
-/** プロフィールを保証（登録・自己修復共通） */
-async function ensureProfile(userId: string, nickname: string): Promise<boolean> {
+/** プロフィールを保証（登録・自己修復共通）。avatar を渡せば併せて更新 */
+async function ensureProfile(userId: string, nickname: string, avatar?: string): Promise<boolean> {
   if (!supabase) return false
-  const { error } = await supabase.from('profiles').upsert({ id: userId, nickname }, { onConflict: 'id' })
+  const row: { id: string; nickname: string; avatar?: string } = { id: userId, nickname }
+  if (avatar !== undefined) row.avatar = avatar
+  const { error } = await supabase.from('profiles').upsert(row, { onConflict: 'id' })
   if (error) {
     console.warn('[supabase] profiles upsert failed:', error.message)
     return false
@@ -40,10 +55,16 @@ async function ensureProfile(userId: string, nickname: string): Promise<boolean>
   return true
 }
 
+/** アバターのみをDBへ反映（変更時） */
+export async function syncAvatar(userId: string, nickname: string, avatar: string): Promise<void> {
+  if (!supabase) return
+  await ensureProfile(userId, nickname, avatar)
+}
+
 /** プロフィール＋初期ステータス(0pt)を作成（ニックネーム登録時＝即ランキング反映） */
-export async function registerProfile(userId: string, nickname: string): Promise<boolean> {
+export async function registerProfile(userId: string, nickname: string, avatar?: string): Promise<boolean> {
   if (!supabase) return false
-  const ok = await ensureProfile(userId, nickname)
+  const ok = await ensureProfile(userId, nickname, avatar)
   if (!ok) return false
   const { error } = await supabase.from('user_stats').upsert(
     {
@@ -67,10 +88,10 @@ export async function registerProfile(userId: string, nickname: string): Promise
 }
 
 /** ステータスをDBへ反映（ミッション達成後）。nicknameを渡すと登録漏れを自己修復する */
-export async function syncStats(userId: string, snap: StatsSnapshot, nickname?: string): Promise<void> {
+export async function syncStats(userId: string, snap: StatsSnapshot, nickname?: string, avatar?: string): Promise<void> {
   if (!supabase) return
-  // プロフィールが無いと外部キー違反になるため、先に保証（自己修復）
-  if (nickname) await ensureProfile(userId, nickname)
+  // プロフィールが無いと外部キー違反になるため、先に保証（自己修復・アバターも同期）
+  if (nickname) await ensureProfile(userId, nickname, avatar)
   const { error } = await supabase.from('user_stats').upsert(
     {
       user_id: userId,
@@ -115,14 +136,17 @@ export async function fetchRanking(): Promise<RankRow[] | null> {
   if (!supabase) return null
   const { data, error } = await supabase
     .from('user_stats')
-    .select('user_id, level, total_score, profiles(nickname)')
+    .select('user_id, level, exp, total_score, strength, intelligence, vitality, charm, profiles(nickname, avatar)')
     .order('total_score', { ascending: false })
     .limit(500)
   if (error || !data) return null
   return data.map((r: any) => ({
     userId: r.user_id,
     nickname: r.profiles?.nickname ?? '名無し',
+    avatar: r.profiles?.avatar ?? null,
     level: r.level ?? 1,
+    exp: r.exp ?? 0,
     totalScore: r.total_score ?? 0,
+    stats: statsFromDb(r),
   }))
 }

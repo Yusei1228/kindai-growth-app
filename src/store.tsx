@@ -6,7 +6,7 @@ import { pickDailyMissions, DAILY_REWARD } from './data/dailyPool'
 import { selfMissionReward, SELF_COINS } from './data/selfMissions'
 import { appDate } from './lib/appDate'
 import { getUserId } from './lib/session'
-import { registerProfile, syncStats, logMission } from './lib/api'
+import { registerProfile, syncStats, logMission, syncAvatar } from './lib/api'
 import { normalizeAvatar } from './data/avatars'
 
 const STORAGE_KEY = 'kindai-growth-state-v2'
@@ -84,7 +84,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const u = state.user
     if (u.registered && u.userId) {
-      syncStats(u.userId, { level: u.level, exp: u.exp, totalScore: u.sp, stats: u.stats }, u.name)
+      syncStats(u.userId, { level: u.level, exp: u.exp, totalScore: u.sp, stats: u.stats }, u.name, u.avatar)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -171,17 +171,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const u = next.user
       if (!u.userId) return
       logMission({ userId: u.userId, missionType: type, missionTitle: title, category, score: sp, exp, appDate: appDate() })
-      syncStats(u.userId, { level: u.level, exp: u.exp, totalScore: u.sp, stats: u.stats }, u.name)
+      syncStats(u.userId, { level: u.level, exp: u.exp, totalScore: u.sp, stats: u.stats }, u.name, u.avatar)
     }
 
     const register: Store['register'] = (nickname) => {
       const userId = getUserId()
       setState((prev) => ({ ...prev, user: { ...prev.user, userId, name: nickname.trim(), registered: true } }))
-      registerProfile(userId, nickname.trim())
+      registerProfile(userId, nickname.trim(), state.user.avatar)
     }
 
     const setAvatar: Store['setAvatar'] = (file) => {
-      setState((prev) => ({ ...prev, user: { ...prev.user, avatar: normalizeAvatar(file) } }))
+      const av = normalizeAvatar(file)
+      setState((prev) => ({ ...prev, user: { ...prev.user, avatar: av } }))
+      const u = state.user
+      if (u.registered && u.userId) syncAvatar(u.userId, u.name, av)
     }
 
     const completeDaily: Store['completeDaily'] = ({ missionId, minutes, rating, comment }) => {

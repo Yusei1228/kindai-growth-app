@@ -10,11 +10,13 @@ import { SelfMissionScreen } from './screens/SelfMissionScreen'
 import { TimerScreen } from './screens/TimerScreen'
 import { ReviewScreen } from './screens/ReviewScreen'
 import { RankingScreen } from './screens/RankingScreen'
+import { UserProfileScreen } from './screens/UserProfileScreen'
 import { ReflectionScreen } from './screens/ReflectionScreen'
 import { MyPageScreen } from './screens/MyPageScreen'
 import { RewardsScreen } from './screens/RewardsScreen'
 import { BottomNav, type Tab } from './components/BottomNav'
 import type { ActiveMission } from './data/types'
+import type { RankRow } from './lib/api'
 import { loadTimerSession } from './lib/timerSession'
 
 export type Route =
@@ -25,6 +27,7 @@ export type Route =
   | { name: 'timer'; mission: ActiveMission }
   | { name: 'review'; mission: ActiveMission; minutes: number }
   | { name: 'ranking' }
+  | { name: 'profile'; user: RankRow; rank: number; total: number; isMe: boolean }
   | { name: 'reflection' }
   | { name: 'mypage' }
   | { name: 'rewards' }
@@ -37,6 +40,7 @@ const TAB_OF: Partial<Record<Route['name'], Tab>> = {
   timer: 'home',
   review: 'home',
   ranking: 'ranking',
+  profile: 'ranking',
   reflection: 'reflection',
   mypage: 'mypage',
   rewards: 'mypage',
@@ -140,7 +144,10 @@ export function App() {
       )
       break
     case 'ranking':
-      screen = <RankingScreen />
+      screen = <RankingScreen go={go} />
+      break
+    case 'profile':
+      screen = <UserProfileScreen user={route.user} rank={route.rank} total={route.total} isMe={route.isMe} back={back} />
       break
     case 'reflection':
       screen = <ReflectionScreen />

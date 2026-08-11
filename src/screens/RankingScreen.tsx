@@ -3,13 +3,14 @@ import { useApp } from '../store'
 import { PageHead } from '../components/ui'
 import { fetchRanking, type RankRow } from '../lib/api'
 import { isSupabaseEnabled } from '../lib/supabase'
+import type { Route } from '../App'
 
 interface Row extends RankRow {
   rank: number
   isMe: boolean
 }
 
-export function RankingScreen() {
+export function RankingScreen({ go }: { go: (r: Route) => void }) {
   const { state } = useApp()
   const me = state.user
   const [rows, setRows] = useState<Row[] | null>(null)
@@ -29,12 +30,22 @@ export function RankingScreen() {
         src = 'local'
         list = localFallback()
       } else {
+        // 自分の最新値（アバター・ステータス含む）
+        const mine: RankRow = {
+          userId: me.userId,
+          nickname: me.name || 'あなた',
+          level: me.level,
+          totalScore: me.sp,
+          avatar: me.avatar,
+          exp: me.exp,
+          stats: me.stats,
+        }
         // 自分がまだDBに無い場合に備えてマージ（登録直後など）
         if (!list.some((r) => r.userId === me.userId)) {
-          list = [...list, { userId: me.userId, nickname: me.name || 'あなた', level: me.level, totalScore: me.sp }]
+          list = [...list, mine]
         } else {
           // DBの自分の値をローカル最新に上書き（反映ラグ対策）
-          list = list.map((r) => (r.userId === me.userId ? { ...r, nickname: me.name || r.nickname, level: me.level, totalScore: me.sp } : r))
+          list = list.map((r) => (r.userId === me.userId ? { ...r, ...mine } : r))
         }
       }
 
@@ -53,7 +64,7 @@ export function RankingScreen() {
 
   function localFallback(): RankRow[] {
     const dummies = state.ranking.map((u) => ({ userId: u.id, nickname: u.name, level: u.level, totalScore: u.monthlySP }))
-    const meRow = { userId: me.userId || 'me', nickname: me.name || 'あなた', level: me.level, totalScore: me.sp }
+    const meRow: RankRow = { userId: me.userId || 'me', nickname: me.name || 'あなた', level: me.level, totalScore: me.sp, avatar: me.avatar, exp: me.exp, stats: me.stats }
     return [...dummies, meRow]
   }
 
@@ -83,6 +94,8 @@ export function RankingScreen() {
     return r.isMe ? '#2563eb' : palette[(r.nickname.charCodeAt(0) + r.level) % palette.length]
   }
 
+  const openProfile = (r: Row) => go({ name: 'profile', user: r, rank: r.rank, total, isMe: r.isMe })
+
   return (
     <>
       <PageHead title="ランキング" />
@@ -107,21 +120,23 @@ export function RankingScreen() {
       {/* 表彰台（上位3人） */}
       {top3.length === 3 && (
         <div className="podium">
-          <PodiumCol r={top3[1]} place={2} color={colorOf(top3[1])} />
-          <PodiumCol r={top3[0]} place={1} color={colorOf(top3[0])} />
-          <PodiumCol r={top3[2]} place={3} color={colorOf(top3[2])} />
+          <PodiumCol r={top3[1]} place={2} color={colorOf(top3[1])} onOpen={openProfile} />
+          <PodiumCol r={top3[0]} place={1} color={colorOf(top3[0])} onOpen={openProfile} />
+          <PodiumCol r={top3[2]} place={3} color={colorOf(top3[2])} onOpen={openProfile} />
         </div>
       )}
 
       <div className="section-title">🏆 上位10人</div>
       {top10.map((r) => (
-        <RankLine key={'top' + r.userId} r={r} color={colorOf(r)} />
+        <RankLine key={'top' + r.userId} r={r} color={colorOf(r)} onOpen={openProfile} />
       ))}
 
       <div className="section-title">🎯 あなたの周辺（前後5人）</div>
       {around.map((r) => (
-        <RankLine key={'near' + r.userId} r={r} color={colorOf(r)} />
+        <RankLine key={'near' + r.userId} r={r} color={colorOf(r)} onOpen={openProfile} />
       ))}
+
+      <p className="hint center" style={{ marginTop: 4 }}>名前をタップすると相手のプロフィールを見られます 👀</p>
 
       <p className="hint center">
         累計スコア（努力の合計）で全員をランキング。{source === 'local' ? '※現在はローカル表示（Supabase未接続）。' : '近大生みんなで競争中！'} 上を目指して続けよう 💪
@@ -130,31 +145,44 @@ export function RankingScreen() {
   )
 }
 
-function RankLine({ r, color }: { r: Row; color: string }) {
+function RankAvatar({ r, color, size }: { r: Row; color: string; size: number }) {
+  const [err, setErr] = useState(false)
+  if (r.avatar && !err) {
+    return (
+      <div className="rank-av rank-av-img" style={{ width: size, height: size }}>
+        <img src={'/' + r.avatar} alt={r.nickname} onError={() => setErr(true)} />
+      </div>
+    )
+  }
   return (
-    <div className={'rank-row' + (r.isMe ? ' me' : '')}>
+    <div className="rank-av" style={{ background: color, width: size, height: size }}>{r.isMe ? '自' : r.nickname[0]}</div>
+  )
+}
+
+function RankLine({ r, color, onOpen }: { r: Row; color: string; onOpen: (r: Row) => void }) {
+  return (
+    <button className={'rank-row rank-row-btn' + (r.isMe ? ' me' : '')} onClick={() => onOpen(r)}>
       <div className="rank-no">{r.rank}</div>
-      <div className="rank-av" style={{ background: color }}>{r.isMe ? '自' : r.nickname[0]}</div>
-      <div>
+      <RankAvatar r={r} color={color} size={40} />
+      <div style={{ minWidth: 0, flex: 1, textAlign: 'left' }}>
         <div className="rank-name">{r.isMe ? `${r.nickname || 'あなた'}（あなた）` : r.nickname} <span className="muted" style={{ fontSize: 11 }}>Lv.{r.level}</span></div>
         <div className="rank-fac">累計スコア</div>
       </div>
       <div className="rank-sp">{r.totalScore.toLocaleString()}<small> pt</small></div>
-    </div>
+      <span className="rank-chevron">›</span>
+    </button>
   )
 }
 
-function PodiumCol({ r, place, color }: { r: Row; place: number; color: string }) {
+function PodiumCol({ r, place, color, onOpen }: { r: Row; place: number; color: string; onOpen: (r: Row) => void }) {
   const medal = place === 1 ? '👑' : place === 2 ? '🥈' : '🥉'
   return (
-    <div className="col">
+    <button className="col col-btn" onClick={() => onOpen(r)}>
       <div style={{ fontSize: 18 }}>{medal}</div>
-      <div className="pavatar" style={{ background: color, width: place === 1 ? 62 : 54, height: place === 1 ? 62 : 54 }}>
-        {r.isMe ? '自' : r.nickname[0]}
-      </div>
+      <RankAvatar r={r} color={color} size={place === 1 ? 62 : 54} />
       <div className="pname">{r.isMe ? 'あなた' : r.nickname}</div>
       <div className="psp">{r.totalScore.toLocaleString()} pt</div>
       <div className={`stand stand-${place}`}>{place}</div>
-    </div>
+    </button>
   )
 }

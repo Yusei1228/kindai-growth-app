@@ -9,8 +9,11 @@
 create table if not exists public.profiles (
   id         uuid primary key,
   nickname   text not null,
+  avatar     text,
   created_at timestamptz not null default now()
 );
+-- 既存DBへの追加用（初回作成時は上の定義に含まれる）
+alter table public.profiles add column if not exists avatar text;
 
 -- 2) ユーザーステータス（ランキングの基準 = total_score）----------
 create table if not exists public.user_stats (
