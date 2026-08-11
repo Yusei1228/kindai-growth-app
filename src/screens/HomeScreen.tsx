@@ -6,12 +6,12 @@ import { StatRing } from '../components/StatRing'
 import type { Route } from '../App'
 
 export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m: string) => void }) {
-  const { state } = useApp()
+  const { state, loginBonusAvailable } = useApp()
   const u = state.user
+  const loginBonus = state.loginBonus
   const need = expForLevel(u.level)
   const expPct = Math.min(100, Math.round((u.exp / need) * 100))
   const remaining = Math.max(0, need - u.exp)
-  const dailyDone = state.missions.filter((m) => m.done).length // デイリーボーナス進捗 X/3
 
   const stats = [
     { key: '体力', val: u.stats.体力, ico: '❤️', c1: '#f9a8d4', c2: '#ec4899' },
@@ -57,12 +57,13 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
           </div>
         </div>
 
-        {/* 左：デイリーボーナス（宝箱・進捗X/3） */}
+        {/* 左：ログインボーナス（宝箱・受け取り導線） */}
         <div className="reward-chest">
-          <button className="chest-box" onClick={() => go({ name: 'daily' })}>
-            <div className="t">デイリーボーナス</div>
-            <ChestIcon open={dailyDone >= 3} />
-            <div className="chest-prog">{dailyDone}/3</div>
+          <button className="chest-box" onClick={() => go({ name: 'login-bonus' })}>
+            <div className="t">ログインボーナス</div>
+            <ChestIcon open={loginBonusAvailable} />
+            <div className="chest-prog">{loginBonusAvailable ? '受け取れる！' : `${loginBonus.claimedDays}/30`}</div>
+            {loginBonusAvailable && <span className="chest-badge">!</span>}
           </button>
         </div>
 

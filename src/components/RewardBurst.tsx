@@ -54,7 +54,7 @@ export function RewardBurst({
         <div className="rb-rows">
           <div className="rb-row"><span className="rb-k">スコア</span><span className="rb-v">+{spv}</span></div>
           <div className="rb-row"><span className="rb-k">EXP</span><span className="rb-v">+{expv}</span></div>
-          <div className="rb-row"><span className="rb-k">{stat}</span><span className="rb-v">+{stv}</span></div>
+          {stat && <div className="rb-row"><span className="rb-k">{stat}</span><span className="rb-v">+{stv}</span></div>}
         </div>
         {bonus && <div className="rb-bonus">✨ 3件達成ボーナス +50 ✨</div>}
       </div>

@@ -4,6 +4,7 @@ import { CATEGORY_TO_STAT, expForLevel } from './data/types'
 import { seedState } from './data/seed'
 import { pickDailyMissions, DAILY_REWARD } from './data/dailyPool'
 import { selfMissionReward, SELF_COINS } from './data/selfMissions'
+import { loginBonusReward, loginMonthKey, LOGIN_BONUS_DAYS } from './data/loginBonus'
 import { appDate } from './lib/appDate'
 import { getUserId } from './lib/session'
 import { registerProfile, syncStats, logMission, syncAvatar } from './lib/api'
@@ -28,6 +29,12 @@ function loadState(): AppState {
     s.user.dailyRewardAvailable = true
   }
   s.user.avatar = normalizeAvatar(s.user.avatar) // 旧データにavatarが無い場合の補正
+
+  // ログインボーナス：未初期化 or 月替わりでリセット（毎月30日分）
+  const month = loginMonthKey(today)
+  if (!s.loginBonus || s.loginBonus.monthKey !== month) {
+    s.loginBonus = { monthKey: month, claimedDays: 0, lastClaimDate: '' }
+  }
   return s
 }
 
@@ -52,6 +59,15 @@ interface CompleteResult {
   dailyBonus: boolean
 }
 
+interface LoginBonusResult {
+  day: number // 受け取った日目（1〜30）
+  sp: number
+  exp: number
+  milestone: boolean
+  leveledUp: boolean
+  newLevel: number
+}
+
 interface Store {
   state: AppState
   expToNext: number
@@ -64,6 +80,10 @@ interface Store {
   /** セルフミッション達成 */
   completeSelf: (p: CompleteSelfPayload) => CompleteResult
   claimDailyReward: () => void
+  /** 今日のログインボーナスを受け取れるか */
+  loginBonusAvailable: boolean
+  /** ログインボーナスを受け取る（受け取れない場合は null） */
+  claimLoginBonus: () => LoginBonusResult | null
   redeemCoupon: (couponId: string) => boolean
   /** 学内ランキング（ローカル・Supabase未設定時のフォールバック用） */
   rankingWith: (scope: 'weekly' | 'monthly', faculty?: string) => RankUser[]
@@ -239,6 +259,41 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return result
     }
 
+    const today0 = appDate()
+    const lb = state.loginBonus
+    const loginBonusAvailable = lb.claimedDays < LOGIN_BONUS_DAYS && lb.lastClaimDate !== today0
+
+    const claimLoginBonus: Store['claimLoginBonus'] = () => {
+      const today = appDate()
+      if (state.loginBonus.claimedDays >= LOGIN_BONUS_DAYS || state.loginBonus.lastClaimDate === today) return null
+      const day = state.loginBonus.claimedDays + 1
+      const rw = loginBonusReward(day)
+      let leveledUp = false
+      let newLevel = state.user.level
+      setState((prev) => {
+        // 同一日に二重取得しない（並行クリック対策）
+        if (prev.loginBonus.lastClaimDate === today || prev.loginBonus.claimedDays >= LOGIN_BONUS_DAYS) return prev
+        const u = { ...prev.user }
+        u.sp += rw.sp
+        u.exp += rw.exp
+        while (u.exp >= expForLevel(u.level)) {
+          u.exp -= expForLevel(u.level)
+          u.level += 1
+          u.points += 20
+          leveledUp = true
+        }
+        newLevel = u.level
+        const next: AppState = {
+          ...prev,
+          user: u,
+          loginBonus: { ...prev.loginBonus, claimedDays: day, lastClaimDate: today },
+        }
+        if (u.userId) syncStats(u.userId, { level: u.level, exp: u.exp, totalScore: u.sp, stats: u.stats }, u.name, u.avatar)
+        return next
+      })
+      return { day, sp: rw.sp, exp: rw.exp, milestone: rw.milestone, leveledUp, newLevel }
+    }
+
     const claimDailyReward: Store['claimDailyReward'] = () => {
       setState((prev) => {
         if (!prev.user.dailyRewardAvailable) return prev
@@ -281,7 +336,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setState(loadState())
     }
 
-    return { state, expToNext, register, setAvatar, completeDaily, completeSelf, claimDailyReward, redeemCoupon, rankingWith, friendRanking, reset }
+    return { state, expToNext, register, setAvatar, completeDaily, completeSelf, claimDailyReward, loginBonusAvailable, claimLoginBonus, redeemCoupon, rankingWith, friendRanking, reset }
   }, [state])
 
   return <Ctx.Provider value={store}>{children}</Ctx.Provider>

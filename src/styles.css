@@ -968,8 +968,12 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 /* ===== ランキング：アバター画像・行タップ・プロフィール遷移 ===== */
 .rank-row-btn { width: 100%; border: 1px solid #eef2f8; font: inherit; cursor: pointer; text-align: left; }
 .rank-row-btn:active { transform: scale(0.995); }
-.rank-av-img { overflow: hidden; padding: 0; background: #fff; }
-.rank-av-img img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+.rank-av-img { overflow: hidden; padding: 0; background: #dbeafe; }
+/* 全身立ち絵を円内で顔中心に拡大（上部の空/白が入らないように） */
+.rank-av-img img {
+  width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block;
+  transform: scale(1.55); transform-origin: center 20%;
+}
 .rank-chevron { color: var(--ink-soft); font-weight: 900; font-size: 18px; flex: none; margin-left: 2px; }
 .podium .col-btn { background: none; border: none; cursor: pointer; font: inherit; padding: 0; }
 .podium .col-btn:active { transform: translateY(1px); }
@@ -996,3 +1000,48 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .rank-row-btn .rank-no { width: 20px; }
 .rank-row-btn .rank-sp { margin-left: 0; flex: none; white-space: nowrap; font-size: 15px; }
 .rank-row-btn .rank-chevron { margin-left: 0; font-size: 16px; }
+
+/* ===== ログインボーナス ===== */
+.chest-box { position: relative; }
+.chest-badge {
+  position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 4px;
+  background: #ef4444; color: #fff; border-radius: 999px; font-size: 12px; font-weight: 900;
+  display: grid; place-items: center; box-shadow: 0 2px 5px rgba(15,23,42,0.35), 0 0 0 2px #fff;
+}
+.lb-today {
+  border-radius: 18px; padding: 16px; margin-top: 12px; text-align: center;
+  box-shadow: var(--shadow-md);
+}
+.lb-today.ready { background: linear-gradient(135deg,#fff7e6,#ffe9bf); border: 1px solid #f6c65a; }
+.lb-today.done { background: #f1f5fb; border: 1px solid #e2e8f0; }
+.lb-today-head { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.lb-today-day { font-size: 20px; font-weight: 900; color: var(--ink); }
+.lb-star { font-size: 12px; font-weight: 800; color: #b45309; background: #fff3d6; border-radius: 999px; padding: 2px 8px; }
+.lb-today-rewards { display: flex; justify-content: center; gap: 8px; margin: 10px 0 14px; }
+.lb-chip { font-size: 13px; font-weight: 800; border-radius: 999px; padding: 5px 12px; }
+.lb-chip.lb-sp { background: #dbeafe; color: #1d4ed8; }
+.lb-chip.lb-exp { background: #dcfce7; color: #15803d; }
+.lb-claim-btn {
+  width: 100%; padding: 14px; border: none; border-radius: 14px; cursor: pointer;
+  font-size: 16px; font-weight: 900; color: #fff;
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0) 46%), linear-gradient(180deg,#f9a825,#e0821a);
+  box-shadow: 0 5px 0 #a85f10, 0 12px 22px rgba(224,130,26,0.32);
+}
+.lb-claim-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #a85f10, 0 6px 12px rgba(224,130,26,0.32); }
+.lb-claim-btn:disabled { opacity: 0.6; }
+.lb-done-msg { padding: 4px 0; }
+.lb-done-ico { font-size: 34px; }
+.lb-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; margin-top: 6px; }
+.lb-cell {
+  border-radius: 12px; padding: 8px 4px 7px; text-align: center; background: #fff;
+  border: 1px solid #e8eef6; box-shadow: var(--shadow-sm); position: relative;
+}
+.lb-cell-day { font-size: 10px; font-weight: 800; color: var(--ink-soft); }
+.lb-cell-ico { font-size: 17px; line-height: 1.2; }
+.lb-cell-sp { font-size: 12px; font-weight: 900; color: var(--blue-600); }
+.lb-cell-exp { font-size: 9px; font-weight: 700; color: #16a34a; }
+.lb-cell.claimed { background: #eef7ee; border-color: #bfe3c2; }
+.lb-cell.claimed .lb-cell-ico { color: #22c55e; }
+.lb-cell.today { border: 2px solid #f6c65a; background: #fff8ea; box-shadow: 0 0 0 3px rgba(246,198,90,0.25); }
+.lb-cell.milestone { border-color: #f6c65a; }
+.lb-cell.milestone .lb-cell-day { color: #b45309; }

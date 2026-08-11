@@ -14,6 +14,7 @@ import { UserProfileScreen } from './screens/UserProfileScreen'
 import { ReflectionScreen } from './screens/ReflectionScreen'
 import { MyPageScreen } from './screens/MyPageScreen'
 import { RewardsScreen } from './screens/RewardsScreen'
+import { LoginBonusScreen } from './screens/LoginBonusScreen'
 import { BottomNav, type Tab } from './components/BottomNav'
 import type { ActiveMission } from './data/types'
 import type { RankRow } from './lib/api'
@@ -31,6 +32,7 @@ export type Route =
   | { name: 'reflection' }
   | { name: 'mypage' }
   | { name: 'rewards' }
+  | { name: 'login-bonus' }
 
 const TAB_OF: Partial<Record<Route['name'], Tab>> = {
   home: 'home',
@@ -44,6 +46,7 @@ const TAB_OF: Partial<Record<Route['name'], Tab>> = {
   reflection: 'reflection',
   mypage: 'mypage',
   rewards: 'mypage',
+  'login-bonus': 'home',
 }
 
 function initialRoute(): Route {
@@ -53,6 +56,7 @@ function initialRoute(): Route {
   if (h === 'ranking') return { name: 'ranking' }
   if (h === 'mypage') return { name: 'mypage' }
   if (h === 'reflection') return { name: 'reflection' }
+  if (h === 'login-bonus') return { name: 'login-bonus' }
   // 明示的な遷移先が無く、進行中タイマーが残っていれば続きから再開する
   const timer = loadTimerSession()
   if (timer && timer.mission) return { name: 'timer', mission: timer.mission }
@@ -154,6 +158,9 @@ export function App() {
       break
     case 'mypage':
       screen = <MyPageScreen go={go} />
+      break
+    case 'login-bonus':
+      screen = <LoginBonusScreen back={back} onLevelUp={setLevelUp} />
       break
     case 'rewards':
       screen = <RewardsScreen back={back} notify={notify} />

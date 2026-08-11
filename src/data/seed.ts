@@ -48,4 +48,5 @@ export const seedState: AppState = {
     { id: 'c5', name: 'タピオカ Q-Tea', category: 'カフェ', title: 'トッピング1つ無料', cost: 150, emoji: '🧋', distance: '90m', redeemed: false },
   ],
   challengeDaysLeft: 6,
+  loginBonus: { monthKey: '', claimedDays: 0, lastClaimDate: '' },
 }

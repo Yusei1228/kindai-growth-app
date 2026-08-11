@@ -124,6 +124,13 @@ export interface UserState {
   dailyRewardAvailable: boolean
 }
 
+/** ログインボーナスの進捗（毎月リセット・最大30日分） */
+export interface LoginBonusState {
+  monthKey: string // 'YYYY-MM'（月替わりでリセット）
+  claimedDays: number // 今月これまでに受け取った日数（0〜30）
+  lastClaimDate: string // 最後に受け取った app_date（1日1回制限）
+}
+
 export interface AppState {
   user: UserState
   missions: Mission[]
@@ -133,6 +140,7 @@ export interface AppState {
   ranking: RankUser[]
   coupons: CouponStore[]
   challengeDaysLeft: number
+  loginBonus: LoginBonusState
 }
 
 /** レベルアップに必要なEXP（レベルに応じて増加） */
