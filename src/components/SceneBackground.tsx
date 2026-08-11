@@ -1,25 +1,34 @@
-// アプリ全体の背景。public/bg-campus.jpg があればその実画像、無ければ下のSVGシーンにフォールバック。
+// アプリ全体の背景。時間帯(昼/夕/夜)で実画像を切替。無ければ下のSVGシーンにフォールバック。
 import { useState } from 'react'
+import { timeOfDay, SCENE_IMAGE, type TimeOfDay } from '../lib/timeOfDay'
 
-// 舞う花びら（軽量CSSアニメ）。固定パラメータで自然にばらけさせる。
+// 舞う粒子（軽量CSSアニメ）。位置/速度は固定でばらけさせ、絵柄は時間帯で切替。
 const PETALS = [
-  { left: 6, size: 16, delay: 0, dur: 9, sway: 26, emoji: '🌸' },
-  { left: 18, size: 12, delay: 2.4, dur: 11, sway: -30, emoji: '🍂' },
-  { left: 30, size: 18, delay: 4.1, dur: 8.5, sway: 34, emoji: '🌸' },
-  { left: 42, size: 13, delay: 1.2, dur: 12, sway: -22, emoji: '🌸' },
-  { left: 54, size: 15, delay: 5.6, dur: 10, sway: 30, emoji: '🍂' },
-  { left: 66, size: 11, delay: 3.0, dur: 13, sway: -34, emoji: '🌸' },
-  { left: 76, size: 17, delay: 6.8, dur: 9.5, sway: 24, emoji: '🌸' },
-  { left: 86, size: 13, delay: 0.8, dur: 11.5, sway: -28, emoji: '🍂' },
-  { left: 94, size: 15, delay: 4.8, dur: 8, sway: 20, emoji: '🌸' },
-  { left: 12, size: 10, delay: 7.5, dur: 12.5, sway: 32, emoji: '🌸' },
-  { left: 48, size: 12, delay: 8.2, dur: 10.5, sway: -26, emoji: '🍂' },
-  { left: 70, size: 14, delay: 2.0, dur: 9, sway: 28, emoji: '🌸' },
+  { left: 6, size: 16, delay: 0, dur: 9, sway: 26 },
+  { left: 18, size: 12, delay: 2.4, dur: 11, sway: -30 },
+  { left: 30, size: 18, delay: 4.1, dur: 8.5, sway: 34 },
+  { left: 42, size: 13, delay: 1.2, dur: 12, sway: -22 },
+  { left: 54, size: 15, delay: 5.6, dur: 10, sway: 30 },
+  { left: 66, size: 11, delay: 3.0, dur: 13, sway: -34 },
+  { left: 76, size: 17, delay: 6.8, dur: 9.5, sway: 24 },
+  { left: 86, size: 13, delay: 0.8, dur: 11.5, sway: -28 },
+  { left: 94, size: 15, delay: 4.8, dur: 8, sway: 20 },
+  { left: 12, size: 10, delay: 7.5, dur: 12.5, sway: 32 },
+  { left: 48, size: 12, delay: 8.2, dur: 10.5, sway: -26 },
+  { left: 70, size: 14, delay: 2.0, dur: 9, sway: 28 },
 ]
 
-function Petals() {
+// 時間帯ごとの舞う絵柄（昼=桜/葉、夕=桜/紅葉、夜=青い光の粒）
+const PARTICLE_SET: Record<TimeOfDay, string[]> = {
+  day: ['🌸', '🌸', '🍃'],
+  sunset: ['🌸', '🍂'],
+  night: ['✦', '🔹', '✧'],
+}
+
+function Petals({ tod }: { tod: TimeOfDay }) {
+  const set = PARTICLE_SET[tod]
   return (
-    <div className="petals" aria-hidden="true">
+    <div className={'petals petals-' + tod} aria-hidden="true">
       {PETALS.map((p, i) => (
         <span
           key={i}
@@ -32,32 +41,37 @@ function Petals() {
             ['--sway' as string]: p.sway + 'px',
           }}
         >
-          {p.emoji}
+          {set[i % set.length]}
         </span>
       ))}
     </div>
   )
 }
 
-export function SceneBackground({ variant = 'day' }: { variant?: 'day' | 'ranking' }) {
+export function SceneBackground({ mode = 'scene' }: { mode?: 'scene' | 'ranking' }) {
   const [failed, setFailed] = useState(false)
+  const tod = timeOfDay()
   if (failed) return <SceneSVG />
 
-  // ランキング：日中(bg-campus)の上に夕焼け(bg-ranking)を数秒かけてフェードイン＋花びら
-  if (variant === 'ranking') {
+  // ランキング：現在の時間帯シーンの上に夕焼けを数秒かけてフェードイン（夜→夕/昼→夕）＋花びら
+  if (mode === 'ranking') {
     return (
       <div className="scene-bg" aria-hidden="true">
-        <img src="/bg-campus.webp" className="scene-img" alt="" onError={() => setFailed(true)} />
+        <img src={SCENE_IMAGE[tod]} className="scene-img" alt="" onError={() => setFailed(true)} />
         <img src="/bg-ranking.webp" className="scene-img scene-sunset" alt="" />
-        <Petals />
+        <div className="scene-tint tod-sunset" />
+        <Petals tod="sunset" />
         <div className="scene-scrim" />
       </div>
     )
   }
 
+  // 通常画面：時間帯に応じたシーン＋時間帯グラデ＋その時間帯の花びら
   return (
     <div className="scene-bg" aria-hidden="true">
-      <img src="/bg-campus.webp" className="scene-img" alt="" onError={() => setFailed(true)} />
+      <img src={SCENE_IMAGE[tod]} className="scene-img" alt="" onError={() => setFailed(true)} />
+      <div className={'scene-tint tod-' + tod} />
+      <Petals tod={tod} />
       <div className="scene-scrim" />
     </div>
   )

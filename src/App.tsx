@@ -19,6 +19,7 @@ import { BottomNav, type Tab } from './components/BottomNav'
 import type { ActiveMission } from './data/types'
 import type { RankRow } from './lib/api'
 import { loadTimerSession } from './lib/timerSession'
+import { timeOfDay } from './lib/timeOfDay'
 
 export type Route =
   | { name: 'home' }
@@ -101,7 +102,7 @@ export function App() {
   if (!state.user.registered) {
     return (
       <div className="app-shell">
-        <div className="phone">
+        <div className={'phone tod-' + timeOfDay()}>
           <SceneBackground />
           <div className="screen-scroll">
             <NicknameScreen />
@@ -169,14 +170,14 @@ export function App() {
 
   const showNav = !['timer', 'review'].includes(route.name)
 
+  const isRanking = route.name === 'ranking' || route.name === 'profile'
+  // 画面内容の可読性用の時間帯（ランキングは夕焼けで固定、それ以外は実時間帯）
+  const bodyTod = isRanking ? 'sunset' : timeOfDay()
+
   return (
     <div className="app-shell">
-      <div className="phone">
-        {(() => {
-          const isSunset = route.name === 'ranking' || route.name === 'profile'
-          // key で昼⇔夕の切替時に再マウントし、フェードアニメを再生
-          return <SceneBackground key={isSunset ? 'sunset' : 'day'} variant={isSunset ? 'ranking' : 'day'} />
-        })()}
+      <div className={'phone tod-' + bodyTod}>
+        <SceneBackground key={isRanking ? 'ranking' : 'scene'} mode={isRanking ? 'ranking' : 'scene'} />
         <div className={'screen-scroll' + (route.name === 'home' ? ' home-fit' : '')} key={route.name}>
           {screen}
         </div>

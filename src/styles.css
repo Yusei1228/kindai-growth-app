@@ -1137,3 +1137,85 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 
 /* ランキングのページタイトルも夕空で読める明色に */
 .rank-theme .page-head h1 { color: #fff6ec; text-shadow: 0 2px 8px rgba(45,16,38,0.6); }
+
+/* ===== 時間帯グラデーション（背景シーンに重ねる淡いティント） ===== */
+.scene-tint { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.scene-tint.tod-day {
+  background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 35%);
+}
+.scene-tint.tod-sunset {
+  background: linear-gradient(180deg, rgba(92,30,72,0.12) 0%, rgba(255,255,255,0) 30%, rgba(232,120,52,0.12) 100%);
+}
+.scene-tint.tod-night {
+  background: linear-gradient(180deg, rgba(8,12,38,0.34) 0%, rgba(8,12,38,0.10) 42%, rgba(8,12,38,0.30) 100%);
+}
+
+/* 夜の粒子は青く発光させる */
+.petals-night .petal { color: #cfe2ff; filter: drop-shadow(0 0 4px rgba(140,185,255,0.95)); }
+
+/* ===== 夜のシーンでは背景直置きテキストを明色化して視認性を確保 ===== */
+.phone.tod-night .sr-val { color: #f4f8ff; text-shadow: 0 1px 2px rgba(0,0,0,0.95), 0 0 7px rgba(0,0,0,0.85); }
+.phone.tod-night .sr-label { color: #dbe6ff; text-shadow: 0 1px 2px rgba(0,0,0,0.95), 0 0 6px rgba(0,0,0,0.8); }
+
+/* ===== 時間帯ごとの重厚テーマ（ステータス・右サイド・下部ナビ）＝CSSのみで軽量 ===== */
+
+/* --- ステータスリング：接地する厚み＋コイン状の土台で重厚に --- */
+.sr-wrap { filter: drop-shadow(0 5px 10px rgba(15,23,42,0.30)); }
+.sr-wrap::before {
+  content: ''; position: absolute; inset: 1px; border-radius: 50%; z-index: 0;
+  background: rgba(255,255,255,0.42);
+  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+  border: 1px solid rgba(255,255,255,0.7);
+  box-shadow: 0 5px 12px rgba(15,23,42,0.22), inset 0 1px 2px rgba(255,255,255,0.7);
+}
+.sr-svg, .sr-emoji { position: relative; z-index: 1; }
+/* 夜：暗いフロストのコイン土台＋青い縁で背景に馴染ませる */
+.phone.tod-night .sr-wrap::before {
+  background: rgba(22,30,64,0.55);
+  border-color: rgba(150,185,255,0.42);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.5), inset 0 1px 2px rgba(180,205,255,0.35);
+}
+/* 夕暮れ：わずかに暖色のコイン土台 */
+.phone.tod-sunset .sr-wrap::before {
+  background: rgba(255,248,240,0.5); border-color: rgba(255,226,196,0.75);
+}
+
+/* --- 右サイドボタン：接地感のある深い影を追加し「浮き」を解消 --- */
+.rail-ico {
+  box-shadow:
+    0 11px 22px rgba(15,23,42,0.40),
+    0 4px 9px rgba(15,23,42,0.26),
+    inset 0 3px 4px rgba(255,255,255,0.55),
+    inset 0 -5px 8px rgba(0,0,0,0.24);
+}
+.phone.tod-night .rail-ico {
+  border-color: rgba(205,224,255,0.92);
+  box-shadow:
+    0 12px 26px rgba(0,0,0,0.58),
+    0 0 16px rgba(120,165,255,0.28),
+    inset 0 3px 4px rgba(255,255,255,0.5),
+    inset 0 -5px 8px rgba(0,0,0,0.32);
+}
+.phone.tod-night .rail-label { background: rgba(8,12,32,0.62); box-shadow: 0 2px 7px rgba(0,0,0,0.55); }
+.phone.tod-sunset .rail-label { background: rgba(60,24,44,0.5); }
+
+/* --- 下部ナビ：背景に馴染むガラスバー＋厚み。夜は暗ガラス＋明色文字 --- */
+.bottom-nav {
+  border-top: none;
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+}
+.phone.tod-day .bottom-nav {
+  background: linear-gradient(180deg, rgba(255,255,255,0.84), rgba(255,255,255,0.95));
+  box-shadow: 0 -10px 26px rgba(30,40,70,0.16), inset 0 1px 0 rgba(255,255,255,0.95);
+}
+.phone.tod-sunset .bottom-nav {
+  background: linear-gradient(180deg, rgba(255,249,242,0.86), rgba(255,242,230,0.96));
+  box-shadow: 0 -10px 26px rgba(70,30,50,0.20), inset 0 1px 0 rgba(255,255,255,0.9);
+}
+.phone.tod-night .bottom-nav {
+  background: linear-gradient(180deg, rgba(20,26,56,0.74), rgba(12,16,38,0.90));
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(150,180,255,0.18);
+}
+.phone.tod-night .nav-item { color: #aebbe4; }
+.phone.tod-night .nav-item .ni-label { text-shadow: 0 1px 3px rgba(0,0,0,0.55); }
+.phone.tod-night .nav-item.active { color: #9ec2ff; }
