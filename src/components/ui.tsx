@@ -1,22 +1,35 @@
 import { useEffect } from 'react'
 
-/** 上部の青ダイヤ（SP）アイコン */
+/** SP（スコア）アイコン：青バッジに「SP」表記 */
 export function GemIcon() {
   return (
-    <svg className="gem" viewBox="0 0 24 24" fill="none">
-      <path d="M6 3h12l3 5-9 13L3 8l3-5z" fill="#3b82f6" />
-      <path d="M6 3h12l3 5H3l3-5z" fill="#60a5fa" />
-      <path d="M3 8h18l-9 13L3 8z" fill="#2563eb" opacity=".85" />
+    <svg className="gem" viewBox="0 0 24 24">
+      <defs>
+        <linearGradient id="spGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#60a5fa" />
+          <stop offset="1" stopColor="#2563eb" />
+        </linearGradient>
+      </defs>
+      <circle cx="12" cy="12" r="11" fill="url(#spGrad)" stroke="#1d4ed8" strokeWidth="1" />
+      <text x="12" y="15.4" textAnchor="middle" fontSize="9.5" fontWeight="900" fill="#fff" fontFamily="-apple-system, 'Segoe UI', sans-serif" letterSpacing="0.3">SP</text>
     </svg>
   )
 }
 
-/** 上部の緑ポイント（P）アイコン */
+/** ポイント（コイン）アイコン：金貨風 */
 export function PointIcon() {
   return (
     <svg className="gem" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="10" fill="#22c55e" />
-      <text x="12" y="16" textAnchor="middle" fontSize="13" fontWeight="800" fill="#fff">P</text>
+      <defs>
+        <linearGradient id="coinGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fde68a" />
+          <stop offset="1" stopColor="#f59e0b" />
+        </linearGradient>
+      </defs>
+      <circle cx="12" cy="12" r="11" fill="url(#coinGrad)" stroke="#d97706" strokeWidth="1" />
+      <circle cx="12" cy="12" r="7.6" fill="none" stroke="#d9a441" strokeWidth="1.2" opacity="0.8" />
+      <text x="12" y="16" textAnchor="middle" fontSize="11" fontWeight="900" fill="#b45309" fontFamily="-apple-system, 'Segoe UI', sans-serif">P</text>
+      <ellipse cx="9" cy="8" rx="2.4" ry="1.4" fill="#fff" opacity="0.55" transform="rotate(-25 9 8)" />
     </svg>
   )
 }
