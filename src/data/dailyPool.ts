@@ -31,8 +31,7 @@ const POOL: PoolItem[] = [
   { id: 'p08', title: '20分歩く', category: '運動', targetMinutes: 20, timed: true },
   { id: 'p09', title: '階段を使って移動する', category: '運動', targetMinutes: 0, timed: false },
   { id: 'p10', title: '軽く筋トレする', category: '運動', targetMinutes: 10, timed: true },
-  // 生活習慣（活力）
-  { id: 'p11', title: '決めた時間に起きる', category: '生活習慣', targetMinutes: 0, timed: false },
+  // 生活習慣（活力）※「決めた時間に起きる」等の日を持ち越す項目は当日完了できないため除外
   { id: 'p12', title: 'こまめに水分をとる', category: '生活習慣', targetMinutes: 0, timed: false },
   { id: 'p13', title: '机まわりを片付ける', category: '生活習慣', targetMinutes: 0, timed: false },
   { id: 'p14', title: '今日の予定を立てる', category: '生活習慣', targetMinutes: 0, timed: false },
