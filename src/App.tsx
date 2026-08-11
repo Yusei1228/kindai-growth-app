@@ -15,6 +15,7 @@ import { MyPageScreen } from './screens/MyPageScreen'
 import { RewardsScreen } from './screens/RewardsScreen'
 import { BottomNav, type Tab } from './components/BottomNav'
 import type { ActiveMission } from './data/types'
+import { loadTimerSession } from './lib/timerSession'
 
 export type Route =
   | { name: 'home' }
@@ -48,6 +49,9 @@ function initialRoute(): Route {
   if (h === 'ranking') return { name: 'ranking' }
   if (h === 'mypage') return { name: 'mypage' }
   if (h === 'reflection') return { name: 'reflection' }
+  // 明示的な遷移先が無く、進行中タイマーが残っていれば続きから再開する
+  const timer = loadTimerSession()
+  if (timer && timer.mission) return { name: 'timer', mission: timer.mission }
   return { name: 'home' }
 }
 

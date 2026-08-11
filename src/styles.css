@@ -923,3 +923,36 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .home-fit .home-header { margin-top: 2px; }
 /* アバターが縮みすぎないよう下限も少し確保（バランス用） */
 .home-fit .hero-wrap { min-height: 220px; }
+
+/* ===== タイマー：再開/一時停止タグ・戻る確認ダイアログ ===== */
+.tm-resume-tag {
+  display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 999px;
+  background: rgba(37,99,235,0.12); color: var(--blue-600, #2563eb);
+  font-size: 11px; font-weight: 800; vertical-align: middle;
+}
+.tm-paused-tag {
+  display: inline-block; margin-top: 8px; padding: 3px 12px; border-radius: 999px;
+  background: rgba(245,158,11,0.15); color: #b45309; font-size: 12px; font-weight: 800;
+}
+.confirm-card {
+  width: 100%; max-width: 320px; background: #fff; border-radius: 20px;
+  padding: 22px 20px 18px; text-align: center;
+  box-shadow: 0 22px 50px rgba(15,23,42,0.4), 0 0 0 4px rgba(255,255,255,0.6);
+}
+.confirm-ico { font-size: 40px; line-height: 1; }
+.confirm-title { font-size: 17px; font-weight: 900; margin: 8px 0 6px; color: var(--ink, #0f172a); }
+.confirm-msg { font-size: 13px; line-height: 1.6; color: var(--ink-soft, #475569); margin: 0 0 16px; }
+.confirm-btn-row { display: flex; flex-direction: column; gap: 10px; }
+.confirm-stay {
+  width: 100%; padding: 13px; border-radius: 12px; border: none; cursor: pointer;
+  font-size: 15px; font-weight: 800; color: #fff;
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0) 46%), linear-gradient(180deg, #3b7bff, #1e3fae);
+  box-shadow: 0 5px 0 #17307e, 0 12px 22px rgba(30,63,174,0.28);
+}
+.confirm-stay:active { transform: translateY(3px); box-shadow: 0 2px 0 #17307e, 0 6px 12px rgba(30,63,174,0.28); }
+.confirm-leave {
+  width: 100%; padding: 12px; border-radius: 12px; cursor: pointer;
+  font-size: 14px; font-weight: 800; color: #ef4444;
+  background: #fff; border: 1.5px solid rgba(239,68,68,0.4);
+}
+.confirm-leave:active { background: rgba(239,68,68,0.06); }
