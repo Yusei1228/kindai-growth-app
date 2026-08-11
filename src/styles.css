@@ -138,6 +138,33 @@ button { font-family: inherit; }
   display: flex; align-items: center; gap: 6px;
 }
 
+/* アバター変更バッジ（ヒーローカード右上） */
+.avatar-edit-badge {
+  position: absolute; top: 16px; right: 16px;
+  background: rgba(15,23,42,0.62); color: #fff;
+  font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 999px;
+  backdrop-filter: blur(2px);
+}
+
+/* ===== アバター選択画面 ===== */
+.avatar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.avatar-tile {
+  position: relative; border: 2px solid var(--line); background: #fff; border-radius: 16px;
+  padding: 0; overflow: hidden; cursor: pointer; aspect-ratio: 3 / 4;
+}
+.avatar-tile img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+.avatar-tile.selected { border-color: var(--blue-600); box-shadow: 0 0 0 3px rgba(37,99,235,0.18); }
+.avatar-tile .avatar-check {
+  position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%;
+  background: var(--blue-600); color: #fff; display: grid; place-items: center; font-weight: 900; font-size: 14px;
+  box-shadow: var(--shadow-sm);
+}
+.avatar-tile .avatar-label {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 6px;
+  background: linear-gradient(180deg, transparent, rgba(15,23,42,0.55));
+  color: #fff; font-size: 12px; font-weight: 800; text-align: left;
+}
+
 /* ===== サイド丸ボタン群 ===== */
 .side-rail { position: absolute; right: 10px; top: 172px; display: flex; flex-direction: column; gap: 12px; z-index: 5; }
 .rail-btn { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; cursor: pointer; }
@@ -169,6 +196,15 @@ button { font-family: inherit; }
 .ico-chiryoku { background: #e2ecfb; color: #2563eb; }
 .ico-katsuryoku { background: #fff0db; color: #f59e0b; }
 .ico-miryoku { background: #fbe8fb; color: #d946ef; }
+
+/* ステータス・リングゲージ（枠なし・背景になじむコンパクト表示） */
+.stats-ring-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+.stat-ring { background: transparent; text-align: center; padding: 0; }
+.sr-wrap { position: relative; width: 58px; height: 58px; margin: 0 auto; filter: drop-shadow(0 3px 6px rgba(15, 23, 42, 0.22)); }
+.sr-svg { width: 58px; height: 58px; display: block; }
+.sr-emoji { position: absolute; inset: 0; display: grid; place-items: center; font-size: 20px; }
+.sr-val { font-size: 16px; font-weight: 900; margin-top: 2px; text-shadow: 0 1px 3px rgba(255, 255, 255, 0.95), 0 0 3px rgba(255, 255, 255, 0.85); }
+.sr-label { font-size: 11px; font-weight: 800; color: var(--ink); text-shadow: 0 1px 3px rgba(255, 255, 255, 0.95); }
 
 /* ===== 2つのミッションボタン ===== */
 .mission-cta-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
@@ -321,3 +357,569 @@ textarea {
 
 .section-title { font-size: 14px; font-weight: 800; margin: 18px 2px 4px; color: var(--ink); }
 .hint { font-size: 11px; color: var(--ink-soft); margin-top: 8px; line-height: 1.6; }
+
+/* ============================================================
+   UI POLISH PASS — スマホゲーム級の質感（方向性・レイアウトは維持）
+   既存ルールをソース順で上書き・強化する追加レイヤー
+   ============================================================ */
+:root {
+  --grad-blue: linear-gradient(135deg, #3b7bff 0%, #2455d6 55%, #1e3fae 100%);
+  --grad-green: linear-gradient(135deg, #34d27a 0%, #22c55e 55%, #15a34a 100%);
+  --edge-blue: #16307e;
+  --edge-green: #0f7a37;
+  --shadow-pop: 0 10px 24px rgba(15, 23, 42, 0.16);
+}
+
+body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+/* 押せる要素の共通トランジション */
+.btn-primary, .btn-ghost, .mission-cta, .pill, .icon-btn, .rail-ico,
+.chest-box, .fac-chip, .tab-row button, .nav-item, .avatar-tile, .coupon .cbtn, .event-banner {
+  transition: transform 0.09s ease, box-shadow 0.09s ease, filter 0.09s ease;
+}
+
+/* プライマリボタン：立体エッジ＋光沢＋押下 */
+.btn-primary {
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0) 46%),
+    var(--grad-blue);
+  border-radius: 16px;
+  box-shadow: 0 4px 0 var(--edge-blue), 0 10px 20px rgba(30, 63, 174, 0.32);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+  letter-spacing: 0.3px;
+}
+.btn-primary:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--edge-blue), 0 4px 10px rgba(30, 63, 174, 0.28); }
+.btn-primary:disabled { background-image: none; background: #cbd5e1; box-shadow: 0 3px 0 #94a3b8; text-shadow: none; }
+
+/* ゴーストボタン：うっすら立体 */
+.btn-ghost { border: 1px solid #dbe4ef; box-shadow: 0 2px 0 #e6edf6, 0 5px 12px rgba(15, 23, 42, 0.06); border-radius: 14px; }
+.btn-ghost:active { transform: translateY(2px); box-shadow: 0 1px 0 #e6edf6; }
+
+/* ミッションCTA：立体エッジ＋光沢オーバーレイ */
+.mission-cta { border-radius: 20px; position: relative; overflow: hidden; }
+.mission-cta::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.30), rgba(255, 255, 255, 0) 44%);
+}
+.mission-cta > * { position: relative; z-index: 1; }
+.cta-blue { background: var(--grad-blue); box-shadow: 0 5px 0 var(--edge-blue), 0 12px 22px rgba(30, 63, 174, 0.30); }
+.cta-green { background: var(--grad-green); box-shadow: 0 5px 0 var(--edge-green), 0 12px 22px rgba(21, 163, 74, 0.28); }
+.mission-cta:active { transform: translateY(3px); filter: saturate(1.05); }
+.mission-cta .ttl { text-shadow: 0 1px 2px rgba(0, 0, 0, 0.22); }
+
+/* 通貨ピル：内側ハイライト＋縁 */
+.pill { border: 1px solid rgba(255, 255, 255, 0.9); box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12), inset 0 1px 0 #fff; }
+
+/* 丸アイコン・サイドレール・宝箱：立体感＋押下 */
+.icon-btn { box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12), inset 0 1px 0 #fff; }
+.icon-btn:active { transform: translateY(2px); }
+.rail-ico { box-shadow: 0 6px 14px rgba(15, 23, 42, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.35); }
+.rail-btn:active .rail-ico { transform: translateY(2px); }
+.chest-box { box-shadow: var(--shadow-pop), inset 0 1px 0 #fff; border: 1px solid rgba(255, 255, 255, 0.9); }
+.chest-box:active { transform: translateY(2px); }
+
+/* レベル・ステータスの数字を強調 */
+.lvl-tag { box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.15); }
+.hero-lvl { text-shadow: 0 1px 1px rgba(255, 255, 255, 0.6); box-shadow: var(--shadow-pop); }
+/* リングは枠なし（frameless）で背景になじませる。ドロップシャドウは基底ルールを使用 */
+
+/* セグメントタブ・学部チップ */
+.tab-row button.active { box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12); }
+.fac-chip:active { transform: translateY(1px); }
+.fac-chip.active { box-shadow: 0 3px 8px rgba(37, 99, 235, 0.30); }
+
+/* ボトムナビ：4等分・アクティブを持ち上げる */
+.bottom-nav { grid-template-columns: repeat(4, 1fr); box-shadow: 0 -6px 20px rgba(15, 23, 42, 0.08); }
+.nav-item .ni-ico { transition: transform 0.12s ease; }
+.nav-item.active .ni-ico { transform: translateY(-2px) scale(1.12); }
+.nav-item.active .ni-label { font-weight: 800; }
+
+/* ランキング行：立体カード */
+.rank-row { border: 1px solid #eef2f8; }
+.rank-row.me { box-shadow: 0 4px 12px rgba(37, 99, 235, 0.18); }
+
+/* バナー押下 */
+.event-banner:active { transform: translateY(2px); }
+
+/* ステータスを枠なしで背景になじませる（元デザイン準拠） */
+.stats-row { margin-top: 10px; }
+.stat { background: transparent; box-shadow: none; border: none; padding: 4px 2px; }
+.stat .ico {
+  width: 42px; height: 42px; font-size: 20px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.20);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+}
+.stat .v { font-size: 20px; text-shadow: 0 1px 3px rgba(255, 255, 255, 0.95), 0 0 3px rgba(255, 255, 255, 0.85); }
+.stat .max { color: var(--ink-soft); text-shadow: 0 1px 2px rgba(255, 255, 255, 0.95); }
+.stat .nm { color: var(--ink); text-shadow: 0 1px 3px rgba(255, 255, 255, 0.95); }
+
+/* ============================================================
+   セルフミッション / タイマー（ワイヤーフレーム準拠）
+   ============================================================ */
+.field-label { font-size: 13px; font-weight: 800; color: var(--ink); margin: 16px 0 8px; }
+
+.cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.cat-tile {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  border: 1px solid var(--line); background: #fff; border-radius: 14px; padding: 10px 2px 8px;
+  cursor: pointer; transition: transform 0.09s ease, box-shadow 0.09s ease, border-color 0.09s ease;
+}
+.cat-tile .cat-emoji { font-size: 22px; }
+.cat-tile .cat-name { font-size: 12px; font-weight: 800; color: var(--ink); }
+.cat-tile .cat-stat { font-size: 10px; font-weight: 700; color: var(--ink-soft); }
+.cat-tile.active { border-color: var(--blue-600); background: var(--blue-50); box-shadow: 0 3px 8px rgba(37, 99, 235, 0.18); }
+.cat-tile.active .cat-stat { color: var(--blue-700); }
+.cat-tile:active { transform: translateY(1px); }
+
+.chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.time-chip {
+  flex: 1; min-width: 64px; border: 1px solid var(--line); background: #fff; color: var(--ink);
+  border-radius: 12px; padding: 10px 8px; font-size: 14px; font-weight: 800; cursor: pointer;
+  transition: transform 0.09s ease, box-shadow 0.09s ease;
+}
+.time-chip.active { border-color: var(--blue-600); background: var(--blue-600); color: #fff; box-shadow: 0 3px 8px rgba(37, 99, 235, 0.25); }
+.time-chip:active { transform: translateY(1px); }
+
+.info-note {
+  background: #f1f5fb; border-radius: 12px; padding: 11px 12px; margin-top: 14px;
+  font-size: 12px; color: var(--ink-soft); line-height: 1.6;
+}
+
+/* タイマー */
+.tm-ico { width: 46px; height: 46px; border-radius: 14px; background: var(--blue-50); display: grid; place-items: center; font-size: 22px; flex: none; }
+.tm-time { font-size: 46px; font-weight: 900; letter-spacing: 2px; font-variant-numeric: tabular-nums; margin: 6px 0 2px; color: var(--ink); }
+.tm-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+.tm-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  border-radius: 16px; padding: 14px 8px; cursor: pointer; border: none;
+  transition: transform 0.09s ease, box-shadow 0.09s ease;
+}
+.tm-btn:active { transform: translateY(2px); }
+.tm-pause { background: #fff; border: 1px solid var(--line); color: var(--ink); box-shadow: 0 2px 0 #e6edf6; }
+.tm-finish {
+  color: #fff;
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0) 46%), var(--grad-blue);
+  box-shadow: 0 4px 0 var(--edge-blue), 0 8px 16px rgba(30, 63, 174, 0.30);
+}
+.tm-finish:disabled { background-image: none; background: #cbd5e1; box-shadow: 0 3px 0 #94a3b8; cursor: default; }
+
+/* ミッション選択（8カード） */
+.ms-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.ms-card {
+  position: relative; text-align: left; background: #fff; border: 1px solid var(--line);
+  border-radius: 16px; padding: 14px 12px; cursor: pointer; box-shadow: var(--shadow-sm);
+  transition: transform 0.09s ease, box-shadow 0.09s ease;
+}
+.ms-card:active { transform: translateY(2px); box-shadow: var(--shadow-md); }
+.ms-arrow { position: absolute; top: 10px; right: 12px; color: var(--ink-soft); font-weight: 900; font-size: 16px; }
+.ms-title { font-weight: 800; font-size: 15px; padding-right: 14px; }
+.ms-rate { font-size: 11px; color: var(--ink-soft); margin-top: 8px; }
+.ms-reward { font-size: 12px; color: var(--ink-soft); font-weight: 700; margin-top: 2px; }
+.ms-stats { display: flex; align-items: center; flex-wrap: wrap; margin-top: 8px; font-size: 11px; font-weight: 700; color: var(--ink); }
+.ms-stat { display: inline-flex; align-items: center; gap: 4px; }
+.ms-sq { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+.ms-dot-sep { color: var(--ink-soft); margin: 0 4px; }
+
+/* ============================================================
+   背景シーン（青空・雲・街並み）＋レイヤリング
+   ============================================================ */
+.scene-bg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  z-index: 0; pointer-events: none; display: block;
+}
+.scene-img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+.scene-scrim { position: absolute; top: 0; left: 0; right: 0; height: 150px; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.30), rgba(255, 255, 255, 0)); }
+.phone > .screen-scroll { position: relative; z-index: 1; }
+.phone > .bottom-nav { z-index: 3; }
+
+/* 雲がゆっくり流れる */
+.scene-clouds { animation: cloudDrift 48s ease-in-out infinite alternate; }
+@keyframes cloudDrift {
+  from { transform: translateX(-10px); }
+  to { transform: translateX(16px); }
+}
+
+/* キラキラの明滅 */
+.scene-bg .spark { animation: sparkTwinkle 3.4s ease-in-out infinite; }
+@keyframes sparkTwinkle {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene-clouds, .scene-bg .spark { animation: none; }
+}
+
+/* 背景の上でヘッダー文字を読みやすく＋立体感 */
+.phone > .screen-scroll .row.between:first-child .bold { text-shadow: 0 1px 3px rgba(255, 255, 255, 0.65); }
+
+/* ホーム：左右4ボタンをキャラ/他要素に重ねない配置に調整 */
+.hero-card { width: 60%; max-width: 210px; }
+.reward-chest { left: 0; right: auto; top: 50%; bottom: auto; transform: translateY(-50%); }
+.chest-box { width: 60px; padding: 8px 4px; }
+.chest-box .t { font-size: 10px; line-height: 1.2; }
+.chest-box .chest-emoji { font-size: 26px; }
+.side-rail { right: 0; left: auto; top: 50%; bottom: auto; transform: translateY(-50%); gap: 10px; }
+
+/* 縦スペースを活かして画像を最大化＋下の余白を詰める */
+/* 上部はスマホのカメラ/時刻/バッテリー領域（セーフエリア）分の余白を確保 */
+.screen-scroll { padding-bottom: 74px; padding-top: calc(env(safe-area-inset-top, 0px) + 14px); }
+
+/* コンパクトなプロフィールヘッダー */
+.home-header {
+  display: flex; align-items: center; gap: 10px;
+  background: #fff; border-radius: 20px; padding: 10px 12px;
+  box-shadow: var(--shadow-md); margin-top: 2px;
+}
+.home-header .avatar-sm { width: 46px; height: 46px; flex: none; }
+.hh-main { flex: 1; min-width: 0; }
+.hh-name-row { display: flex; align-items: center; gap: 6px; }
+.hh-name { font-weight: 800; font-size: 16px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+.hh-sub { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 4px 0 5px; }
+.hh-sub .streak-chip { font-size: 12px; }
+.hh-cur { display: flex; flex-direction: column; gap: 5px; flex: none; }
+.hh-pill { padding: 5px 9px; font-size: 13px; gap: 5px; }
+
+/* 下側の余白を詰めて全体バランスを取る（アバター拡大＋間隔調整） */
+.hero-img { aspect-ratio: 0.49; }        /* さらに縦長にして写真を大きく＋下余白を吸収 */
+.hero-card { margin-top: 14px; }
+.stats-ring-row { margin-top: 16px; }
+.mission-cta-row { margin-top: 16px; }
+.event-banner { margin-top: 16px; }
+.hero-card { margin-top: 12px; }
+.hero-img { aspect-ratio: 0.49; }          /* 縦長にして写真を大きく＋下余白を吸収 */
+.stats-ring-row { margin-top: 14px; }
+.mission-cta-row { margin-top: 14px; }
+.event-banner { margin-top: 12px; margin-bottom: 2px; }
+
+/* ヒーローカードのプレミアム額装（質感アップ・方向性は維持） */
+.hero-card {
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
+  box-shadow:
+    0 16px 36px rgba(37, 99, 235, 0.20),
+    0 4px 12px rgba(15, 23, 42, 0.12),
+    inset 0 0 0 3px rgba(255, 255, 255, 0.7);
+}
+.hero-img { box-shadow: inset 0 2px 8px rgba(15, 23, 42, 0.10); }
+/* カード右の縦ドットインジケータ（モック準拠の装飾） */
+.hero-card { position: relative; }
+.hero-card::after {
+  content: ''; position: absolute; top: 50%; right: 8px; transform: translateY(-50%);
+  width: 5px; height: 44px;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.95) 40%, transparent 42%);
+  background-size: 5px 9px; background-repeat: repeat-y;
+  filter: drop-shadow(0 1px 1px rgba(15,23,42,0.35));
+  pointer-events: none;
+}
+
+/* ===== 透明(グラス)プロフィールヘッダー ＋ デイリーボーナス宝箱 ===== */
+.home-header {
+  background: linear-gradient(135deg, rgba(255,255,255,0.26), rgba(176,212,255,0.20));
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.55);
+  box-shadow: 0 8px 22px rgba(15,23,42,0.14);
+}
+.home-header .exp-bar { background: rgba(255,255,255,0.5); }
+.hh-name { color: #fff; text-shadow: 0 1px 4px rgba(15,23,42,0.38); }
+.hh-exp-txt { color: rgba(255,255,255,0.96); font-size: 11px; text-shadow: 0 1px 3px rgba(15,23,42,0.4); }
+.home-header .streak-chip { background: rgba(255,255,255,0.92); color: #f97316; border-radius: 999px; padding: 2px 9px; box-shadow: 0 1px 3px rgba(15,23,42,0.12); }
+.home-header .lvl-tag { background: rgba(255,255,255,0.95); }
+
+/* 丸型フレームのアバター */
+.hh-avatar {
+  width: 54px; height: 54px; border-radius: 50%; padding: 3px; flex: none;
+  background: conic-gradient(from 45deg, #ffe08a, #f4b63e, #fff0c2, #e0921c, #ffe08a);
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.85), 0 4px 10px rgba(15,23,42,0.25);
+}
+.hh-avatar .avatar-sm { width: 100%; height: 100%; border-radius: 50%; border: 2px solid #fff; }
+
+/* 通貨ピルの＋ボタン */
+.hh-pill { border: none; cursor: pointer; font: inherit; }
+.hh-plus { display: inline-grid; place-items: center; width: 17px; height: 17px; border-radius: 50%; color: #fff; font-size: 12px; line-height: 1; margin-left: 3px; }
+
+/* デイリーボーナス宝箱（グラス） */
+.chest-box {
+  background: linear-gradient(135deg, rgba(255,255,255,0.30), rgba(176,212,255,0.22));
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.6);
+  box-shadow: 0 8px 18px rgba(15,23,42,0.18), inset 0 1px 0 rgba(255,255,255,0.5);
+  width: 66px; padding: 8px 5px; border-radius: 16px; text-align: center; cursor: pointer;
+}
+.chest-box .t { color: #fff; font-size: 10px; font-weight: 800; line-height: 1.2; text-shadow: 0 1px 3px rgba(15,23,42,0.45); }
+.chest-svg { width: 44px; height: 40px; display: block; margin: 3px auto 1px; filter: drop-shadow(0 2px 4px rgba(15,23,42,0.3)); }
+.chest-prog { color: #fff; font-weight: 900; font-size: 14px; text-shadow: 0 1px 3px rgba(15,23,42,0.5); }
+
+/* ===== 右サイドの高品質ボタン（フレンド/大学/報酬） ===== */
+.rail-ico {
+  width: 54px; height: 54px; border-radius: 50%; position: relative;
+  display: grid; place-items: center; font-size: 23px; color: #fff;
+  border: 2px solid rgba(255,255,255,0.9);
+  box-shadow:
+    0 8px 18px rgba(15,23,42,0.30),
+    inset 0 3px 4px rgba(255,255,255,0.55),
+    inset 0 -5px 8px rgba(0,0,0,0.22);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.28);
+}
+/* 上部の光沢ハイライト */
+.rail-ico::after {
+  content: ''; position: absolute; top: 4px; left: 9px; right: 9px; height: 42%;
+  border-radius: 50% 50% 45% 45%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0));
+  pointer-events: none;
+}
+.rail-blue  { background: radial-gradient(120% 120% at 50% 0%, #7db4ff 0%, #3b7bff 45%, #1e50c8 100%); }
+.rail-red   { background: radial-gradient(120% 120% at 50% 0%, #ff9a9a 0%, #f5555a 45%, #d21f2f 100%); }
+.rail-green { background: radial-gradient(120% 120% at 50% 0%, #8fe6b0 0%, #2ecc71 45%, #12a150 100%); }
+.rail-btn:active .rail-ico { transform: translateY(2px); box-shadow: 0 3px 8px rgba(15,23,42,0.28), inset 0 2px 3px rgba(255,255,255,0.5), inset 0 -3px 6px rgba(0,0,0,0.22); }
+
+/* ラベルを写真背景でも読みやすく（半透明ダークピル） */
+.rail-label {
+  color: #fff !important; font-size: 11px; font-weight: 800;
+  background: rgba(15,23,42,0.45); padding: 2px 9px; border-radius: 999px;
+  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+  box-shadow: 0 2px 5px rgba(15,23,42,0.2);
+}
+/* バッジを少し上質に */
+.rail-ico .badge { box-shadow: 0 2px 5px rgba(15,23,42,0.35), 0 0 0 2px #fff; font-weight: 900; }
+
+/* 右サイドボタンの白アイコン */
+.rail-ico .rail-glyph { position: relative; z-index: 1; width: 27px; height: 27px; display: block; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.28)); }
+
+/* ===== 中央カードをトランプが重なった立体スタックに ===== */
+.hero-stack { position: relative; width: 60%; max-width: 210px; margin: 14px auto 0; }
+.hero-stack .hero-card { width: 100%; max-width: none; margin: 0; position: relative;
+  /* シンプルに：白い縁を細く＋自然な影のみ */
+  background: #fff; border: 1px solid rgba(255,255,255,0.9);
+  padding: 5px; border-radius: 14px;
+  box-shadow: 0 14px 30px rgba(15,23,42,0.20);
+}
+.hero-stack .hero-img { border-radius: 10px; }
+.hero-back { position: absolute; left: 0; right: 0; top: 0; bottom: 0; border-radius: 16px; background: #fff; }
+/* 参考写真どおり控えめに1枚だけ重ねる */
+.hero-back1 { transform: translate(7px, 7px) rotate(2deg); background: #f6f9ff; box-shadow: 0 10px 22px rgba(15,23,42,0.14); }
+
+/* 白縁を細くした分の余白を詰めて再バランス＋四辺の縁を16pxに統一 */
+.hero-stack { margin-top: 10px; }
+.hero-stack .hero-img { aspect-ratio: 0.508; }
+.stats-ring-row { margin-top: 12px; }
+.mission-cta-row { margin-top: 12px; }
+.event-banner { margin-top: 12px; margin-bottom: 4px; }
+
+/* ===== ステータス：四角枠なし・グラデリング（見やすくスタイリッシュ） ===== */
+.stats-ring-row { background: transparent; border: none; box-shadow: none; padding: 0; margin-top: 12px; gap: 4px; }
+.stat-ring { background: transparent; }
+.sr-wrap { width: 58px; height: 58px; margin: 0 auto; filter: drop-shadow(0 4px 7px rgba(15,23,42,0.24)); }
+.sr-svg { width: 58px; height: 58px; display: block; }
+.sr-emoji { font-size: 20px; }
+.sr-val { font-size: 18px; font-weight: 900; color: var(--ink); margin-top: 2px; text-shadow: 0 1px 3px rgba(255,255,255,0.95), 0 0 3px rgba(255,255,255,0.85); }
+.sr-label { font-size: 11px; font-weight: 800; color: var(--ink); text-shadow: 0 1px 3px rgba(255,255,255,0.95); }
+
+/* ===== ホームはスクロールさせず、中央カードが余白に合わせて伸縮 ===== */
+.screen-scroll.home-fit { display: flex; flex-direction: column; overflow: hidden;
+  padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
+.home-fit .hero-wrap { flex: 1 1 auto; min-height: 0; margin-top: 10px; }
+.home-fit .hero-stack { height: 100%; margin-top: 0; }
+.home-fit .hero-stack .hero-card { height: 100%; }
+.home-fit .hero-stack .hero-img { aspect-ratio: auto; height: 100%; }
+.home-fit .hero-back { top: 0; bottom: 0; height: auto; }
+
+/* ===== デイリーミッション選択：重厚・立体カード＋押したくなる3Dボタン ===== */
+.dm-progress {
+  background: rgba(255,255,255,0.9); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.8); border-radius: 16px; padding: 12px 14px; margin-top: 8px;
+  box-shadow: 0 8px 20px rgba(15,23,42,0.12);
+}
+.dm-card {
+  position: relative; margin-top: 14px; border-radius: 20px; padding: 14px 14px 14px 18px; overflow: hidden;
+  background: linear-gradient(180deg, #ffffff, #f4f8ff);
+  border: 1px solid rgba(255,255,255,0.9);
+  box-shadow: 0 12px 26px rgba(15,23,42,0.16), inset 0 1px 0 #fff;
+}
+.dm-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: linear-gradient(180deg, var(--c1), var(--c2)); }
+.dm-top { display: flex; align-items: center; gap: 12px; }
+.dm-ico {
+  width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-size: 22px; flex: none;
+  background: linear-gradient(180deg, var(--c1), var(--c2));
+  border: 2px solid rgba(255,255,255,0.85);
+  box-shadow: 0 5px 12px rgba(15,23,42,0.22), inset 0 2px 2px rgba(255,255,255,0.5);
+}
+.dm-main { flex: 1; min-width: 0; }
+.dm-title { margin: 0; font-size: 16px; font-weight: 800; }
+.dm-sub { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+.dm-status { font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 999px; flex: none; }
+.dm-status.todo { background: #eef2f7; color: var(--ink-soft); }
+.dm-status.done { background: #dcfce7; color: var(--green-600); }
+.dm-rewards { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+.dm-rw { font-size: 11px; font-weight: 800; color: var(--ink); background: #f1f5fb; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; }
+.dm-btn {
+  width: 100%; border: none; cursor: pointer; color: #fff; font-weight: 900; font-size: 15px;
+  border-radius: 16px; padding: 13px; letter-spacing: 0.3px; text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0) 46%), linear-gradient(180deg, var(--c1), var(--c2));
+  box-shadow: 0 5px 0 var(--edge), 0 10px 20px rgba(15,23,42,0.22);
+  transition: transform 0.09s ease, box-shadow 0.09s ease;
+}
+.dm-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--edge), 0 4px 10px rgba(15,23,42,0.2); }
+.dm-btn:disabled { background-image: none; background: #cbd5e1; box-shadow: 0 3px 0 #94a3b8; cursor: default; text-shadow: none; }
+
+.dm-bonus {
+  display: flex; align-items: center; gap: 12px; margin-top: 16px; border-radius: 20px; padding: 14px;
+  background: linear-gradient(135deg, #fff7e6, #ffe9c7); border: 1px solid #fde3b0;
+  box-shadow: 0 10px 22px rgba(180,120,20,0.16);
+}
+.dm-bonus.done { background: linear-gradient(135deg, #fff2cc, #ffd98a); }
+.dm-bonus-ico { font-size: 26px; }
+.dm-bonus-star { font-size: 24px; }
+
+/* ===== カラーパレット統一：アクション=青 / 報酬=金 / ステータス=4色（データ） ===== */
+/* セルフミッションCTAは緑（ユーザー指定で戻す） */
+.cta-green {
+  background: linear-gradient(135deg, #34d27a 0%, #22c55e 55%, #15a34a 100%);
+  box-shadow: 0 5px 0 #0f7a37, 0 12px 22px rgba(21, 163, 74, 0.28);
+}
+/* 右サイド：元の配色に復帰（フレンド=青 / 大学=赤 / 報酬=緑）。立体感・光沢の質感は維持 */
+.rail-red   { background: radial-gradient(120% 120% at 50% 0%, #ff9a9a 0%, #f5555a 45%, #d21f2f 100%); }
+.rail-green { background: radial-gradient(120% 120% at 50% 0%, #8fe6b0 0%, #2ecc71 45%, #12a150 100%); }
+.rail-green .rail-glyph { filter: drop-shadow(0 1px 1px rgba(0,0,0,0.28)); }
+
+/* デイリーミッション：カード/アイコン/ボタンを青に統一（カテゴリは絵文字＋文字で表現） */
+.dm-card::before { background: linear-gradient(180deg, #60a5fa, #2563eb); }
+.dm-ico { background: linear-gradient(180deg, #60a5fa, #2563eb); }
+.dm-btn {
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0) 46%), linear-gradient(180deg, #3b7bff, #1e3fae);
+  box-shadow: 0 5px 0 #16307e, 0 10px 20px rgba(30, 63, 174, 0.24);
+}
+.dm-btn:active { box-shadow: 0 1px 0 #16307e, 0 4px 10px rgba(30, 63, 174, 0.2); }
+
+/* ===== デイリー達成ボタン：重厚・立体を強化 ===== */
+.dm-btn {
+  padding: 15px; font-size: 16px;
+  border: 1px solid rgba(255,255,255,0.35);
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,0.38), rgba(255,255,255,0.06) 42%, rgba(255,255,255,0) 56%),
+    linear-gradient(180deg, #4f8bff 0%, #2a5fe0 55%, #1e3fae 100%);
+  box-shadow:
+    0 7px 0 #16307e,
+    0 10px 0 #0f2560,
+    0 18px 26px rgba(15,23,42,0.32),
+    inset 0 2px 3px rgba(255,255,255,0.55),
+    inset 0 -5px 9px rgba(0,0,0,0.24);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+}
+.dm-btn:active {
+  transform: translateY(6px);
+  box-shadow:
+    0 1px 0 #16307e,
+    0 3px 0 #0f2560,
+    0 6px 12px rgba(15,23,42,0.26),
+    inset 0 2px 3px rgba(255,255,255,0.45),
+    inset 0 -3px 6px rgba(0,0,0,0.24);
+}
+.dm-btn:disabled { background-image: none; background: #cbd5e1; border-color: rgba(255,255,255,0.4);
+  box-shadow: 0 5px 0 #94a3b8, 0 8px 14px rgba(15,23,42,0.14); text-shadow: none; }
+
+/* ===== 達成エフェクト（RewardBurst・約1.4秒） ===== */
+.rb-overlay { position: absolute; inset: 0; z-index: 70; display: grid; place-items: center; padding: 24px;
+  background: rgba(15,23,42,0.5); animation: rbFade 0.2s ease; }
+@keyframes rbFade { from { opacity: 0; } to { opacity: 1; } }
+.rb-card {
+  position: relative; min-width: 230px; text-align: center; padding: 22px 26px 20px; border-radius: 24px;
+  background: linear-gradient(180deg, #ffffff, #eef4ff);
+  box-shadow: 0 22px 50px rgba(15,23,42,0.4), 0 0 0 4px rgba(255,255,255,0.6), 0 0 40px rgba(96,165,250,0.5);
+  animation: rbPop 0.42s cubic-bezier(0.2, 1.3, 0.4, 1);
+}
+@keyframes rbPop { 0% { transform: scale(0.6); opacity: 0; } 60% { transform: scale(1.05); } 100% { transform: scale(1); opacity: 1; } }
+.rb-badge { font-size: 42px; animation: rbBadge 0.6s ease; }
+@keyframes rbBadge { 0% { transform: scale(0) rotate(-25deg); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+.rb-title { font-weight: 900; font-size: 18px; color: var(--blue-700); margin: 4px 0 12px; }
+.rb-rows { display: flex; flex-direction: column; gap: 6px; }
+.rb-row { display: flex; justify-content: space-between; gap: 24px; background: #f1f5fb; border-radius: 10px; padding: 8px 14px; }
+.rb-k { font-weight: 800; color: var(--ink-soft); font-size: 13px; }
+.rb-v { font-weight: 900; color: var(--blue-600); font-size: 17px; text-shadow: 0 0 10px rgba(37,99,235,0.35); }
+.rb-bonus { margin-top: 10px; font-weight: 900; color: #d97706; font-size: 13px; animation: rbBonus 0.6s ease 0.3s both; }
+@keyframes rbBonus { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+/* キラキラの放射 */
+.rb-burst { position: absolute; left: 0; right: 0; top: 34%; height: 0; pointer-events: none; }
+.rb-spark {
+  position: absolute; left: 50%; top: 0; color: #ffd257; font-size: 20px; opacity: 0;
+  text-shadow: 0 0 8px rgba(255,200,60,0.8);
+  transform: rotate(var(--a)) translateY(0) scale(0.3);
+  animation: rbSpark 1s ease-out var(--d) forwards;
+}
+@keyframes rbSpark {
+  0% { opacity: 0; transform: rotate(var(--a)) translateY(0) scale(0.3); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(var(--a)) translateY(-96px) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) { .rb-spark { animation: none; display: none; } .rb-card, .rb-badge { animation: none; } }
+
+/* ===== セルフ「ミッション選択」：大きく高品質な立体カード ===== */
+.ms-grid { grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.ms-card {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+  min-height: 168px; padding: 16px 14px 14px; text-align: left; cursor: pointer; position: relative; overflow: hidden;
+  border-radius: 20px; border: 1px solid rgba(255,255,255,0.9);
+  background: linear-gradient(180deg, #ffffff, #f2f7ff);
+  box-shadow: 0 12px 26px rgba(15,23,42,0.16), inset 0 1px 0 #fff;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.ms-card::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 5px; background: linear-gradient(90deg, #60a5fa, #2563eb); }
+.ms-card:active { transform: translateY(3px); box-shadow: 0 6px 14px rgba(15,23,42,0.18); }
+.ms-ico {
+  width: 50px; height: 50px; border-radius: 15px; display: grid; place-items: center; font-size: 25px;
+  background: linear-gradient(180deg, #60a5fa, #2563eb); border: 2px solid rgba(255,255,255,0.85);
+  box-shadow: 0 6px 14px rgba(30,63,174,0.28), inset 0 2px 2px rgba(255,255,255,0.55);
+}
+.ms-title { font-weight: 800; font-size: 16px; margin-top: 2px; }
+.ms-reward-pill { font-size: 11px; font-weight: 800; color: var(--blue-700); background: #e9f1ff; border: 1px solid #d6e6ff; border-radius: 999px; padding: 3px 10px; }
+.ms-stats { display: flex; gap: 10px; flex-wrap: wrap; margin-top: auto; padding-top: 6px; }
+.ms-stat { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 800; color: var(--ink); }
+.ms-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.ms-go { align-self: flex-end; font-size: 12px; font-weight: 800; color: var(--blue-600); }
+
+/* ===== セルフ選択：カテゴリ配色＋スクロールなしフィット ===== */
+.ms-card::before { background: linear-gradient(90deg, var(--c1, #60a5fa), var(--c2, #2563eb)); }
+.ms-ico { background: linear-gradient(180deg, var(--c1, #60a5fa), var(--c2, #2563eb)); }
+
+.screen-scroll.self-fit { display: flex; flex-direction: column; overflow: hidden;
+  padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
+.self-fit .ms-grid { flex: 1 1 auto; min-height: 0; grid-template-rows: repeat(4, 1fr); margin-top: 10px; }
+.self-fit .ms-card { min-height: 0; padding: 12px 12px 10px; gap: 4px; justify-content: center; }
+.self-fit .ms-ico { width: 44px; height: 44px; font-size: 22px; border-radius: 13px; }
+.self-fit .ms-title { font-size: 15px; margin-top: 0; }
+.self-fit .ms-reward-pill { padding: 2px 9px; }
+.self-fit .ms-stats { margin-top: 4px; padding-top: 2px; }
+.self-fit .ms-go { display: none; }
+.self-fit .info-note { display: none; }
+
+/* ===== セルフ選択：最初のシンプル配色＋コンパクト（背景が透ける） ===== */
+.ms-grid { grid-template-columns: 1fr 1fr; grid-template-rows: none; gap: 10px; margin-top: 12px; }
+.ms-card {
+  display: block; position: relative; min-height: 0; text-align: left;
+  padding: 12px 12px 12px; border-radius: 16px; overflow: visible;
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.14);
+  transition: transform 0.08s ease;
+}
+.ms-card::before, .ms-card::after { display: none !important; }
+.ms-card:active { transform: translateY(1px); }
+.ms-title { font-weight: 800; font-size: 14px; line-height: 1.3; color: var(--ink); }
+.ms-rate { font-size: 11px; color: var(--ink-soft); margin-top: 8px; }
+.ms-reward { font-size: 12px; color: var(--ink-soft); font-weight: 700; margin-top: 2px; }
+.ms-stats { display: flex; flex-wrap: wrap; align-items: center; margin-top: 8px; font-size: 11px; font-weight: 700; color: var(--ink); }
+.ms-stat { display: inline-flex; align-items: center; gap: 4px; }
+.ms-sq { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+.ms-dot-sep { color: var(--ink-soft); margin: 0 4px; }
+.ms-arrow { position: absolute; top: 10px; right: 12px; color: var(--ink-soft); font-weight: 900; font-size: 18px; }
+
+/* ===== ホーム上部：スマホの内カメラ/時刻/バッテリー領域を確実に確保 =====
+   home-fitは高さ固定のflex。上部paddingを増やすとアバター(flex:1)がその分縮み、
+   プロフィールが下がって上部にスペースが空く（＝縦長アバターを少し短く＋上部確保）。*/
+.screen-scroll.home-fit {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 40px);
+}
+.home-fit .home-header { margin-top: 2px; }
+/* アバターが縮みすぎないよう下限も少し確保（バランス用） */
+.home-fit .hero-wrap { min-height: 220px; }

@@ -1,72 +1,111 @@
 import { useEffect, useRef, useState } from 'react'
-import { useApp } from '../store'
 import { PageHead } from '../components/ui'
 import type { Route } from '../App'
+import type { ActiveMission } from '../data/types'
 
-export function TimerScreen({ missionId, go }: { missionId: string; go: (r: Route) => void }) {
-  const { state } = useApp()
-  const mission = state.missions.find((m) => m.id === missionId)!
-  const [seconds, setSeconds] = useState(0)
-  const [running, setRunning] = useState(false)
+const CAT_EMOJI: Record<string, string> = { 勉強: '📘', 運動: '🏃', 生活習慣: '⚡', 振り返り: '✨' }
+const TARGETS = [0, 15, 30, 45, 60] // 分（0=なし/カウントアップ）
+
+export function TimerScreen({ mission, back, replace }: { mission: ActiveMission; back: () => void; replace: (r: Route) => void }) {
+  const [seconds, setSeconds] = useState(0) // 経過秒
+  const [target, setTarget] = useState(mission.targetMinutes || 0) // 目標分（0=カウントアップ）
+  const [running, setRunning] = useState(true)
   const ref = useRef<number | null>(null)
+  const finishedRef = useRef(false)
+  const [startAt] = useState(() => new Date())
 
   useEffect(() => {
-    if (running) {
-      ref.current = window.setInterval(() => setSeconds((s) => s + 1), 1000)
-    }
-    return () => {
-      if (ref.current) window.clearInterval(ref.current)
-    }
+    if (running) ref.current = window.setInterval(() => setSeconds((s) => s + 1), 1000)
+    return () => { if (ref.current) window.clearInterval(ref.current) }
   }, [running])
 
-  const fmt = (t: number) => {
-    const h = String(Math.floor(t / 3600)).padStart(2, '0')
-    const m = String(Math.floor((t % 3600) / 60)).padStart(2, '0')
-    const s = String(t % 60).padStart(2, '0')
-    return `${h}:${m}:${s}`
-  }
+  const countdown = target > 0
+  const targetSec = target * 60
+  const remaining = countdown ? Math.max(0, targetSec - seconds) : 0
+  const pct = countdown ? Math.min(100, Math.round((seconds / targetSec) * 100)) : 0
+  const emoji = mission.self?.emoji ?? CAT_EMOJI[mission.category] ?? '🎯'
+  const hhmm = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  const fmt = (t: number) => [Math.floor(t / 3600), Math.floor((t % 3600) / 60), t % 60].map((n) => String(n).padStart(2, '0')).join(':')
 
-  const targetSec = mission.targetMinutes * 60
-  const pct = Math.min(100, (seconds / targetSec) * 100)
-
-  const finish = () => {
+  const finish = (mins: number) => {
+    if (finishedRef.current) return
+    finishedRef.current = true
     setRunning(false)
-    // 経過分（最低1分はカウント、デモでは秒も切り上げ）
-    const minutes = Math.max(1, Math.round(seconds / 60))
-    go({ name: 'review', missionId, minutes })
+    replace({ name: 'review', mission, minutes: Math.max(1, mins) })
   }
+
+  // カウントダウンが0になったら自動終了
+  useEffect(() => {
+    if (countdown && seconds >= targetSec) finish(target)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seconds, countdown, targetSec])
+
+  const onFinishTap = () => finish(countdown ? Math.min(target, Math.round(seconds / 60)) : Math.round(seconds / 60))
 
   return (
     <>
-      <PageHead title="ミッション実行中" onBack={() => go({ name: 'daily' })} action={<span className="back" style={{ visibility: 'hidden' }} />} />
+      <PageHead title="タイマー" onBack={back} />
+      <div className="muted" style={{ fontSize: 13, fontWeight: 700, marginTop: 4 }}>
+        {mission.kind === 'daily' ? 'デイリーミッション実行中' : 'セルフミッション実行中'}
+      </div>
 
-      <div className="timer-card">
-        <h3 style={{ margin: '0 0 8px' }}>{mission.title}</h3>
-        <div className="muted" style={{ fontSize: 13 }}>カテゴリー: {mission.category}</div>
-        <div className="muted" style={{ fontSize: 13 }}>目標時間: {mission.targetMinutes}分</div>
-        <div style={{ borderTop: '1px solid var(--line)', marginTop: 10, paddingTop: 10, fontSize: 12, color: 'var(--ink-soft)' }}>
-          報酬: EXP +{mission.reward.exp} / SP +{mission.reward.sp} / コイン +{mission.reward.coins} / {mission.reward.stat} +{mission.reward.statAmount}
+      {/* ミッション情報 */}
+      <div className="section-card" style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 }}>
+        <div className="tm-ico">{emoji}</div>
+        <div>
+          <div className="bold" style={{ fontSize: 15 }}>{mission.title}</div>
+          <div className="muted" style={{ fontSize: 12 }}>{mission.category}</div>
         </div>
       </div>
 
-      <div className="center muted" style={{ marginTop: 18, fontSize: 13 }}>経過時間</div>
-      <div className="timer-circle" style={{ ['--p' as string]: pct + '%' }}>
-        <div className="timer-inner">{fmt(seconds)}</div>
+      {/* 目標時間セレクタはセルフミッションのみ（デイリーは指定時間で固定） */}
+      {mission.kind === 'self' && (
+        <>
+          <div className="field-label" style={{ marginBottom: 6 }}>目標時間（押すとカウントダウン）</div>
+          <div className="chip-row">
+            {TARGETS.map((t) => (
+              <button
+                key={t}
+                className={'time-chip' + (target === t ? ' active' : '')}
+                onClick={() => { setTarget(t); finishedRef.current = false }}
+              >
+                {t === 0 ? 'なし' : `${t}分`}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* 時間表示 */}
+      <div className="section-card center" style={{ paddingTop: 18, paddingBottom: 18, marginTop: 12 }}>
+        <div className="muted" style={{ fontSize: 13 }}>{countdown ? '残り時間' : '経過時間'}</div>
+        <div className="tm-time">{fmt(countdown ? remaining : seconds)}</div>
+        <div className="muted" style={{ fontSize: 12 }}>開始時刻 {hhmm(startAt)}</div>
+        {countdown ? (
+          <>
+            <div className="progress-track" style={{ marginTop: 14 }}><i style={{ width: pct + '%' }} /></div>
+            <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>進捗 {pct}%（{Math.floor(seconds / 60)}分 / {target}分）</div>
+          </>
+        ) : (
+          <div className="muted" style={{ fontSize: 12, marginTop: 12 }}>カウントアップ中（目標時間なし）</div>
+        )}
       </div>
 
-      <div className="center muted" style={{ fontSize: 12 }}>終了後にレビューを記録するとスコアに反映されます</div>
-
-      <div className="note-box">
-        長時間実行時は確認通知が表示されます<br />
-        反応がない場合はタイマーが終了する場合があります
+      {/* 操作 */}
+      <div className="tm-btn-row">
+        <button className="tm-btn tm-pause" onClick={() => setRunning((r) => !r)}>
+          <span className="bold">{running ? '中断する' : '再開する'}</span>
+          <span className="muted" style={{ fontSize: 11 }}>{running ? '一時停止します' : 'タイマーを続ける'}</span>
+        </button>
+        <button className="tm-btn tm-finish" onClick={onFinishTap} disabled={seconds === 0}>
+          <span className="bold">終了する</span>
+          <span style={{ fontSize: 11, opacity: 0.9 }}>ミッションを完了します</span>
+        </button>
       </div>
 
-      <button className="btn-primary" onClick={finish} disabled={seconds === 0}>終了してレビューを書く</button>
-      <div className="row gap12" style={{ marginTop: 10 }}>
-        <button className="btn-ghost" onClick={() => setRunning((r) => !r)}>{running ? '一時停止' : 'スタート'}</button>
-        <button className="btn-ghost" onClick={() => { setRunning(false); setSeconds(0) }}>リセット</button>
+      <div className="info-note" style={{ marginTop: 12 }}>
+        ⓘ 長時間のご利用時には、定期的に確認画面が表示される場合があります。
       </div>
-      <p className="hint center">※ デモでは経過秒数を分に換算してスコアに反映します</p>
     </>
   )
 }

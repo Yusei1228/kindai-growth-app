@@ -34,8 +34,36 @@ export interface Mission {
   title: string
   category: Category
   targetMinutes: number
+  timed: boolean // true=時間指定タイマー / false=タイマー無し（感想入力へ）
   reward: Reward
   done: boolean
+}
+
+/** セルフミッションの定義（8種・2ステータス・時間比例報酬） */
+export interface SelfMission {
+  id: string
+  title: string
+  emoji: string
+  category: Category // ログ・アイコン用の代表カテゴリ
+  exp30: number // 30分あたりのEXP
+  sp30: number // 30分あたりのSP（スコア）
+  stats: StatKey[] // 上昇するステータス（1〜2種）
+  timed: boolean // false = タイマーを飛ばしてレビューへ
+}
+
+/** タイマー/レビュー画面に渡す「実行中ミッション」情報（デイリー・セルフ共通） */
+export interface ActiveMission {
+  kind: 'daily' | 'self'
+  missionId?: string // daily のみ（達成マーク・ボーナス判定用）
+  self?: SelfMission // self のみ（報酬モデル）
+  timed?: boolean // false=タイマー無しで直接レビューへ
+  title: string
+  category: Category
+  targetMinutes: number // タイマーの目標時間（0=自由/カウントアップ）
+  // daily 用の固定報酬（self は self から算出）
+  rewardSp: number
+  rewardExp: number
+  statAmount: number
 }
 
 /** 実行ログ（振り返り・ランキング集計の元データ） */
@@ -82,12 +110,15 @@ export interface CouponStore {
 }
 
 export interface UserState {
-  name: string
+  userId: string // 匿名UUID（localStorage）
+  registered: boolean // ニックネーム登録済みか
+  name: string // ニックネーム
+  avatar: string // 選択中のアバター画像ファイル名（public/直下）
   level: number
   exp: number
   streak: number // 連続日数
   totalDays: number // 累計達成日数
-  sp: number // シーズンPt（青いダイヤ・上部表示）
+  sp: number // 累計スコア（total_score・ランキング基準）
   points: number // ポイント（緑のP・クーポン用）
   stats: Stats
   dailyRewardAvailable: boolean
@@ -96,6 +127,7 @@ export interface UserState {
 export interface AppState {
   user: UserState
   missions: Mission[]
+  missionsDate: string // missions を生成した app_date
   logs: ActivityLog[]
   friends: Friend[]
   ranking: RankUser[]

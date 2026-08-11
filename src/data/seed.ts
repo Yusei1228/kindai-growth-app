@@ -1,57 +1,25 @@
 import type { AppState } from './types'
 
-// 設計画像（Lv.23 / 連続45日 / SP2,350 / P710 / 体力78 知力82 活力74 魅力69）を初期値に再現
+// 検証版: 新規ユーザーはニックネーム未登録・Lv1・ステータス20からスタート。
+// missions は store 側で当日分を自動生成する（missionsDate='' で必ず再生成）。
 export const seedState: AppState = {
   user: {
-    name: 'Yusei',
-    level: 23,
-    exp: 540, // あと少しで次のレベル（演出用）
-    streak: 45,
-    totalDays: 128,
-    sp: 2350,
-    points: 710,
-    stats: { 体力: 78, 知力: 82, 活力: 74, 魅力: 69 },
+    userId: '',
+    registered: false,
+    name: '',
+    avatar: 'hero-avatar.png',
+    level: 1,
+    exp: 0,
+    streak: 0,
+    totalDays: 0,
+    sp: 0,
+    points: 0,
+    stats: { 体力: 20, 知力: 20, 活力: 20, 魅力: 20 },
     dailyRewardAvailable: true,
   },
-  missions: [
-    {
-      id: 'm1',
-      title: '勉強10分',
-      category: '勉強',
-      targetMinutes: 10,
-      reward: { exp: 10, sp: 10, coins: 5, stat: '知力', statAmount: 1 },
-      done: false,
-    },
-    {
-      id: 'm2',
-      title: 'ストレッチ5分',
-      category: '運動',
-      targetMinutes: 5,
-      reward: { exp: 5, sp: 5, coins: 3, stat: '体力', statAmount: 1 },
-      done: false,
-    },
-    {
-      id: 'm3',
-      title: '日記を書く',
-      category: '生活習慣',
-      targetMinutes: 5,
-      reward: { exp: 5, sp: 5, coins: 3, stat: '活力', statAmount: 1 },
-      done: false,
-    },
-  ],
-  logs: [
-    {
-      id: 'l0',
-      missionTitle: 'TOEIC単語',
-      category: '勉強',
-      minutes: 30,
-      spEarned: 60,
-      rating: 4,
-      comment: '昨日の記録',
-      date: new Date(Date.now() - 86400000).toISOString().slice(0, 10),
-      at: Date.now() - 86400000,
-    },
-  ],
+  missions: [],
+  missionsDate: '',
+  logs: [],
   friends: [
     { id: 'f1', name: 'Sakura', level: 26, faculty: '文芸学部', weeklySP: 2580, avatarColor: '#f472b6' },
     { id: 'f2', name: 'Haruto', level: 21, faculty: '経済学部', weeklySP: 1940, avatarColor: '#60a5fa' },

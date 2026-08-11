@@ -1,11 +1,10 @@
-export type Tab = 'home' | 'ranking' | 'reflection' | 'mypage' | 'menu'
+export type Tab = 'home' | 'ranking' | 'reflection' | 'mypage'
 
 const ITEMS: { key: Tab; label: string; ico: string; badge?: number }[] = [
   { key: 'home', label: 'ホーム', ico: '🏠' },
   { key: 'ranking', label: 'ランキング', ico: '🏆' },
-  { key: 'reflection', label: '振り返り', ico: '📈', badge: 1 },
+  { key: 'reflection', label: '振り返り', ico: '📈' },
   { key: 'mypage', label: 'マイページ', ico: '👤' },
-  { key: 'menu', label: 'メニュー', ico: '☰', badge: 1 },
 ]
 
 export function BottomNav({ active, onTab }: { active: Tab; onTab: (t: Tab) => void }) {
