@@ -10,11 +10,11 @@ export interface AvatarOption {
 
 export const AVATARS: AvatarOption[] = [
   { file: 'hero-avatar.png', label: 'アバター1' },
-  { file: 'avatar-2.webp', label: 'アバター2' },
-  { file: 'avatar-3.webp', label: 'アバター3' },
-  { file: 'avatar-4.webp', label: 'アバター4' },
-  { file: 'avatar-5.webp', label: 'アバター5' },
-  { file: 'avatar-6.webp', label: 'アバター6' },
+  // avatar-2 以降は public/ に置いた webp。存在しないものは選択画面で自動的に隠れる。
+  ...Array.from({ length: 19 }, (_, i) => {
+    const n = i + 2 // 2〜20
+    return { file: `avatar-${n}.webp`, label: `アバター${n}` }
+  }),
 ]
 
 export const DEFAULT_AVATAR = AVATARS[0].file
