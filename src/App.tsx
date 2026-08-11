@@ -172,7 +172,7 @@ export function App() {
   return (
     <div className="app-shell">
       <div className="phone">
-        <SceneBackground />
+        <SceneBackground image={route.name === 'ranking' || route.name === 'profile' ? '/bg-ranking.webp' : '/bg-campus.webp'} />
         <div className={'screen-scroll' + (route.name === 'home' ? ' home-fit' : '')} key={route.name}>
           {screen}
         </div>

@@ -1,12 +1,12 @@
 // アプリ全体の背景。public/bg-campus.jpg があればその実画像、無ければ下のSVGシーンにフォールバック。
 import { useState } from 'react'
 
-export function SceneBackground() {
+export function SceneBackground({ image = '/bg-campus.webp' }: { image?: string }) {
   const [failed, setFailed] = useState(false)
   if (!failed) {
     return (
       <div className="scene-bg" aria-hidden="true">
-        <img src="/bg-campus.webp" className="scene-img" alt="" onError={() => setFailed(true)} />
+        <img src={image} className="scene-img" alt="" onError={() => setFailed(true)} />
         <div className="scene-scrim" />
       </div>
     )
