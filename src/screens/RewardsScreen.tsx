@@ -1,8 +1,6 @@
 import { useApp } from '../store'
 import { PageHead, PointIcon } from '../components/ui'
-import type { Route } from '../App'
-
-export function RewardsScreen({ go, notify }: { go: (r: Route) => void; notify: (m: string) => void }) {
+export function RewardsScreen({ back, notify }: { back: () => void; notify: (m: string) => void }) {
   const { state, redeemCoupon } = useApp()
 
   const redeem = (id: string, cost: number) => {
@@ -15,7 +13,7 @@ export function RewardsScreen({ go, notify }: { go: (r: Route) => void; notify: 
 
   return (
     <>
-      <PageHead title="協賛店舗・報酬" onBack={() => go({ name: 'mypage' })} />
+      <PageHead title="協賛店舗・報酬" onBack={back} />
 
       <div className="section-card row between">
         <div>

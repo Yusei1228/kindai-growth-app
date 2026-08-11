@@ -11,7 +11,7 @@ const CAT_META: Record<Category, { emoji: string; c1: string; c2: string; edge: 
   振り返り: { emoji: '✨', c1: '#e879f9', c2: '#d946ef', edge: '#a21caf' },
 }
 
-export function DailyMissionScreen({ go }: { go: (r: Route) => void }) {
+export function DailyMissionScreen({ go, back }: { go: (r: Route) => void; back: () => void }) {
   const { state } = useApp()
   const done = state.missions.filter((m) => m.done).length
   const total = state.missions.length || 1
@@ -19,7 +19,7 @@ export function DailyMissionScreen({ go }: { go: (r: Route) => void }) {
 
   return (
     <>
-      <PageHead title="今日のデイリーミッション" onBack={() => go({ name: 'home' })} />
+      <PageHead title="今日のデイリーミッション" onBack={back} />
 
       {/* 進捗 */}
       <div className="dm-progress">

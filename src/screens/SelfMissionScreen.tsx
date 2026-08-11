@@ -5,7 +5,7 @@ import type { Route } from '../App'
 
 const STAT_COLOR: Record<StatKey, string> = { 体力: '#ec4899', 知力: '#2563eb', 活力: '#f59e0b', 魅力: '#d946ef' }
 
-export function SelfMissionScreen({ go }: { go: (r: Route) => void }) {
+export function SelfMissionScreen({ go, back }: { go: (r: Route) => void; back: () => void }) {
   const select = (m: SelfMission) => {
     const am: ActiveMission = {
       kind: 'self',
@@ -23,7 +23,7 @@ export function SelfMissionScreen({ go }: { go: (r: Route) => void }) {
 
   return (
     <>
-      <PageHead title="ミッション選択" onBack={() => go({ name: 'home' })} />
+      <PageHead title="ミッション選択" onBack={back} />
       <p className="muted center" style={{ fontSize: 12, marginTop: 2 }}>取り組む内容を選んで、自分だけのミッションを始めよう</p>
 
       <div className="ms-grid">

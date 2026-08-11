@@ -6,7 +6,7 @@ import type { ActiveMission } from '../data/types'
 const CAT_EMOJI: Record<string, string> = { 勉強: '📘', 運動: '🏃', 生活習慣: '⚡', 振り返り: '✨' }
 const TARGETS = [0, 15, 30, 45, 60] // 分（0=なし/カウントアップ）
 
-export function TimerScreen({ mission, go }: { mission: ActiveMission; go: (r: Route) => void }) {
+export function TimerScreen({ mission, back, replace }: { mission: ActiveMission; back: () => void; replace: (r: Route) => void }) {
   const [seconds, setSeconds] = useState(0) // 経過秒
   const [target, setTarget] = useState(mission.targetMinutes || 0) // 目標分（0=カウントアップ）
   const [running, setRunning] = useState(true)
@@ -24,7 +24,6 @@ export function TimerScreen({ mission, go }: { mission: ActiveMission; go: (r: R
   const remaining = countdown ? Math.max(0, targetSec - seconds) : 0
   const pct = countdown ? Math.min(100, Math.round((seconds / targetSec) * 100)) : 0
   const emoji = mission.self?.emoji ?? CAT_EMOJI[mission.category] ?? '🎯'
-  const back: Route = mission.kind === 'daily' ? { name: 'daily' } : { name: 'self' }
   const hhmm = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
   const fmt = (t: number) => [Math.floor(t / 3600), Math.floor((t % 3600) / 60), t % 60].map((n) => String(n).padStart(2, '0')).join(':')
 
@@ -32,7 +31,7 @@ export function TimerScreen({ mission, go }: { mission: ActiveMission; go: (r: R
     if (finishedRef.current) return
     finishedRef.current = true
     setRunning(false)
-    go({ name: 'review', mission, minutes: Math.max(1, mins) })
+    replace({ name: 'review', mission, minutes: Math.max(1, mins) })
   }
 
   // カウントダウンが0になったら自動終了
@@ -45,7 +44,7 @@ export function TimerScreen({ mission, go }: { mission: ActiveMission; go: (r: R
 
   return (
     <>
-      <PageHead title="タイマー" onBack={() => go(back)} />
+      <PageHead title="タイマー" onBack={back} />
       <div className="muted" style={{ fontSize: 13, fontWeight: 700, marginTop: 4 }}>
         {mission.kind === 'daily' ? 'デイリーミッション実行中' : 'セルフミッション実行中'}
       </div>

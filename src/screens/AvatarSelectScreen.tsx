@@ -2,9 +2,8 @@ import { useState } from 'react'
 import { useApp } from '../store'
 import { PageHead } from '../components/ui'
 import { AVATARS } from '../data/avatars'
-import type { Route } from '../App'
 
-export function AvatarSelectScreen({ go, notify }: { go: (r: Route) => void; notify: (m: string) => void }) {
+export function AvatarSelectScreen({ back, notify }: { back: () => void; notify: (m: string) => void }) {
   const { state, setAvatar } = useApp()
   const current = state.user.avatar
   // 読み込みに失敗した画像は候補から隠す
@@ -19,7 +18,7 @@ export function AvatarSelectScreen({ go, notify }: { go: (r: Route) => void; not
 
   return (
     <>
-      <PageHead title="アバターを選ぶ" onBack={() => go({ name: 'home' })} />
+      <PageHead title="アバターを選ぶ" onBack={back} />
       <p className="hint" style={{ marginTop: 4 }}>
         使いたいキャラクターをタップすると、ホームの画像が切り替わります。
       </p>

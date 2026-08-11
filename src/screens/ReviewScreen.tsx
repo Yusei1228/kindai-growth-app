@@ -11,13 +11,15 @@ interface BurstData { sp: number; exp: number; stat: string; statAmount: number;
 export function ReviewScreen({
   mission,
   minutes,
-  go,
+  back,
+  replace,
   notify,
   onLevelUp,
 }: {
   mission: ActiveMission
   minutes: number
-  go: (r: Route) => void
+  back: () => void
+  replace: (r: Route) => void
   notify: (m: string) => void
   onLevelUp: (lv: number) => void
 }) {
@@ -60,12 +62,12 @@ export function ReviewScreen({
     const b = burst
     setBurst(null)
     if (b.leveledUp) onLevelUp(b.newLevel)
-    go(b.dest)
+    replace(b.dest)
   }
 
   return (
     <>
-      <PageHead title="レビュー" onBack={() => go(mission.kind === 'daily' ? { name: 'daily' } : { name: 'self' })} />
+      <PageHead title="レビュー" onBack={back} />
       <p className="center" style={{ fontSize: 14, fontWeight: 800, marginTop: 6 }}>ミッションお疲れさまでした！</p>
       <p className="muted center" style={{ fontSize: 12, marginTop: 2 }}>記録を残して報酬を受け取りましょう。</p>
 

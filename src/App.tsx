@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useApp } from './store'
 import { Toast } from './components/ui'
 import { NicknameScreen } from './screens/NicknameScreen'
@@ -57,7 +57,32 @@ export function App() {
   const [toast, setToast] = useState<string | null>(null)
   const [levelUp, setLevelUp] = useState<number | null>(null)
 
-  const go = useCallback((r: Route) => setRoute(r), [])
+  // 画面遷移の履歴スタック。← ボタンで「1つ前の画面」に戻れるようにする
+  const historyRef = useRef<Route[]>([])
+  const routeRef = useRef(route)
+  routeRef.current = route
+
+  const TAB_NAMES = ['home', 'ranking', 'reflection', 'mypage']
+
+  const go = useCallback((r: Route) => {
+    // タブのルート画面へ移動するときは履歴をリセット（トップ階層のため）
+    if (TAB_NAMES.includes(r.name)) {
+      historyRef.current = []
+    } else {
+      historyRef.current.push(routeRef.current)
+    }
+    setRoute(r)
+  }, [])
+
+  // ← ボタン：1つ前の画面へ。履歴が無ければホームへ
+  const back = useCallback(() => {
+    const prev = historyRef.current.pop()
+    setRoute(prev ?? { name: 'home' })
+  }, [])
+
+  // 履歴に積まずに置き換える遷移（タイマー→レビュー→完了など、戻ると困る中間画面用）
+  const replace = useCallback((r: Route) => setRoute(r), [])
+
   const notify = useCallback((m: string) => setToast(m), [])
 
   // ニックネーム未登録なら登録画面を全画面表示
@@ -87,23 +112,24 @@ export function App() {
       screen = <HomeScreen go={go} notify={notify} />
       break
     case 'daily':
-      screen = <DailyMissionScreen go={go} />
+      screen = <DailyMissionScreen go={go} back={back} />
       break
     case 'avatar':
-      screen = <AvatarSelectScreen go={go} notify={notify} />
+      screen = <AvatarSelectScreen back={back} notify={notify} />
       break
     case 'self':
-      screen = <SelfMissionScreen go={go} />
+      screen = <SelfMissionScreen go={go} back={back} />
       break
     case 'timer':
-      screen = <TimerScreen mission={route.mission} go={go} />
+      screen = <TimerScreen mission={route.mission} back={back} replace={replace} />
       break
     case 'review':
       screen = (
         <ReviewScreen
           mission={route.mission}
           minutes={route.minutes}
-          go={go}
+          back={back}
+          replace={replace}
           notify={notify}
           onLevelUp={setLevelUp}
         />
@@ -119,7 +145,7 @@ export function App() {
       screen = <MyPageScreen go={go} />
       break
     case 'rewards':
-      screen = <RewardsScreen go={go} notify={notify} />
+      screen = <RewardsScreen back={back} notify={notify} />
       break
   }
 
