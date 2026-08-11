@@ -1168,7 +1168,9 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
   border: 1px solid rgba(255,255,255,0.7);
   box-shadow: 0 5px 12px rgba(15,23,42,0.22), inset 0 1px 2px rgba(255,255,255,0.7);
 }
-.sr-svg, .sr-emoji { position: relative; z-index: 1; }
+/* svgはコイン土台の上に。絵文字は基底の position:absolute を維持したまま前面へ */
+.sr-svg { position: relative; z-index: 1; }
+.sr-wrap .sr-emoji { z-index: 2; }
 /* 夜：暗いフロストのコイン土台＋青い縁で背景に馴染ませる */
 .phone.tod-night .sr-wrap::before {
   background: rgba(22,30,64,0.55);
