@@ -1239,3 +1239,55 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .st-switch.on .st-knob { transform: translateX(20px); }
 .st-state { font-weight: 800; font-size: 13px; color: var(--ink-soft); width: 32px; text-align: right; }
 @media (prefers-reduced-motion: reduce) { .st-switch, .st-knob { transition: none; } }
+
+/* ===== 下部ナビを立体ドック化（モンスト風の3Dパネル・時間帯別） ===== */
+.bottom-nav {
+  border-radius: 22px 22px 0 0;            /* ドックが底から立ち上がる形 */
+  padding: 12px 8px calc(14px + env(safe-area-inset-bottom));
+  border-top: none;
+}
+.nav-item {
+  position: relative; border-radius: 16px; padding: 7px 2px 5px; margin: 0 3px;
+  transition: transform .12s ease;
+}
+.nav-item .ni-ico { font-size: 22px; transition: transform .15s ease; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.28)); position: relative; z-index: 1; }
+.nav-item .ni-label { position: relative; z-index: 1; }
+.nav-item:active { transform: translateY(2px); }
+.nav-item.active .ni-ico { transform: translateY(-3px) scale(1.12); }
+/* 選択中の“浮き上がる台座” */
+.nav-item.active::before {
+  content: ""; position: absolute; inset: 2px 4px; border-radius: 14px; z-index: 0;
+}
+
+/* --- 昼：白い光沢ドック＋青の台座 --- */
+.phone.tod-day .bottom-nav {
+  background: linear-gradient(180deg, #ffffff 0%, #eaf0f8 100%);
+  box-shadow: 0 -14px 32px rgba(30,40,70,0.20), inset 0 2px 0 rgba(255,255,255,1), inset 0 -4px 10px rgba(15,23,42,0.07);
+}
+.phone.tod-day .nav-item.active::before {
+  background: linear-gradient(180deg, #e8f0ff, #d2e3ff);
+  border: 1px solid rgba(37,99,235,0.28);
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.9), 0 5px 12px rgba(37,99,235,0.24);
+}
+
+/* --- 夕暮れ：暖色ブロンズのドック＋金の台座 --- */
+.phone.tod-sunset .bottom-nav {
+  background: linear-gradient(180deg, #fff6ec 0%, #ffe6ce 100%);
+  box-shadow: 0 -14px 32px rgba(90,40,50,0.24), inset 0 2px 0 rgba(255,255,255,0.95), inset 0 -4px 10px rgba(120,60,30,0.12);
+}
+.phone.tod-sunset .nav-item.active::before {
+  background: linear-gradient(180deg, #ffe9c2, #ffd699);
+  border: 1px solid rgba(214,130,20,0.32);
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.9), 0 5px 12px rgba(214,130,20,0.3);
+}
+
+/* --- 夜：ダーク金属ブルーのドック＋発光する青の台座 --- */
+.phone.tod-night .bottom-nav {
+  background: linear-gradient(180deg, #263066 0%, #10143198 40%, #0d1130 100%);
+  box-shadow: 0 -14px 34px rgba(0,0,0,0.55), inset 0 2px 0 rgba(150,185,255,0.24), inset 0 -4px 12px rgba(0,0,0,0.45);
+}
+.phone.tod-night .nav-item.active::before {
+  background: linear-gradient(180deg, #35479a, #202f6e);
+  border: 1px solid rgba(150,185,255,0.45);
+  box-shadow: inset 0 1px 2px rgba(180,205,255,0.35), 0 5px 16px rgba(90,140,255,0.45);
+}
