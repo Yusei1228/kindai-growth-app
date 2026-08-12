@@ -151,6 +151,100 @@ export function playSound(name: SoundName): void {
   }
 }
 
+// ===== BGM（合成アンビエント・ループ）。SFXとは独立トグル・既定OFF =====
+const BGM_KEY = 'kindai-growth-bgm'
+export function isBgmEnabled(): boolean {
+  try {
+    return localStorage.getItem(BGM_KEY) === 'on'
+  } catch {
+    return false
+  }
+}
+export function setBgmEnabled(on: boolean): void {
+  try {
+    localStorage.setItem(BGM_KEY, on ? 'on' : 'off')
+  } catch {
+    /* noop */
+  }
+}
+
+interface Bgm { g: GainNode; oscs: OscillatorNode[]; lfo: OscillatorNode; timer: number }
+let bgm: Bgm | null = null
+
+/** BGM開始（有効かつ未再生のときのみ。自動再生規制のためユーザー操作後に呼ぶ） */
+export function startBgm(): void {
+  if (bgm || !isBgmEnabled()) return
+  const c = ac()
+  if (!c || !master) return
+  const g = c.createGain()
+  g.gain.value = 0.0001
+  g.connect(master)
+  const filt = c.createBiquadFilter()
+  filt.type = 'lowpass'
+  filt.frequency.value = 1000
+  filt.Q.value = 0.6
+  filt.connect(g)
+  const lfo = c.createOscillator()
+  lfo.frequency.value = 0.07
+  const lg = c.createGain()
+  lg.gain.value = 240
+  lfo.connect(lg)
+  lg.connect(filt.frequency)
+  lfo.start()
+  const chord = [110, 164.81, 220, 277.18]
+  const oscs = chord.map((f, i) => {
+    const o = c.createOscillator()
+    o.type = 'sawtooth'
+    o.frequency.value = f
+    o.detune.value = (i - 1.5) * 6
+    const og = c.createGain()
+    og.gain.value = 0.05
+    o.connect(og).connect(filt)
+    o.start()
+    return o
+  })
+  const arp = [440, 554.37, 659.25, 880, 659.25, 554.37]
+  let ai = 0
+  const timer = window.setInterval(() => {
+    bell(arp[ai % arp.length], 0, 0.05, 1.1)
+    ai++
+  }, 1600)
+  g.gain.exponentialRampToValueAtTime(0.4, c.currentTime + 1.6)
+  bgm = { g, oscs, lfo, timer }
+}
+
+/** BGM停止（フェードアウト） */
+export function stopBgm(): void {
+  if (!bgm) return
+  const c = ac()
+  const b = bgm
+  bgm = null
+  clearInterval(b.timer)
+  if (c) {
+    try {
+      b.g.gain.cancelScheduledValues(c.currentTime)
+      b.g.gain.setValueAtTime(Math.max(0.0002, b.g.gain.value), c.currentTime)
+      b.g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.6)
+    } catch {
+      /* noop */
+    }
+  }
+  window.setTimeout(() => {
+    b.oscs.forEach((o) => {
+      try {
+        o.stop()
+      } catch {
+        /* noop */
+      }
+    })
+    try {
+      b.lfo.stop()
+    } catch {
+      /* noop */
+    }
+  }, 700)
+}
+
 // 全ボタンの押下音を一括で有効化。data-sound 属性で個別上書き可（"none"=無音 / 名前=その音）。
 let installed = false
 export function installTapSound(): void {
@@ -163,9 +257,10 @@ export function installTapSound(): void {
       const el = t && typeof t.closest === 'function' ? (t.closest('button,[role="button"]') as HTMLElement | null) : null
       if (!el || (el as HTMLButtonElement).disabled) return
       const s = el.dataset ? el.dataset.sound : undefined
-      if (s === 'none') return
+      if (s === 'none') { startBgm(); return }
       if (s && s in SYNTH) playSound(s as SoundName)
       else playSound('tap')
+      startBgm() // 初回操作でBGMを開始（有効時のみ・二重起動しない）
     },
     { passive: true },
   )
