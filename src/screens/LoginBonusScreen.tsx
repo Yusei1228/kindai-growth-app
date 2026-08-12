@@ -3,6 +3,7 @@ import { useApp } from '../store'
 import { PageHead } from '../components/ui'
 import { RewardBurst } from '../components/RewardBurst'
 import { LOGIN_BONUS_DAYS, loginBonusReward } from '../data/loginBonus'
+import { playSound } from '../lib/sound'
 
 interface Burst { sp: number; exp: number; milestone: boolean; leveledUp: boolean; newLevel: number }
 
@@ -14,7 +15,10 @@ export function LoginBonusScreen({ back, onLevelUp }: { back: () => void; onLeve
 
   const onClaim = () => {
     const res = claimLoginBonus()
-    if (res) setBurst({ sp: res.sp, exp: res.exp, milestone: res.milestone, leveledUp: res.leveledUp, newLevel: res.newLevel })
+    if (res) {
+      playSound(res.milestone ? 'reward' : 'coin')
+      setBurst({ sp: res.sp, exp: res.exp, milestone: res.milestone, leveledUp: res.leveledUp, newLevel: res.newLevel })
+    }
   }
   const finishBurst = () => {
     const b = burst
@@ -43,7 +47,7 @@ export function LoginBonusScreen({ back, onLevelUp }: { back: () => void; onLeve
               <span className="lb-chip lb-sp">スコア +{loginBonusReward(nextDay).sp}</span>
               <span className="lb-chip lb-exp">EXP +{loginBonusReward(nextDay).exp}</span>
             </div>
-            <button className="lb-claim-btn" onClick={onClaim} disabled={!!burst}>
+            <button className="lb-claim-btn" onClick={onClaim} disabled={!!burst} data-sound="none">
               受け取る 🎁
             </button>
           </>

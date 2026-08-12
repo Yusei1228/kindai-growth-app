@@ -46,7 +46,7 @@ export function PageHead({ title, onBack, action }: { title: string; onBack?: ()
   return (
     <div className="page-head">
       {onBack ? (
-        <button className="back" onClick={onBack} aria-label="戻る">←</button>
+        <button className="back" onClick={onBack} aria-label="戻る" data-sound="back">←</button>
       ) : (
         <span className="spacer" />
       )}

@@ -4,6 +4,7 @@ import { PageHead } from '../components/ui'
 import { RewardBurst } from '../components/RewardBurst'
 import { CATEGORY_TO_STAT, type ActiveMission, type StatKey } from '../data/types'
 import { selfMissionReward } from '../data/selfMissions'
+import { playSound } from '../lib/sound'
 import type { Route } from '../App'
 
 interface BurstData { sp: number; exp: number; stat: string; statAmount: number; bonus: boolean; leveledUp: boolean; newLevel: number; dest: Route }
@@ -44,6 +45,7 @@ export function ReviewScreen({
         ? completeDaily({ missionId: mission.missionId, minutes, rating: focus, comment: memo })
         : completeSelf({ mission: mission.self!, minutes, comment: memo, rating: focus })
 
+    playSound('complete') // 達成音
     // 達成エフェクトを表示（終了後に遷移・レベルアップ）
     setBurst({
       sp: res.gainedSP,
@@ -96,7 +98,7 @@ export function ReviewScreen({
         </span>
       </div>
 
-      <button className="btn-primary" style={{ marginTop: 12 }} onClick={submit} disabled={!!burst}>
+      <button className="btn-primary" style={{ marginTop: 12 }} onClick={submit} disabled={!!burst} data-sound="none">
         記録して報酬を受け取る
       </button>
 

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useApp } from './store'
 import { Toast } from './components/ui'
 import { NicknameScreen } from './screens/NicknameScreen'
@@ -20,6 +20,7 @@ import type { ActiveMission } from './data/types'
 import type { RankRow } from './lib/api'
 import { loadTimerSession } from './lib/timerSession'
 import { timeOfDay } from './lib/timeOfDay'
+import { installTapSound, playSound } from './lib/sound'
 
 export type Route =
   | { name: 'home' }
@@ -97,6 +98,14 @@ export function App() {
   const replace = useCallback((r: Route) => setRoute(r), [])
 
   const notify = useCallback((m: string) => setToast(m), [])
+
+  // 効果音：全ボタンの押下音を有効化＋レベルアップ演出時にファンファーレ
+  useEffect(() => {
+    installTapSound()
+  }, [])
+  useEffect(() => {
+    if (levelUp !== null) playSound('levelup')
+  }, [levelUp])
 
   // ニックネーム未登録なら登録画面を全画面表示
   if (!state.user.registered) {

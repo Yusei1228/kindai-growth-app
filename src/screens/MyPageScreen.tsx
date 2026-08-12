@@ -1,12 +1,21 @@
+import { useState } from 'react'
 import { useApp } from '../store'
 import { PageHead, GemIcon, PointIcon } from '../components/ui'
 import { HeroAvatar } from '../components/Avatar'
 import { expForLevel } from '../data/types'
+import { isSoundEnabled, setSoundEnabled, playSound } from '../lib/sound'
 import type { Route } from '../App'
 
 export function MyPageScreen({ go }: { go: (r: Route) => void }) {
   const { state, reset } = useApp()
   const u = state.user
+  const [soundOn, setSoundOn] = useState(isSoundEnabled())
+  const toggleSound = () => {
+    const next = !soundOn
+    setSoundEnabled(next)
+    setSoundOn(next)
+    if (next) playSound('tap') // ONにした確認音
+  }
   const expPct = Math.min(100, Math.round((u.exp / expForLevel(u.level)) * 100))
 
   const stats = [
@@ -56,7 +65,14 @@ export function MyPageScreen({ go }: { go: (r: Route) => void }) {
         <div className="kpi"><div className="lab">総記録回数</div><div className="num">{state.logs.length}<span style={{ fontSize: 14 }}> 回</span></div></div>
       </div>
 
-      <button className="btn-ghost" style={{ marginTop: 18 }} onClick={() => go({ name: 'rewards' })}>🎁 協賛店舗・クーポンを見る</button>
+      <div className="section-title">設定</div>
+      <button className="sound-toggle" onClick={toggleSound} role="switch" aria-checked={soundOn} data-sound="none">
+        <span className="st-label">🔊 効果音</span>
+        <span className={'st-switch' + (soundOn ? ' on' : '')}><span className="st-knob" /></span>
+        <span className="st-state">{soundOn ? 'ON' : 'OFF'}</span>
+      </button>
+
+      <button className="btn-ghost" style={{ marginTop: 14 }} onClick={() => go({ name: 'rewards' })}>🎁 協賛店舗・クーポンを見る</button>
       <button className="btn-ghost" style={{ marginTop: 10, color: '#ef4444' }} onClick={() => { if (confirm('データを初期状態に戻しますか？')) reset() }}>データをリセット（デモ用）</button>
 
       <p className="hint center">KINDAI GROWTH MVP — 努力が見える・続く・得をする</p>
