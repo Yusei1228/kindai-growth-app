@@ -1291,3 +1291,40 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
   border: 1px solid rgba(150,185,255,0.45);
   box-shadow: inset 0 1px 2px rgba(180,205,255,0.35), 0 5px 16px rgba(90,140,255,0.45);
 }
+
+/* ===== プレミアム・ゲームUI：ミッションボタン＆HUDを立体グロス化（オリジナル・自アプリ配色） ===== */
+.mission-cta {
+  border-radius: 18px; padding: 15px 15px 17px; border: none; position: relative; overflow: hidden;
+  transition: transform .07s ease, box-shadow .07s ease;
+}
+.cta-blue {
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,0.40), rgba(255,255,255,0) 44%),
+    linear-gradient(180deg, #4f8dff 0%, #2a5fe0 55%, #1e46b8 100%);
+  box-shadow: 0 6px 0 #163a94, 0 15px 24px rgba(30,63,174,0.38), inset 0 1px 0 rgba(255,255,255,0.55), inset 0 -3px 8px rgba(0,0,0,0.18);
+}
+.cta-green {
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,0.40), rgba(255,255,255,0) 44%),
+    linear-gradient(180deg, #37d27f 0%, #1fb866 55%, #12934f 100%);
+  box-shadow: 0 6px 0 #0d6e3a, 0 15px 24px rgba(21,163,74,0.34), inset 0 1px 0 rgba(255,255,255,0.55), inset 0 -3px 8px rgba(0,0,0,0.16);
+}
+.mission-cta:active { transform: translateY(4px); }
+.cta-blue:active { box-shadow: 0 2px 0 #163a94, 0 7px 12px rgba(30,63,174,0.38), inset 0 1px 0 rgba(255,255,255,0.5); }
+.cta-green:active { box-shadow: 0 2px 0 #0d6e3a, 0 7px 12px rgba(21,163,74,0.34), inset 0 1px 0 rgba(255,255,255,0.5); }
+.mission-cta .ttl { text-shadow: 0 1px 2px rgba(0,0,0,0.30); }
+.mission-cta .sub { text-shadow: 0 1px 2px rgba(0,0,0,0.22); }
+.mission-cta .arrow { font-size: 18px; }
+/* きらっと横切るグロス */
+.mission-cta::before {
+  content: ""; position: absolute; top: 0; left: -30%; width: 45%; height: 100%;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,0.35) 50%, transparent);
+  transform: skewX(-18deg); pointer-events: none;
+}
+
+/* 上部の通貨カウンターを金属カプセル風に（ベベル＋ハイライト） */
+.hh-pill {
+  background: linear-gradient(180deg, #ffffff, #e9f0fa);
+  border: 1px solid rgba(255,255,255,0.85);
+  box-shadow: 0 3px 8px rgba(15,23,42,0.20), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -2px 4px rgba(15,23,42,0.07);
+}
