@@ -77,11 +77,48 @@ function bell(f: number, t = 0, peak = 0.14, dur = 0.32): void {
   tone({ f: f * 2.01, type: 'sine', t, peak: peak * 0.35, atk: 0.003, dur: dur * 0.7 })
 }
 
-export type SoundName = 'tap' | 'complete' | 'levelup' | 'coin' | 'reward' | 'back'
+// ノイズバッファは一度だけ生成して使い回す（スライド音用・軽量）
+let noiseBuf: AudioBuffer | null = null
+function noise(c: AudioContext): AudioBuffer {
+  if (noiseBuf && noiseBuf.sampleRate === c.sampleRate) return noiseBuf
+  const len = Math.floor(c.sampleRate * 0.4)
+  const b = c.createBuffer(1, len, c.sampleRate)
+  const d = b.getChannelData(0)
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1
+  noiseBuf = b
+  return b
+}
+
+export type SoundName = 'tap' | 'slide' | 'complete' | 'levelup' | 'coin' | 'reward' | 'back'
 const SYNTH: Record<SoundName, () => void> = {
   tap() {
-    tone({ f: 1250, f2: 640, type: 'triangle', peak: 0.1, atk: 0.002, dur: 0.05 })
-    tone({ f: 2400, type: 'sine', peak: 0.03, dur: 0.03 })
+    // 押すたびに微妙にピッチを変えて「のっぺり」防止
+    const v = 0.93 + Math.random() * 0.14
+    tone({ f: 1250 * v, f2: 640 * v, type: 'triangle', peak: 0.1, atk: 0.002, dur: 0.05 })
+    tone({ f: 2400 * v, type: 'sine', peak: 0.03, dur: 0.03 })
+  },
+  slide() {
+    // タブ切替用の「スワッ」というスライド音（バンドパスを上へスイープ）
+    const c = ac()
+    if (!c || !master) return
+    const now = c.currentTime
+    const dur = 0.2
+    const src = c.createBufferSource()
+    src.buffer = noise(c)
+    const bp = c.createBiquadFilter()
+    bp.type = 'bandpass'
+    bp.Q.value = 0.9
+    bp.frequency.setValueAtTime(520, now)
+    bp.frequency.exponentialRampToValueAtTime(2700, now + dur)
+    const g = c.createGain()
+    g.gain.setValueAtTime(0.0001, now)
+    g.gain.exponentialRampToValueAtTime(0.12, now + 0.02)
+    g.gain.exponentialRampToValueAtTime(0.0001, now + dur)
+    src.connect(bp).connect(g).connect(master)
+    src.start(now)
+    src.stop(now + dur + 0.02)
+    // ほんのり上昇するトーンを重ねて「移動」感を強調
+    tone({ f: 480, f2: 900, type: 'sine', peak: 0.05, atk: 0.01, dur: 0.18 })
   },
   complete() {
     ;[1318.5, 1661.2, 1975.5, 2637].forEach((f, i) => bell(f, i * 0.055, 0.14 - i * 0.015, 0.5))

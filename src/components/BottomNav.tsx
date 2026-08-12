@@ -15,6 +15,7 @@ export function BottomNav({ active, onTab }: { active: Tab; onTab: (t: Tab) => v
           key={it.key}
           className={'nav-item' + (active === it.key ? ' active' : '')}
           onClick={() => onTab(it.key)}
+          data-sound="slide"
         >
           <span className="ni-ico">{it.ico}</span>
           <span className="ni-label">{it.label}</span>

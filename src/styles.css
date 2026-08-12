@@ -220,7 +220,7 @@ button { font-family: inherit; }
   border-radius: 18px; padding: 16px 14px; color: #fff; text-align: left;
   border: none; cursor: pointer; box-shadow: var(--shadow-md); position: relative; overflow: hidden;
 }
-.mission-cta .ttl { font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 6px; }
+.mission-cta .ttl { font-weight: 800; font-size: 14px; letter-spacing: -0.02em; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
 .mission-cta .sub { font-size: 11px; opacity: 0.92; margin-top: 4px; }
 .mission-cta .arrow { position: absolute; right: 12px; bottom: 12px; opacity: 0.9; }
 .cta-blue { background: linear-gradient(135deg, #2f6bff, #2455d6); }
@@ -925,12 +925,15 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 /* ===== ホーム上部：スマホの内カメラ/時刻/バッテリー領域を確実に確保 =====
    home-fitは高さ固定のflex。上部paddingを増やすとアバター(flex:1)がその分縮み、
    プロフィールが下がって上部にスペースが空く（＝縦長アバターを少し短く＋上部確保）。*/
+/* モンスト同様に上下いっぱいに配置：セーフエリア分だけ確保し上部の余白を最小化。
+   空いた分は下部（ミッションボタン等）に回して窮屈さを解消する。 */
 .screen-scroll.home-fit {
-  padding-top: calc(env(safe-area-inset-top, 0px) + 40px);
+  padding-top: calc(env(safe-area-inset-top, 0px) + 6px);
+  padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  gap: 4px;
 }
-.home-fit .home-header { margin-top: 2px; }
-/* アバターが縮みすぎないよう下限も少し確保（バランス用） */
-.home-fit .hero-wrap { min-height: 220px; }
+.home-fit .home-header { margin-top: 0; }
+.home-fit .hero-wrap { min-height: 180px; }
 
 /* ===== タイマー：再開/一時停止タグ・戻る確認ダイアログ ===== */
 .tm-resume-tag {
