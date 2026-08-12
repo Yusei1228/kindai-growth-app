@@ -1328,3 +1328,38 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
   border: 1px solid rgba(255,255,255,0.85);
   box-shadow: 0 3px 8px rgba(15,23,42,0.20), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -2px 4px rgba(15,23,42,0.07);
 }
+
+/* ===== 下部ドックを立体“金属コンソール”に強化（オリジナル・時間帯別） ===== */
+.bottom-nav { overflow: visible; }
+/* 上端の磨かれた金属の catch-light（横に走るハイライト） */
+.bottom-nav::before {
+  content: ""; position: absolute; top: 2px; left: 16px; right: 16px; height: 3px; border-radius: 3px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.95) 50%, transparent);
+}
+/* その下のヘアライン（二段ベベルの陰） */
+.bottom-nav::after {
+  content: ""; position: absolute; top: 6px; left: 12px; right: 12px; height: 1px;
+  pointer-events: none; background: rgba(0,0,0,0.10);
+}
+
+/* --- 昼：磨かれた白銀メタル --- */
+.phone.tod-day .bottom-nav {
+  background: linear-gradient(180deg, #ffffff 0%, #f3f7fc 20%, #dfe7f1 58%, #eef3fa 100%);
+  box-shadow: 0 -16px 34px rgba(30,40,70,0.22), inset 0 2px 0 rgba(255,255,255,1), inset 0 -5px 12px rgba(15,23,42,0.09), inset 0 0 0 1px rgba(255,255,255,0.5);
+}
+
+/* --- 夕暮れ：温かいブロンズメタル --- */
+.phone.tod-sunset .bottom-nav {
+  background: linear-gradient(180deg, #fff8ef 0%, #ffe9d3 22%, #f6c99f 60%, #ffe2c6 100%);
+  box-shadow: 0 -16px 34px rgba(90,40,50,0.26), inset 0 2px 0 rgba(255,255,255,0.95), inset 0 -5px 12px rgba(120,60,30,0.16), inset 0 0 0 1px rgba(255,240,225,0.5);
+}
+.phone.tod-sunset .bottom-nav::before { background: linear-gradient(90deg, transparent, rgba(255,244,225,0.98) 50%, transparent); }
+
+/* --- 夜：ダーク・ガンメタル（青い反射） --- */
+.phone.tod-night .bottom-nav {
+  background: linear-gradient(180deg, #2b356b 0%, #1a2150 24%, #0c1030 62%, #141a3e 100%);
+  box-shadow: 0 -16px 36px rgba(0,0,0,0.6), inset 0 2px 0 rgba(150,185,255,0.28), inset 0 -5px 14px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(120,150,220,0.18);
+}
+.phone.tod-night .bottom-nav::before { background: linear-gradient(90deg, transparent, rgba(170,200,255,0.85) 50%, transparent); }
+.phone.tod-night .bottom-nav::after { background: rgba(0,0,0,0.35); }
