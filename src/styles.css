@@ -929,7 +929,7 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
    空いた分は下部（ミッションボタン等）に回して窮屈さを解消する。 */
 .screen-scroll.home-fit {
   padding-top: calc(env(safe-area-inset-top, 0px) + 6px);
-  padding-bottom: calc(74px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
   gap: 4px;
 }
 .home-fit .home-header { margin-top: 0; }
@@ -1243,7 +1243,7 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 /* ===== 下部ナビを立体ドック化（モンスト風の3Dパネル・時間帯別） ===== */
 .bottom-nav {
   border-radius: 22px 22px 0 0;            /* ドックが底から立ち上がる形 */
-  padding: 12px 8px calc(14px + env(safe-area-inset-bottom));
+  padding: 7px 8px calc(12px + env(safe-area-inset-bottom));
   border-top: none;
 }
 .nav-item {
