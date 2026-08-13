@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../store'
 import { FACULTIES, ENROLLMENT_YEARS } from '../data/kindai'
+import { startBgm } from '../lib/sound'
 
 export function NicknameScreen() {
   const { register } = useApp()
@@ -9,7 +10,11 @@ export function NicknameScreen() {
   const [year, setYear] = useState('')
   const trimmed = name.trim()
   const ok = trimmed.length >= 1 && trimmed.length <= 12
-  const start = () => register(trimmed, faculty ? Number(faculty) : null, year ? Number(year) : null)
+  const start = () => {
+    // 「はじめる」＝最初のユーザー操作。ここでBGMを開始し、チュートリアルから流れるようにする
+    startBgm()
+    register(trimmed, faculty ? Number(faculty) : null, year ? Number(year) : null)
+  }
 
   const selectStyle = {
     width: '100%', border: '1px solid var(--line)', borderRadius: 12,
