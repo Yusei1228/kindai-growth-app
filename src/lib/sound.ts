@@ -155,9 +155,10 @@ export function playSound(name: SoundName): void {
 const BGM_KEY = 'kindai-growth-bgm'
 export function isBgmEnabled(): boolean {
   try {
-    return localStorage.getItem(BGM_KEY) === 'on'
+    // 既定ON（初回から再生）。明示的にOFFにした場合のみ無効。
+    return localStorage.getItem(BGM_KEY) !== 'off'
   } catch {
-    return false
+    return true
   }
 }
 export function setBgmEnabled(on: boolean): void {
