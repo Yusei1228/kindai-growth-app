@@ -19,18 +19,17 @@ interface PoolItem {
 // 4カテゴリをバランスよく用意（勉強=知力 / 運動=体力 / 生活習慣=活力 / 振り返り=魅力）
 // timed:true は「その時間ちょうどのカウントダウン」、false はタイマー無しで感想入力へ
 const POOL: PoolItem[] = [
-  // 勉強（知力）
-  { id: 'p01', title: '勉強・課題を10分する', category: '勉強', targetMinutes: 10, timed: true },
+  // 勉強（知力）※勉強/読書は5分の1種目に一本化（10分版は削除して重複回避）
+  { id: 'p18', title: '勉強を5分する', category: '勉強', targetMinutes: 5, timed: true },
+  { id: 'p19', title: '読書を5分する', category: '勉強', targetMinutes: 5, timed: true },
+  { id: 'p05', title: '資格・テスト勉強を15分', category: '勉強', targetMinutes: 15, timed: true },
   { id: 'p02', title: '英単語を15個おぼえる', category: '勉強', targetMinutes: 0, timed: false },
   { id: 'p03', title: '授業ノートを見返す', category: '勉強', targetMinutes: 0, timed: false },
-  { id: 'p04', title: '読書を10分する', category: '勉強', targetMinutes: 10, timed: true },
-  { id: 'p05', title: '資格・テスト勉強を15分', category: '勉強', targetMinutes: 15, timed: true },
-  // 運動（体力）
+  // 運動（体力）※筋トレは5分に一本化（10分版は削除）。「階段を使って移動する」は削除
+  { id: 'p20', title: '筋トレを5分する', category: '運動', targetMinutes: 5, timed: true },
   { id: 'p06', title: 'ストレッチを5分する', category: '運動', targetMinutes: 5, timed: true },
-  { id: 'p07', title: '腕立て・腹筋を各10回', category: '運動', targetMinutes: 0, timed: false },
   { id: 'p08', title: '20分歩く', category: '運動', targetMinutes: 20, timed: true },
-  { id: 'p09', title: '階段を使って移動する', category: '運動', targetMinutes: 0, timed: false },
-  { id: 'p10', title: '軽く筋トレする', category: '運動', targetMinutes: 10, timed: true },
+  { id: 'p07', title: '腕立て・腹筋を各10回', category: '運動', targetMinutes: 0, timed: false },
   // 生活習慣（活力）※「決めた時間に起きる」等の日を持ち越す項目は当日完了できないため除外
   { id: 'p12', title: 'こまめに水分をとる', category: '生活習慣', targetMinutes: 0, timed: false },
   { id: 'p13', title: '机まわりを片付ける', category: '生活習慣', targetMinutes: 0, timed: false },

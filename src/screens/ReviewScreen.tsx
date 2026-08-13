@@ -69,6 +69,10 @@ export function ReviewScreen({
     replace(b.dest)
   }
 
+  // タイマー無しのデイリー ＆ セルフミッションは振り返りコメントを必須にする
+  const commentRequired = mission.kind === 'self' || mission.timed === false
+  const commentMissing = commentRequired && comment.trim() === ''
+
   return (
     <>
       <PageHead title="レビュー" onBack={back} />
@@ -89,9 +93,17 @@ export function ReviewScreen({
       <div className="field-label">きつさ <span className="muted" style={{ fontWeight: 700 }}>{hard} / 5</span></div>
       <StarRow value={hard} onChange={setHard} loLabel="楽だった" hiLabel="きつかった" />
 
-      <div className="field-label">コメント（任意）</div>
-      <textarea value={comment} onChange={(e) => setComment(e.target.value.slice(0, 200))} placeholder="自由に入力してください" style={{ minHeight: 90 }} />
-      <div className="muted" style={{ fontSize: 11, textAlign: 'right', marginTop: 2 }}>{comment.length} / 200</div>
+      <div className="field-label">{commentRequired ? '振り返りコメント（必須）' : 'コメント（任意）'}</div>
+      <textarea
+        value={comment}
+        onChange={(e) => setComment(e.target.value.slice(0, 200))}
+        placeholder={commentRequired ? '今日の取り組みを一言ふり返ろう' : '自由に入力してください'}
+        style={{ minHeight: 90, border: commentMissing ? '1.5px solid #ef4444' : undefined }}
+      />
+      <div className="row between" style={{ marginTop: 2 }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color: '#ef4444' }}>{commentMissing ? '※ 振り返りコメントを入力してください' : ''}</span>
+        <span className="muted" style={{ fontSize: 11 }}>{comment.length} / 200</span>
+      </div>
 
       <div className="section-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
         <span className="muted" style={{ fontSize: 13 }}>{minutes > 0 ? `${minutes}分の記録` : '記録'}</span>
@@ -100,7 +112,7 @@ export function ReviewScreen({
         </span>
       </div>
 
-      <button className="btn-primary" style={{ marginTop: 12 }} onClick={submit} disabled={!!burst} data-sound="none">
+      <button className="btn-primary" style={{ marginTop: 12 }} onClick={submit} disabled={!!burst || commentMissing} data-sound="none">
         記録して報酬を受け取る
       </button>
 
