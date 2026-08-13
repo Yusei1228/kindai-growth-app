@@ -16,6 +16,7 @@ export const seedState: AppState = {
     points: 0,
     stats: { 体力: 20, 知力: 20, 活力: 20, 魅力: 20 },
     dailyRewardAvailable: true,
+    tutorialDone: false,
   },
   missions: [],
   missionsDate: '',

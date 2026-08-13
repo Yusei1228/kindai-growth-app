@@ -5,6 +5,7 @@ import { seedState } from './data/seed'
 import { pickDailyMissions, DAILY_REWARD } from './data/dailyPool'
 import { selfMissionReward, SELF_COINS } from './data/selfMissions'
 import { loginBonusReward, loginMonthKey, LOGIN_BONUS_DAYS } from './data/loginBonus'
+import { tutorialMission, TUTORIAL_MISSION_ID, TUTORIAL_REWARD } from './data/tutorial'
 import { appDate } from './lib/appDate'
 import { getUserId } from './lib/session'
 import { registerProfile, syncStats, logMission, syncAvatar } from './lib/api'
@@ -21,10 +22,17 @@ function loadState(): AppState {
   } catch {
     s = structuredClone(seedState)
   }
+  // 初回チュートリアル完了フラグの補正：既存ユーザー（実績あり）はスキップ、新規のみ表示
+  if (typeof s.user.tutorialDone !== 'boolean') {
+    s.user.tutorialDone = s.logs?.length > 0 || s.user.sp > 0 || s.user.level > 1
+  }
+
   const today = appDate()
   const oldFormat = s.missions?.some((m) => (m as { timed?: boolean }).timed === undefined)
   if (s.missionsDate !== today || !s.missions?.length || oldFormat) {
-    s.missions = pickDailyMissions(today)
+    const normals = pickDailyMissions(today)
+    // 未完了ならチュートリアルを先頭に固定（合計3件を維持）
+    s.missions = s.user.tutorialDone ? normals : [tutorialMission(), ...normals.slice(0, 2)]
     s.missionsDate = today
     s.user.dailyRewardAvailable = true
   }
@@ -79,6 +87,8 @@ interface Store {
   completeDaily: (p: CompleteDailyPayload) => CompleteResult
   /** セルフミッション達成 */
   completeSelf: (p: CompleteSelfPayload) => CompleteResult
+  /** 初回チュートリアル完了（EXP+SP付与・Lv1→Lv2） */
+  completeTutorial: () => CompleteResult
   claimDailyReward: () => void
   /** 今日のログインボーナスを受け取れるか */
   loginBonusAvailable: boolean
@@ -294,6 +304,32 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return { day, sp: rw.sp, exp: rw.exp, milestone: rw.milestone, leveledUp, newLevel }
     }
 
+    const completeTutorial: Store['completeTutorial'] = () => {
+      let result: CompleteResult = { leveledUp: false, newLevel: state.user.level, gainedSP: 0, dailyBonus: false }
+      setState((prev) => {
+        if (prev.user.tutorialDone) return prev
+        const { next, result: r } = applyReward(prev, {
+          type: 'daily',
+          title: 'アプリの使い方（チュートリアル）',
+          category: '振り返り',
+          minutes: 0,
+          comment: '使い方を確認した',
+          rating: 5,
+          sp: TUTORIAL_REWARD.sp,
+          exp: TUTORIAL_REWARD.exp,
+          coins: TUTORIAL_REWARD.coins,
+          statBoosts: { 体力: TUTORIAL_REWARD.statAmount, 知力: TUTORIAL_REWARD.statAmount, 活力: TUTORIAL_REWARD.statAmount, 魅力: TUTORIAL_REWARD.statAmount },
+          markMissionId: TUTORIAL_MISSION_ID,
+          allDailyBonus: false,
+        })
+        next.user = { ...next.user, tutorialDone: true }
+        result = r
+        pushToDb(next, 'daily', 'チュートリアル', '振り返り', r.gainedSP, TUTORIAL_REWARD.exp)
+        return next
+      })
+      return result
+    }
+
     const claimDailyReward: Store['claimDailyReward'] = () => {
       setState((prev) => {
         if (!prev.user.dailyRewardAvailable) return prev
@@ -336,7 +372,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setState(loadState())
     }
 
-    return { state, expToNext, register, setAvatar, completeDaily, completeSelf, claimDailyReward, loginBonusAvailable, claimLoginBonus, redeemCoupon, rankingWith, friendRanking, reset }
+    return { state, expToNext, register, setAvatar, completeDaily, completeSelf, completeTutorial, claimDailyReward, loginBonusAvailable, claimLoginBonus, redeemCoupon, rankingWith, friendRanking, reset }
   }, [state])
 
   return <Ctx.Provider value={store}>{children}</Ctx.Provider>

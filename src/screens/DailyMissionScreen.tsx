@@ -64,16 +64,24 @@ function MissionCard({ m, go }: { m: Mission; go: (r: Route) => void }) {
     rewardExp: DAILY_REWARD.exp,
     statAmount: DAILY_REWARD.statAmount,
   }
-  const start = () => (m.timed ? go({ name: 'timer', mission: active }) : go({ name: 'review', mission: active, minutes: 0 }))
-  const styleVars = { ['--c1' as string]: meta.c1, ['--c2' as string]: meta.c2, ['--edge' as string]: meta.edge }
+  const isTut = m.id === 'tutorial'
+  const start = () =>
+    isTut
+      ? go({ name: 'tutorial' })
+      : m.timed
+        ? go({ name: 'timer', mission: active })
+        : go({ name: 'review', mission: active, minutes: 0 })
+  const styleVars = isTut
+    ? { ['--c1' as string]: '#7db4ff', ['--c2' as string]: '#2563eb', ['--edge' as string]: '#1e40af' }
+    : { ['--c1' as string]: meta.c1, ['--c2' as string]: meta.c2, ['--edge' as string]: meta.edge }
 
   return (
-    <div className="dm-card" style={styleVars}>
+    <div className={'dm-card' + (isTut ? ' dm-tut' : '')} style={styleVars}>
       <div className="dm-top">
-        <div className="dm-ico">{meta.emoji}</div>
+        <div className="dm-ico">{isTut ? '🎓' : meta.emoji}</div>
         <div className="dm-main">
-          <h3 className="dm-title">{m.title}</h3>
-          <div className="dm-sub">{m.timed ? `${m.targetMinutes}分 タイマー` : 'タイマー不要'} ・ {m.category}</div>
+          <h3 className="dm-title">{isTut && <span className="dm-tut-badge">はじめに</span>}{m.title}</h3>
+          <div className="dm-sub">{isTut ? '使い方を覚えよう ・ 約1分' : `${m.timed ? `${m.targetMinutes}分 タイマー` : 'タイマー不要'} ・ ${m.category}`}</div>
         </div>
         <span className={'dm-status ' + (m.done ? 'done' : 'todo')}>{m.done ? '完了' : '未達成'}</span>
       </div>
@@ -81,11 +89,12 @@ function MissionCard({ m, go }: { m: Mission; go: (r: Route) => void }) {
       <div className="dm-rewards">
         <span className="dm-rw">EXP +{m.reward.exp}</span>
         <span className="dm-rw">スコア +{m.reward.sp}</span>
-        <span className="dm-rw">{m.reward.stat} +{m.reward.statAmount}</span>
+        <span className="dm-rw">{isTut ? '全ステ' : m.reward.stat} +{m.reward.statAmount}</span>
+        {isTut && <span className="dm-rw tut">Lv.UP</span>}
       </div>
 
-      <button className="dm-btn" disabled={m.done} onClick={start}>
-        {m.done ? '達成済み' : m.timed ? 'チャレンジする' : '記録する'}<span className="dm-arrow"> ›</span>
+      <button className="dm-btn" disabled={m.done} onClick={start} data-sound={isTut ? 'none' : undefined}>
+        {m.done ? '達成済み' : isTut ? 'はじめる' : m.timed ? 'チャレンジする' : '記録する'}<span className="dm-arrow"> ›</span>
       </button>
     </div>
   )

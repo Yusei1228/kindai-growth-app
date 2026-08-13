@@ -1363,3 +1363,42 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 }
 .phone.tod-night .bottom-nav::before { background: linear-gradient(90deg, transparent, rgba(170,200,255,0.85) 50%, transparent); }
 .phone.tod-night .bottom-nav::after { background: rgba(0,0,0,0.35); }
+
+/* ===== 初回チュートリアル ===== */
+.tut-wrap { position: absolute; inset: 0; z-index: 40; display: grid; place-items: center;
+  padding: 24px; background: rgba(10,14,34,0.55); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+.tut-card {
+  width: 100%; max-width: 340px; text-align: center; border-radius: 22px; padding: 26px 22px 20px;
+  background: linear-gradient(180deg, #ffffff, #eef4ff);
+  box-shadow: 0 26px 56px rgba(10,14,40,0.5), 0 0 0 4px rgba(255,255,255,0.6);
+}
+.tut-step-label { font-size: 12px; font-weight: 800; color: var(--blue-600); letter-spacing: 0.04em; }
+.tut-emoji { font-size: 60px; line-height: 1; margin: 10px 0 6px; }
+.tut-title { font-size: 20px; font-weight: 900; color: var(--ink); margin: 4px 8px 8px; line-height: 1.35; }
+.tut-body { font-size: 14px; line-height: 1.75; color: var(--ink-soft); margin: 0 4px; }
+.tut-reward { display: flex; justify-content: center; gap: 7px; flex-wrap: wrap; margin-top: 14px; }
+.tut-rw-chip { font-size: 12.5px; font-weight: 800; border-radius: 999px; padding: 5px 12px; background: #dbeafe; color: #1d4ed8; }
+.tut-rw-chip.exp { background: #dcfce7; color: #15803d; }
+.tut-rw-chip.lv { background: linear-gradient(180deg,#ffe9a8,#f7c948); color: #92610b; }
+.tut-dots { display: flex; justify-content: center; gap: 7px; margin: 18px 0 16px; }
+.tut-dot { width: 8px; height: 8px; border-radius: 50%; background: #cbd5e1; transition: all .2s; }
+.tut-dot.past { background: #93c5fd; }
+.tut-dot.on { width: 22px; border-radius: 5px; background: var(--blue-600); }
+.tut-btns { display: flex; gap: 10px; }
+.tut-back { flex: none; padding: 13px 18px; border-radius: 13px; border: 1.5px solid var(--line); background: #fff;
+  font-weight: 800; font-size: 14px; color: var(--ink-soft); cursor: pointer; }
+.tut-next { flex: 1; padding: 14px; border: none; border-radius: 13px; cursor: pointer; font-size: 15px; font-weight: 900; color: #fff;
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0) 46%), linear-gradient(180deg, #3b7bff, #1e46b8);
+  box-shadow: 0 5px 0 #17307e, 0 12px 22px rgba(30,63,174,0.3); }
+.tut-next:active { transform: translateY(3px); box-shadow: 0 2px 0 #17307e, 0 6px 12px rgba(30,63,174,0.3); }
+.tut-finish {
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.32), rgba(255,255,255,0) 46%), linear-gradient(180deg, #f9a825, #e0821a);
+  box-shadow: 0 5px 0 #a85f10, 0 12px 22px rgba(224,130,26,0.32); }
+.tut-finish:active { box-shadow: 0 2px 0 #a85f10, 0 6px 12px rgba(224,130,26,0.32); }
+.tut-finish:disabled { opacity: 0.6; }
+
+/* デイリー：チュートリアル・カードの強調 */
+.dm-card.dm-tut { box-shadow: 0 12px 26px rgba(37,99,235,0.28), 0 0 0 2px rgba(37,99,235,0.35); }
+.dm-tut-badge { display: inline-block; font-size: 10px; font-weight: 900; color: #fff; background: var(--blue-600);
+  border-radius: 999px; padding: 2px 8px; margin-right: 7px; vertical-align: middle; }
+.dm-rw.tut { background: linear-gradient(180deg,#ffe9a8,#f7c948); color: #92610b; font-weight: 900; }

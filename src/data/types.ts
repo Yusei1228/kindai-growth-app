@@ -122,6 +122,7 @@ export interface UserState {
   points: number // ポイント（緑のP・クーポン用）
   stats: Stats
   dailyRewardAvailable: boolean
+  tutorialDone: boolean // 初回チュートリアルを完了したか
 }
 
 /** ログインボーナスの進捗（毎月リセット・最大30日分） */

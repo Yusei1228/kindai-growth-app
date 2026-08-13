@@ -15,6 +15,7 @@ import { ReflectionScreen } from './screens/ReflectionScreen'
 import { MyPageScreen } from './screens/MyPageScreen'
 import { RewardsScreen } from './screens/RewardsScreen'
 import { LoginBonusScreen } from './screens/LoginBonusScreen'
+import { TutorialScreen } from './screens/TutorialScreen'
 import { BottomNav, type Tab } from './components/BottomNav'
 import type { ActiveMission } from './data/types'
 import type { RankRow } from './lib/api'
@@ -26,6 +27,7 @@ export type Route =
   | { name: 'home' }
   | { name: 'avatar' }
   | { name: 'daily' }
+  | { name: 'tutorial' }
   | { name: 'self' }
   | { name: 'timer'; mission: ActiveMission }
   | { name: 'review'; mission: ActiveMission; minutes: number }
@@ -40,6 +42,7 @@ const TAB_OF: Partial<Record<Route['name'], Tab>> = {
   home: 'home',
   avatar: 'home',
   daily: 'home',
+  tutorial: 'home',
   self: 'home',
   timer: 'home',
   review: 'home',
@@ -136,6 +139,9 @@ export function App() {
     case 'daily':
       screen = <DailyMissionScreen go={go} back={back} />
       break
+    case 'tutorial':
+      screen = <TutorialScreen go={go} onLevelUp={setLevelUp} />
+      break
     case 'avatar':
       screen = <AvatarSelectScreen back={back} notify={notify} />
       break
@@ -177,7 +183,7 @@ export function App() {
       break
   }
 
-  const showNav = !['timer', 'review'].includes(route.name)
+  const showNav = !['timer', 'review', 'tutorial'].includes(route.name)
 
   const isRanking = route.name === 'ranking' || route.name === 'profile'
   // 画面内容の可読性用の時間帯（ランキングは夕焼けで固定、それ以外は実時間帯）
