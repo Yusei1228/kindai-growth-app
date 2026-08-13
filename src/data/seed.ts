@@ -1,4 +1,5 @@
 import type { AppState } from './types'
+import { DEFAULT_AVATAR } from './avatars'
 
 // 検証版: 新規ユーザーはニックネーム未登録・Lv1・ステータス20からスタート。
 // missions は store 側で当日分を自動生成する（missionsDate='' で必ず再生成）。
@@ -7,7 +8,7 @@ export const seedState: AppState = {
     userId: '',
     registered: false,
     name: '',
-    avatar: 'hero-avatar.png',
+    avatar: DEFAULT_AVATAR,
     level: 1,
     exp: 0,
     streak: 0,

@@ -16,6 +16,7 @@ import { MyPageScreen } from './screens/MyPageScreen'
 import { RewardsScreen } from './screens/RewardsScreen'
 import { LoginBonusScreen } from './screens/LoginBonusScreen'
 import { TutorialScreen } from './screens/TutorialScreen'
+import { TutorialTour, ExpAbsorb } from './components/TutorialTour'
 import { BottomNav, type Tab } from './components/BottomNav'
 import type { ActiveMission } from './data/types'
 import type { RankRow } from './lib/api'
@@ -69,10 +70,13 @@ function initialRoute(): Route {
 }
 
 export function App() {
-  const { state } = useApp()
+  const { state, completeTutorial } = useApp()
   const [route, setRoute] = useState<Route>(initialRoute)
   const [toast, setToast] = useState<string | null>(null)
   const [levelUp, setLevelUp] = useState<number | null>(null)
+  const [tour, setTour] = useState(false)
+  const [expFx, setExpFx] = useState<{ leveledUp: boolean; newLevel: number } | null>(null)
+  const tourStartedRef = useRef(false)
 
   // 画面遷移の履歴スタック。← ボタンで「1つ前の画面」に戻れるようにする
   const historyRef = useRef<Route[]>([])
@@ -109,6 +113,21 @@ export function App() {
   useEffect(() => {
     if (levelUp !== null) playSound('levelup')
   }, [levelUp])
+
+  // 登録直後（チュートリアル未完了）はホームに戻し、コーチマーク・ツアーを強制起動
+  useEffect(() => {
+    if (state.user.registered && !state.user.tutorialDone && !tourStartedRef.current) {
+      tourStartedRef.current = true
+      setRoute({ name: 'home' })
+      setTour(true)
+    }
+  }, [state.user.registered, state.user.tutorialDone])
+
+  const finishTour = useCallback(() => {
+    const res = completeTutorial()
+    setTour(false)
+    setExpFx({ leveledUp: res.leveledUp, newLevel: res.newLevel })
+  }, [completeTutorial])
 
   // ニックネーム未登録なら登録画面を全画面表示
   if (!state.user.registered) {
@@ -198,6 +217,17 @@ export function App() {
         </div>
 
         {showNav && <BottomNav active={TAB_OF[route.name] ?? 'home'} onTab={onTab} />}
+
+        {tour && route.name === 'home' && <TutorialTour onComplete={finishTour} />}
+        {expFx && (
+          <ExpAbsorb
+            onDone={() => {
+              const b = expFx
+              setExpFx(null)
+              if (b.leveledUp) setLevelUp(b.newLevel)
+            }}
+          />
+        )}
 
         {toast && <Toast message={toast} onDone={() => setToast(null)} />}
 

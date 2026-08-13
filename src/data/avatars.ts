@@ -39,8 +39,8 @@ export const AVATARS: AvatarOption[] = AVATAR_FILES.map((file, i) => ({
   label: `アバター${i + 1}`,
 }))
 
-// 新規ユーザーの既定アバター（並び順とは独立に固定）
-export const DEFAULT_AVATAR = 'hero-avatar.png'
+// 新規ユーザーの既定アバター＝アバター1（並び順の先頭）
+export const DEFAULT_AVATAR = AVATAR_FILES[0]
 
 // 旧ファイル名（png）→ 現行（webp）への移行マップ。
 // 以前 avatar-2/3 を選んでいたユーザーの保存値を自動で読み替える。

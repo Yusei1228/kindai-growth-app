@@ -5,7 +5,7 @@ import { seedState } from './data/seed'
 import { pickDailyMissions, DAILY_REWARD } from './data/dailyPool'
 import { selfMissionReward, SELF_COINS } from './data/selfMissions'
 import { loginBonusReward, loginMonthKey, LOGIN_BONUS_DAYS } from './data/loginBonus'
-import { tutorialMission, TUTORIAL_MISSION_ID, TUTORIAL_REWARD } from './data/tutorial'
+import { TUTORIAL_MISSION_ID, TUTORIAL_REWARD } from './data/tutorial'
 import { appDate } from './lib/appDate'
 import { getUserId } from './lib/session'
 import { registerProfile, syncStats, logMission, syncAvatar } from './lib/api'
@@ -30,9 +30,7 @@ function loadState(): AppState {
   const today = appDate()
   const oldFormat = s.missions?.some((m) => (m as { timed?: boolean }).timed === undefined)
   if (s.missionsDate !== today || !s.missions?.length || oldFormat) {
-    const normals = pickDailyMissions(today)
-    // 未完了ならチュートリアルを先頭に固定（合計3件を維持）
-    s.missions = s.user.tutorialDone ? normals : [tutorialMission(), ...normals.slice(0, 2)]
+    s.missions = pickDailyMissions(today)
     s.missionsDate = today
     s.user.dailyRewardAvailable = true
   }

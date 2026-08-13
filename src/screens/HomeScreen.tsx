@@ -23,7 +23,7 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
   return (
     <>
       {/* 上部：透明（グラス）プロフィールヘッダー */}
-      <div className="home-header">
+      <div className="home-header" data-tour="profile">
         <div className="hh-avatar"><MiniAvatar /></div>
         <div className="hh-main">
           <div className="hh-name-row">
@@ -34,10 +34,10 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
             <span className="streak-chip">🔥 連続{u.streak}日</span>
             <span className="hh-exp-txt">あと {remaining.toLocaleString()} EXP</span>
           </div>
-          <div className="exp-bar"><i style={{ width: expPct + '%' }} /></div>
+          <div className="exp-bar" data-tour="exp"><i style={{ width: expPct + '%' }} /></div>
         </div>
         <div className="hh-cur">
-          <button className="pill hh-pill" onClick={() => notify('ミッション達成でスコアが増えます')}>
+          <button className="pill hh-pill" data-tour="sp" onClick={() => notify('ミッション達成でスコアが増えます')}>
             <GemIcon /> {u.sp.toLocaleString()} <span className="hh-plus" style={{ background: 'var(--blue-500)' }}>＋</span>
           </button>
           <button className="pill hh-pill" onClick={() => notify('ミッション達成でポイントが増えます')}>
@@ -58,7 +58,7 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
         </div>
 
         {/* 左：ログインボーナス（宝箱・受け取り導線） */}
-        <div className="reward-chest">
+        <div className="reward-chest" data-tour="loginbonus">
           <button className="chest-box" onClick={() => go({ name: 'login-bonus' })}>
             <div className="t">ログインボーナス</div>
             <ChestIcon open={loginBonusAvailable} />
@@ -85,14 +85,14 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
       </div>
 
       {/* ステータス4種（枠なしリングゲージ・視覚重視でコンパクト） */}
-      <div className="stats-ring-row">
+      <div className="stats-ring-row" data-tour="stats">
         {stats.map((s) => (
           <StatRing key={s.key} label={s.key} value={s.val} emoji={s.ico} c1={s.c1} c2={s.c2} />
         ))}
       </div>
 
       {/* ミッションCTA */}
-      <div className="mission-cta-row">
+      <div className="mission-cta-row" data-tour="missions">
         <button className="mission-cta cta-blue" onClick={() => go({ name: 'daily' })}>
           <div className="ttl">📋 デイリーミッション</div>
           <div className="sub">今日のやることを確認</div>
