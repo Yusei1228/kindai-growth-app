@@ -123,6 +123,8 @@ export interface UserState {
   stats: Stats
   dailyRewardAvailable: boolean
   tutorialDone: boolean // 初回チュートリアルを完了したか
+  facultyId?: number | null // 学部（近大マスタのid・任意）
+  enrollmentYear?: number | null // 入学年度（学年別分析の前提・任意）
 }
 
 /** ログインボーナスの進捗（毎月リセット・最大30日分） */

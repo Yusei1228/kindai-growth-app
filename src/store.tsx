@@ -8,7 +8,7 @@ import { loginBonusReward, loginMonthKey, LOGIN_BONUS_DAYS } from './data/loginB
 import { TUTORIAL_MISSION_ID, TUTORIAL_REWARD } from './data/tutorial'
 import { appDate } from './lib/appDate'
 import { getUserId } from './lib/session'
-import { registerProfile, syncStats, logMission, syncAvatar } from './lib/api'
+import { registerProfile, syncStats, logMission, syncAvatar, flushLogOutbox } from './lib/api'
 import { normalizeAvatar } from './data/avatars'
 
 const STORAGE_KEY = 'kindai-growth-state-v2'
@@ -49,6 +49,7 @@ interface CompleteDailyPayload {
   minutes: number
   rating: number
   comment: string
+  startedAtMs?: number // 活動開始時刻（タイマー由来）
 }
 
 interface CompleteSelfPayload {
@@ -56,6 +57,7 @@ interface CompleteSelfPayload {
   minutes: number
   comment: string
   rating?: number
+  startedAtMs?: number // 活動開始時刻（タイマー由来）
 }
 
 interface CompleteResult {
@@ -78,7 +80,7 @@ interface Store {
   state: AppState
   expToNext: number
   /** ニックネーム登録（UUID発行・profiles/user_stats作成） */
-  register: (nickname: string) => void
+  register: (nickname: string, facultyId?: number | null, enrollmentYear?: number | null) => void
   /** アバター画像を変更（localStorageに保存） */
   setAvatar: (file: string) => void
   /** デイリーミッション達成 */
@@ -114,6 +116,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (u.registered && u.userId) {
       syncStats(u.userId, { level: u.level, exp: u.exp, totalScore: u.sp, stats: u.stats }, u.name, u.avatar)
     }
+    // 未送信の達成ログを再送（履歴を失わない）
+    flushLogOutbox()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -194,18 +198,46 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return { next, result: { leveledUp: leveled, newLevel: u.level, gainedSP, dailyBonus } }
     }
 
-    /** DBへ非同期反映（fire-and-forget） */
-    function pushToDb(next: AppState, type: 'daily' | 'self', title: string, category: Category, sp: number, exp: number) {
+    interface LogExtra {
+      missionKey?: string
+      startedAtMs?: number
+      durationSeconds?: number
+      coinDelta?: number
+      statKey?: StatKey
+      statDelta?: number
+    }
+    /** DBへ非同期反映（達成ログはアウトボックスで信頼送信・ステータスはupsert） */
+    function pushToDb(next: AppState, type: 'daily' | 'self', title: string, category: Category, sp: number, exp: number, extra?: LogExtra) {
       const u = next.user
       if (!u.userId) return
-      logMission({ userId: u.userId, missionType: type, missionTitle: title, category, score: sp, exp, appDate: appDate() })
+      const durationSeconds = extra?.durationSeconds
+      const startedAt = extra?.startedAtMs
+        ? new Date(extra.startedAtMs).toISOString()
+        : durationSeconds
+          ? new Date(Date.now() - durationSeconds * 1000).toISOString()
+          : undefined
+      logMission({
+        userId: u.userId,
+        missionType: type,
+        missionTitle: title,
+        category,
+        score: sp,
+        exp,
+        appDate: appDate(),
+        missionKey: extra?.missionKey,
+        startedAt,
+        durationSeconds,
+        coinDelta: extra?.coinDelta,
+        statKey: extra?.statKey,
+        statDelta: extra?.statDelta,
+      })
       syncStats(u.userId, { level: u.level, exp: u.exp, totalScore: u.sp, stats: u.stats }, u.name, u.avatar)
     }
 
-    const register: Store['register'] = (nickname) => {
+    const register: Store['register'] = (nickname, facultyId = null, enrollmentYear = null) => {
       const userId = getUserId()
-      setState((prev) => ({ ...prev, user: { ...prev.user, userId, name: nickname.trim(), registered: true } }))
-      registerProfile(userId, nickname.trim(), state.user.avatar)
+      setState((prev) => ({ ...prev, user: { ...prev.user, userId, name: nickname.trim(), registered: true, facultyId, enrollmentYear } }))
+      registerProfile(userId, nickname.trim(), state.user.avatar, facultyId, enrollmentYear)
     }
 
     const setAvatar: Store['setAvatar'] = (file) => {
@@ -215,10 +247,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (u.registered && u.userId) syncAvatar(u.userId, u.name, av)
     }
 
-    const completeDaily: Store['completeDaily'] = ({ missionId, minutes, rating, comment }) => {
+    const completeDaily: Store['completeDaily'] = ({ missionId, minutes, rating, comment, startedAtMs }) => {
       const mission = state.missions.find((m) => m.id === missionId)
       let result: CompleteResult = { leveledUp: false, newLevel: state.user.level, gainedSP: 0, dailyBonus: false }
       if (!mission) return result
+      const stat = CATEGORY_TO_STAT[mission.category]
       setState((prev) => {
         const { next, result: r } = applyReward(prev, {
           type: 'daily',
@@ -230,18 +263,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           sp: DAILY_REWARD.sp,
           exp: DAILY_REWARD.exp,
           coins: DAILY_REWARD.coins,
-          statBoosts: { [CATEGORY_TO_STAT[mission.category]]: DAILY_REWARD.statAmount },
+          statBoosts: { [stat]: DAILY_REWARD.statAmount },
           markMissionId: missionId,
           allDailyBonus: true,
         })
         result = r
-        pushToDb(next, 'daily', mission.title, mission.category, r.gainedSP, DAILY_REWARD.exp)
+        pushToDb(next, 'daily', mission.title, mission.category, r.gainedSP, DAILY_REWARD.exp, {
+          missionKey: mission.id,
+          startedAtMs,
+          durationSeconds: minutes > 0 ? minutes * 60 : undefined,
+          coinDelta: DAILY_REWARD.coins,
+          statKey: stat,
+          statDelta: DAILY_REWARD.statAmount,
+        })
         return next
       })
       return result
     }
 
-    const completeSelf: Store['completeSelf'] = ({ mission, minutes, comment, rating = 0 }) => {
+    const completeSelf: Store['completeSelf'] = ({ mission, minutes, comment, rating = 0, startedAtMs }) => {
       let result: CompleteResult = { leveledUp: false, newLevel: state.user.level, gainedSP: 0, dailyBonus: false }
       const rw = selfMissionReward(mission, minutes) // 時間比例（timed=false は固定）
       const statBoosts: Partial<Record<StatKey, number>> = {}
@@ -261,7 +301,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           allDailyBonus: false,
         })
         result = r
-        pushToDb(next, 'self', mission.title, mission.category, rw.sp, rw.exp)
+        pushToDb(next, 'self', mission.title, mission.category, rw.sp, rw.exp, {
+          missionKey: mission.id,
+          startedAtMs,
+          durationSeconds: minutes > 0 ? minutes * 60 : undefined,
+          coinDelta: SELF_COINS,
+          statKey: mission.stats[0],
+          statDelta: rw.statAmount,
+        })
         return next
       })
       return result

@@ -12,6 +12,7 @@ interface BurstData { sp: number; exp: number; stat: string; statAmount: number;
 export function ReviewScreen({
   mission,
   minutes,
+  startedAtMs,
   back,
   replace,
   notify,
@@ -19,6 +20,7 @@ export function ReviewScreen({
 }: {
   mission: ActiveMission
   minutes: number
+  startedAtMs?: number
   back: () => void
   replace: (r: Route) => void
   notify: (m: string) => void
@@ -42,8 +44,8 @@ export function ReviewScreen({
     const memo = [content.trim(), comment.trim() ? `メモ:${comment.trim()}` : '', `きつさ${hard}/5`].filter(Boolean).join(' / ')
     const res =
       mission.kind === 'daily' && mission.missionId
-        ? completeDaily({ missionId: mission.missionId, minutes, rating: focus, comment: memo })
-        : completeSelf({ mission: mission.self!, minutes, comment: memo, rating: focus })
+        ? completeDaily({ missionId: mission.missionId, minutes, rating: focus, comment: memo, startedAtMs })
+        : completeSelf({ mission: mission.self!, minutes, comment: memo, rating: focus, startedAtMs })
 
     playSound('complete') // 達成音
     // 達成エフェクトを表示（終了後に遷移・レベルアップ）

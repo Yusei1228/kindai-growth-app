@@ -31,7 +31,7 @@ export type Route =
   | { name: 'tutorial' }
   | { name: 'self' }
   | { name: 'timer'; mission: ActiveMission }
-  | { name: 'review'; mission: ActiveMission; minutes: number }
+  | { name: 'review'; mission: ActiveMission; minutes: number; startedAtMs?: number }
   | { name: 'ranking' }
   | { name: 'profile'; user: RankRow; rank: number; total: number; isMe: boolean }
   | { name: 'reflection' }
@@ -175,6 +175,7 @@ export function App() {
         <ReviewScreen
           mission={route.mission}
           minutes={route.minutes}
+          startedAtMs={route.startedAtMs}
           back={back}
           replace={replace}
           notify={notify}

@@ -1,11 +1,20 @@
 import { useState } from 'react'
 import { useApp } from '../store'
+import { FACULTIES, ENROLLMENT_YEARS } from '../data/kindai'
 
 export function NicknameScreen() {
   const { register } = useApp()
   const [name, setName] = useState('')
+  const [faculty, setFaculty] = useState('')
+  const [year, setYear] = useState('')
   const trimmed = name.trim()
   const ok = trimmed.length >= 1 && trimmed.length <= 12
+  const start = () => register(trimmed, faculty ? Number(faculty) : null, year ? Number(year) : null)
+
+  const selectStyle = {
+    width: '100%', border: '1px solid var(--line)', borderRadius: 12,
+    padding: '12px', fontSize: 15, fontFamily: 'inherit', background: '#f8fafc', color: 'var(--ink)',
+  } as const
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', justifyContent: 'center', gap: 8 }}>
@@ -26,13 +35,30 @@ export function NicknameScreen() {
             width: '100%', border: '1px solid var(--line)', borderRadius: 12,
             padding: '13px 12px', fontSize: 16, fontFamily: 'inherit', background: '#f8fafc',
           }}
-          onKeyDown={(e) => { if (e.key === 'Enter' && ok) register(trimmed) }}
+          onKeyDown={(e) => { if (e.key === 'Enter' && ok) start() }}
         />
+
+        <div className="section-title" style={{ margin: '16px 0 8px', fontSize: 13 }}>学部・入学年度 <span className="muted" style={{ fontWeight: 600 }}>（任意）</span></div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <select value={faculty} onChange={(e) => setFaculty(e.target.value)} style={selectStyle} aria-label="学部">
+            <option value="">学部を選択</option>
+            {FACULTIES.map((f) => (
+              <option key={f.id} value={f.id}>{f.name}</option>
+            ))}
+          </select>
+          <select value={year} onChange={(e) => setYear(e.target.value)} style={selectStyle} aria-label="入学年度">
+            <option value="">入学年度</option>
+            {ENROLLMENT_YEARS.map((y) => (
+              <option key={y} value={y}>{y}年</option>
+            ))}
+          </select>
+        </div>
+
         <p className="hint" style={{ marginTop: 8 }}>
           ※ ランキングに表示される名前です。本名・メール・電話番号は不要です。<br />
-          ※ このニックネームで他の近大生と累計スコアを競います。
+          ※ 学部・入学年度は近大内の匿名集計にのみ使い、個人が特定される形では公開しません。
         </p>
-        <button className="btn-primary" style={{ marginTop: 12 }} disabled={!ok} onClick={() => register(trimmed)}>
+        <button className="btn-primary" style={{ marginTop: 12 }} disabled={!ok} onClick={start}>
           はじめる
         </button>
       </div>

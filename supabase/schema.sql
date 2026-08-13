@@ -110,3 +110,33 @@ insert into public.daily_missions (title, category) values
   ('感謝したことを1つ書く', '振り返り'),
   ('明日の目標を決める', '振り返り')
 on conflict do nothing;
+
+-- ============================================================
+-- 6,000人フェーズ拡張（2026-08 適用済み・既存を壊さない追加）
+-- ============================================================
+-- 1) 行動ログの詳細化（後から取得不能な活動時間・種目を保存）
+alter table public.mission_logs
+  add column if not exists mission_key text,
+  add column if not exists started_at timestamptz,
+  add column if not exists duration_seconds integer,
+  add column if not exists coin_delta integer,
+  add column if not exists stat_key text,
+  add column if not exists stat_delta integer;
+create index if not exists idx_mission_logs_key on public.mission_logs (mission_key, app_date);
+
+-- 2) 大学・学部マスタ＋プロフィール属性（"近畿大学"ベタ書き回避／学年別分析の前提）
+create table if not exists public.universities (
+  id smallint primary key, name text not null, code text unique, created_at timestamptz not null default now());
+create table if not exists public.faculties (
+  id smallint primary key, university_id smallint not null references public.universities(id), name text not null);
+insert into public.universities (id, name, code) values (1,'近畿大学','kindai') on conflict (id) do nothing;
+-- faculties は 1..15＋99(その他) を投入（省略・migration参照）
+alter table public.profiles
+  add column if not exists university_id smallint references public.universities(id) default 1,
+  add column if not exists faculty_id smallint references public.faculties(id),
+  add column if not exists enrollment_year smallint,
+  add column if not exists gender text;
+
+-- 3) ランキング：全件取得しない集計RPC＋索引（6,000人でも低コスト・正確）
+create index if not exists idx_user_stats_score on public.user_stats (total_score desc);
+-- function public.get_ranking(me uuid, win int, topn int) returns jsonb  ... （migration参照）

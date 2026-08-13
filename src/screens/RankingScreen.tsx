@@ -1,74 +1,69 @@
 import { useEffect, useState } from 'react'
 import { useApp } from '../store'
 import { PageHead } from '../components/ui'
-import { fetchRanking, type RankRow } from '../lib/api'
+import { fetchRankingBoard, type RankRow, type RankRowRanked } from '../lib/api'
 import { isSupabaseEnabled } from '../lib/supabase'
 import type { Route } from '../App'
 
-interface Row extends RankRow {
-  rank: number
+interface Row extends RankRowRanked {
   isMe: boolean
+}
+interface Board {
+  top: Row[]
+  around: Row[]
+  total: number
+  myRank: number
+  source: 'supabase' | 'local'
 }
 
 export function RankingScreen({ go }: { go: (r: Route) => void }) {
   const { state } = useApp()
   const me = state.user
-  const [rows, setRows] = useState<Row[] | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [source, setSource] = useState<'supabase' | 'local'>('local')
+  const [board, setBoard] = useState<Board | null>(null)
 
   useEffect(() => {
     let alive = true
     async function load() {
-      setLoading(true)
-      let list: RankRow[] | null = null
-      if (isSupabaseEnabled) list = await fetchRanking()
+      // 自分の最新ローカル値（反映ラグ対策で表示を上書き）
+      const localMe = { nickname: me.name || 'あなた', level: me.level, totalScore: me.sp, avatar: me.avatar, stats: me.stats }
+      const withMe = (r: Row): Row => (r.isMe ? { ...r, ...localMe } : r)
 
-      let src: 'supabase' | 'local' = 'supabase'
-      if (!list) {
-        // フォールバック: ローカルのダミー母集団＋自分（Supabase未設定時のUI確認用）
-        src = 'local'
-        list = localFallback()
-      } else {
-        // 自分の最新値（アバター・ステータス含む）
-        const mine: RankRow = {
-          userId: me.userId,
-          nickname: me.name || 'あなた',
-          level: me.level,
-          totalScore: me.sp,
-          avatar: me.avatar,
-          exp: me.exp,
-          stats: me.stats,
+      const b = isSupabaseEnabled && me.userId ? await fetchRankingBoard(me.userId) : null
+      if (b) {
+        const mark = (r: RankRowRanked): Row => ({ ...r, isMe: r.userId === me.userId })
+        let top = b.top.map(mark).map(withMe)
+        let around = b.around.map(mark).map(withMe)
+        let total = b.total
+        let myRank = b.myRank ?? total + 1
+        // 自分がまだ集計に載っていない場合（登録直後など）は末尾に補完
+        if (!b.top.some((r) => r.userId === me.userId) && !b.around.some((r) => r.userId === me.userId)) {
+          total = b.myRank ? total : total + 1
+          const meRow: Row = { ...localMe, userId: me.userId, rank: myRank, isMe: true } as Row
+          around = [...around, meRow]
         }
-        // 自分がまだDBに無い場合に備えてマージ（登録直後など）
-        if (!list.some((r) => r.userId === me.userId)) {
-          list = [...list, mine]
-        } else {
-          // DBの自分の値をローカル最新に上書き（反映ラグ対策）
-          list = list.map((r) => (r.userId === me.userId ? { ...r, ...mine } : r))
-        }
+        if (alive) setBoard({ top, around, total, myRank, source: 'supabase' })
+        return
       }
 
-      const sorted = [...list].sort((a, b) => b.totalScore - a.totalScore)
-      const ranked: Row[] = sorted.map((r, i) => ({ ...r, rank: i + 1, isMe: r.userId === me.userId }))
-      if (alive) {
-        setRows(ranked)
-        setSource(src)
-        setLoading(false)
-      }
+      // フォールバック：ローカルのダミー母集団＋自分
+      const dummies: RankRow[] = state.ranking.map((u) => ({ userId: u.id, nickname: u.name, level: u.level, totalScore: u.monthlySP }))
+      const meRow: RankRow = { userId: me.userId || 'me', nickname: me.name || 'あなた', level: me.level, totalScore: me.sp, avatar: me.avatar, exp: me.exp, stats: me.stats }
+      const ranked: Row[] = [...dummies, meRow]
+        .sort((a, b2) => b2.totalScore - a.totalScore)
+        .map((r, i) => ({ ...r, rank: i + 1, isMe: r.userId === me.userId }))
+      const myRank = ranked.find((r) => r.isMe)?.rank ?? ranked.length
+      const from = Math.max(0, myRank - 1 - 5)
+      const to = Math.min(ranked.length, myRank - 1 + 5 + 1)
+      if (alive) setBoard({ top: ranked.slice(0, 50), around: ranked.slice(from, to), total: ranked.length, myRank, source: 'local' })
     }
     load()
-    return () => { alive = false }
+    return () => {
+      alive = false
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me.userId, me.sp, me.level, me.name])
 
-  function localFallback(): RankRow[] {
-    const dummies = state.ranking.map((u) => ({ userId: u.id, nickname: u.name, level: u.level, totalScore: u.monthlySP }))
-    const meRow: RankRow = { userId: me.userId || 'me', nickname: me.name || 'あなた', level: me.level, totalScore: me.sp, avatar: me.avatar, exp: me.exp, stats: me.stats }
-    return [...dummies, meRow]
-  }
-
-  if (loading || !rows) {
+  if (!board) {
     return (
       <>
         <PageHead title="ランキング" />
@@ -77,17 +72,10 @@ export function RankingScreen({ go }: { go: (r: Route) => void }) {
     )
   }
 
-  const total = rows.length
-  const meRow = rows.find((r) => r.isMe)
-  const myRank = meRow?.rank ?? total
-  const percentile = Math.max(1, Math.round((myRank / total) * 100))
-  const top3 = rows.slice(0, 3)
-  const top10 = rows.slice(0, 10)
-
-  // 自分の前後5人（自分中心の±5ウィンドウ）
-  const from = Math.max(0, myRank - 1 - 5)
-  const to = Math.min(total, myRank - 1 + 5 + 1)
-  const around = rows.slice(from, to)
+  const { top, around, total, myRank, source } = board
+  const percentile = total > 0 ? Math.max(1, Math.round((myRank / total) * 100)) : 100
+  const top3 = top.slice(0, 3)
+  const top10 = top.slice(0, 10)
 
   const colorOf = (r: Row) => {
     const palette = ['#f472b6', '#60a5fa', '#34d399', '#fbbf24', '#a78bfa', '#fb7185']

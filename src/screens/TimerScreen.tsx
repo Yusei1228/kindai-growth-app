@@ -64,7 +64,7 @@ export function TimerScreen({ mission, back, replace }: { mission: ActiveMission
     if (finishedRef.current) return
     finishedRef.current = true
     clearTimerSession()
-    replace({ name: 'review', mission, minutes: Math.max(1, mins) })
+    replace({ name: 'review', mission, minutes: Math.max(1, mins), startedAtMs: originStartRef.current })
   }
 
   // カウントダウンが目標に到達したら自動終了（アプリを閉じている間に超過していても復帰時に完了）
