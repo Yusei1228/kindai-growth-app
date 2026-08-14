@@ -10,6 +10,7 @@ export function SelfMissionScreen({ go, back }: { go: (r: Route) => void; back: 
     const am: ActiveMission = {
       kind: 'self',
       self: m,
+      timed: m.timed,
       title: m.title,
       category: m.category,
       targetMinutes: 0,

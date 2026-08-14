@@ -69,8 +69,8 @@ export function ReviewScreen({
     replace(b.dest)
   }
 
-  // タイマー無しのデイリー ＆ セルフミッションは振り返りコメントを必須にする
-  const commentRequired = mission.kind === 'self' || mission.timed === false
+  // タイマー無しのミッションのみ振り返りコメントを必須にする（タイマーありは任意）
+  const commentRequired = mission.timed === false
   const commentMissing = commentRequired && comment.trim() === ''
 
   return (
