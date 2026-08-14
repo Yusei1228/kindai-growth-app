@@ -48,12 +48,9 @@ export function DailyMissionScreen({ go, back, onBeginTutorial }: { go: (r: Rout
         </div>
       </div>
 
-      {/* 初回：チュートリアルの導線（固定ミッション） */}
+      {/* 初回：チュートリアルの導線（固定ミッション・スポットライトで誘導） */}
       {showTutorial && (
-        <>
-          <div className="onboard-hint">👇 まずはこれをタップ！アプリの使い方がわかります</div>
-          <MissionCard m={tutMission!} go={go} onBeginTutorial={onBeginTutorial} onboard={!tutMission!.done} />
-        </>
+        <MissionCard m={tutMission!} go={go} onBeginTutorial={onBeginTutorial} onboard={!tutMission!.done} />
       )}
 
       {/* デイリーミッション3件 */}
@@ -89,7 +86,7 @@ function MissionCard({ m, go, onBeginTutorial, onboard }: { m: Mission; go: (r: 
     : { ['--c1' as string]: meta.c1, ['--c2' as string]: meta.c2, ['--edge' as string]: meta.edge }
 
   return (
-    <div className={'dm-card' + (isTut ? ' dm-tut' : '') + (onboard ? ' onboard-pulse' : '')} style={styleVars}>
+    <div className={'dm-card' + (isTut ? ' dm-tut' : '') + (onboard ? ' onboard-pulse' : '')} data-guide={isTut && onboard ? 'tut-card' : undefined} style={styleVars}>
       <div className="dm-top">
         <div className="dm-ico">{isTut ? '🎓' : meta.emoji}</div>
         <div className="dm-main">

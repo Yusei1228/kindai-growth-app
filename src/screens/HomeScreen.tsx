@@ -90,12 +90,9 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
         ))}
       </div>
 
-      {/* 初回：まずデイリーミッションへ誘導 */}
-      {!u.tutorialDone && <div className="onboard-hint">👇 まずは「デイリーミッション」を開いてみよう！</div>}
-
-      {/* ミッションCTA */}
+      {/* ミッションCTA（初回はデイリーをスポットライトで誘導） */}
       <div className="mission-cta-row" data-tour="missions">
-        <button className={'mission-cta cta-blue' + (!u.tutorialDone ? ' onboard-pulse' : '')} onClick={() => go({ name: 'daily' })}>
+        <button className={'mission-cta cta-blue' + (!u.tutorialDone ? ' onboard-pulse' : '')} data-guide={!u.tutorialDone ? 'daily-cta' : undefined} onClick={() => go({ name: 'daily' })}>
           <div className="ttl">📋 デイリーミッション</div>
           <div className="sub">今日のやることを確認</div>
           <div className="arrow">›</div>

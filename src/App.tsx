@@ -23,7 +23,7 @@ import { CouponUseScreen } from './screens/CouponUseScreen'
 import type { Coupon } from './lib/rewards'
 import { LoginBonusScreen } from './screens/LoginBonusScreen'
 import { TutorialScreen } from './screens/TutorialScreen'
-import { TutorialTour, ExpAbsorb } from './components/TutorialTour'
+import { TutorialTour, ExpAbsorb, GuideSpotlight } from './components/TutorialTour'
 import { BottomNav, type Tab } from './components/BottomNav'
 import type { ActiveMission } from './data/types'
 import type { RankRow } from './lib/api'
@@ -253,6 +253,14 @@ export function App() {
         {showNav && <BottomNav active={TAB_OF[route.name] ?? 'home'} onTab={onTab} />}
 
         {tour && route.name === 'home' && <TutorialTour onComplete={finishTour} />}
+
+        {/* チュートリアル開始前の誘導スポットライト（実際のボタンをタップさせる） */}
+        {!state.user.tutorialDone && !tour && route.name === 'home' && (
+          <GuideSpotlight selector='[data-guide="daily-cta"]' message='まずは「デイリーミッション」をタップ！' />
+        )}
+        {!state.user.tutorialDone && !tour && route.name === 'daily' && (
+          <GuideSpotlight selector='[data-guide="tut-card"]' message='このミッションから始めよう！' />
+        )}
         {expFx && (
           <ExpAbsorb
             onDone={() => {

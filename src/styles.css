@@ -798,6 +798,26 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 }
 @media (prefers-reduced-motion: reduce) { .onboard-hint, .onboard-pulse { animation: none; } }
 
+/* チュートリアル開始前の誘導スポットライト（対象は実際にタップ可能） */
+.guide-overlay { position: absolute; inset: 0; z-index: 55; pointer-events: none; }
+.guide-hole {
+  position: absolute; border-radius: 16px; outline: 3px solid #fff;
+  box-shadow: 0 0 0 9999px rgba(15,23,42,0.5);
+  animation: guideRing 1.3s ease-in-out infinite;
+}
+@keyframes guideRing {
+  0%,100% { outline-color: rgba(255,255,255,0.95); box-shadow: 0 0 0 9999px rgba(15,23,42,0.5); }
+  50% { outline-color: rgba(125,180,255,0.98); box-shadow: 0 0 0 9999px rgba(15,23,42,0.5), 0 0 22px 5px rgba(125,180,255,0.55); }
+}
+.guide-tip {
+  position: absolute; left: 50%; transform: translateX(-50%); max-width: 84%; text-align: center;
+  background: #fff; color: var(--ink); font-weight: 800; font-size: 14px; line-height: 1.45;
+  padding: 10px 16px; border-radius: 14px; box-shadow: 0 10px 24px rgba(15,23,42,0.34);
+}
+.guide-hand { display: inline-block; animation: guideHand 1s ease-in-out infinite; }
+@keyframes guideHand { 0%,100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+@media (prefers-reduced-motion: reduce) { .guide-hole, .guide-hand { animation: none; } }
+
 /* ===== カラーパレット統一：アクション=青 / 報酬=金 / ステータス=4色（データ） ===== */
 /* セルフミッションCTAは緑（ユーザー指定で戻す） */
 .cta-green {

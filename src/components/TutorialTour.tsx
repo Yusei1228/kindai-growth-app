@@ -111,6 +111,55 @@ export function TutorialTour({ onComplete }: { onComplete: () => void }) {
 }
 
 // 経験値吸収エフェクト：右下からキラキラがEXPバーに集まり、バーが光る
+/** チュートリアル開始前の「ここをタップ」誘導スポットライト（対象は実際にタップ可能） */
+export function GuideSpotlight({ selector, message }: { selector: string; message: string }) {
+  const [box, setBox] = useState<Box | null>(null)
+  const [phoneH, setPhoneH] = useState(800)
+
+  useLayoutEffect(() => {
+    const compute = () => {
+      const phone = document.querySelector('.phone') as HTMLElement | null
+      const el = document.querySelector(selector) as HTMLElement | null
+      if (!phone || !el) {
+        setBox(null)
+        return
+      }
+      const p = phone.getBoundingClientRect()
+      const r = el.getBoundingClientRect()
+      setPhoneH(p.height)
+      setBox({ top: r.top - p.top, left: r.left - p.left, width: r.width, height: r.height })
+    }
+    compute()
+    // 画面遷移やレイアウト確定後にも追従できるよう定期的に再計測
+    const iv = window.setInterval(compute, 300)
+    window.addEventListener('resize', compute)
+    window.addEventListener('scroll', compute, true)
+    return () => {
+      window.clearInterval(iv)
+      window.removeEventListener('resize', compute)
+      window.removeEventListener('scroll', compute, true)
+    }
+  }, [selector])
+
+  if (!box) return null
+  const PAD = 6
+  const belowTop = box.top + box.height + PAD + 12
+  const showBelow = belowTop + 56 < phoneH - 78
+  const tipTop = showBelow ? belowTop : Math.max(10, box.top - PAD - 56)
+
+  return (
+    <div className="guide-overlay">
+      <div
+        className="guide-hole"
+        style={{ top: box.top - PAD, left: box.left - PAD, width: box.width + PAD * 2, height: box.height + PAD * 2 }}
+      />
+      <div className="guide-tip" style={{ top: tipTop }}>
+        <span className="guide-hand">{showBelow ? '👆' : '👇'}</span> {message}
+      </div>
+    </div>
+  )
+}
+
 const SPARKS = Array.from({ length: 12 }, (_, i) => i)
 
 export function ExpAbsorb({ onDone }: { onDone: () => void }) {
