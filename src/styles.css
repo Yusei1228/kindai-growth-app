@@ -1449,14 +1449,3 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .exp-bar.exp-charge { box-shadow: 0 0 16px 3px rgba(96,165,250,0.95); animation: expCharge .7s ease .55s; }
 @keyframes expCharge { 0%,100% { filter: brightness(1); } 45% { filter: brightness(1.9); } }
 @media (prefers-reduced-motion: reduce) { .exp-spark { animation: none; display: none; } .tour-hole { transition: none; } }
-
-/* ===== ホーム：iPhone実機の短い表示高でもアバターを大きく＆空間を有効活用 ===== */
-/* アバターカードを広げる（左右の宝箱/サイドボタンは端に重ねる前提で拡大） */
-.home-fit .hero-stack { width: 70%; max-width: 260px; }
-/* 下部要素を省スペース化して、余った縦幅を伸縮するアバター(flex:1)に回す */
-.home-fit .stats-ring-row { margin-top: 8px; }
-.home-fit .mission-cta-row { margin-top: 8px; }
-.home-fit .event-banner { margin-top: 8px; padding: 10px 14px; }
-.home-fit .event-banner .event-sub { display: none; } /* 省スペース：説明文を隠す */
-.home-fit .mission-cta .sub { display: none; }         /* ボタンの補足も隠して高さ圧縮 */
-.home-fit .mission-cta { padding: 13px 14px; }
