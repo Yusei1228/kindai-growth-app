@@ -9,6 +9,7 @@ import { TUTORIAL_MISSION_ID, TUTORIAL_REWARD } from './data/tutorial'
 import { appDate } from './lib/appDate'
 import { getUserId } from './lib/session'
 import { registerProfile, syncStats, logMission, syncAvatar, flushLogOutbox } from './lib/api'
+import { grantDailyTicket } from './lib/rewards'
 import { normalizeAvatar } from './data/avatars'
 
 const STORAGE_KEY = 'kindai-growth-state-v2'
@@ -118,6 +119,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
     // 未送信の達成ログを再送（履歴を失わない）
     flushLogOutbox()
+    // 今日すでにミッションを達成済みなら抽選券を付与（サーバー側で1日1枚・冪等）
+    if (state.logs.some((l) => l.date === appDate())) grantDailyTicket()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -281,6 +284,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         })
         return next
       })
+      grantDailyTicket() // その日の達成で抽選券を付与（サーバーで1日1枚・冪等）
       return result
     }
 
@@ -315,6 +319,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         })
         return next
       })
+      grantDailyTicket() // その日の達成で抽選券を付与（サーバーで1日1枚・冪等）
       return result
     }
 

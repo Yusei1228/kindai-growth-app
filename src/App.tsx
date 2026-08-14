@@ -14,6 +14,13 @@ import { UserProfileScreen } from './screens/UserProfileScreen'
 import { ReflectionScreen } from './screens/ReflectionScreen'
 import { MyPageScreen } from './screens/MyPageScreen'
 import { RewardsScreen } from './screens/RewardsScreen'
+import { SponsorListScreen } from './screens/SponsorListScreen'
+import { SponsorDetailScreen } from './screens/SponsorDetailScreen'
+import { TicketsGachaScreen } from './screens/TicketsGachaScreen'
+import { RewardBoxScreen } from './screens/RewardBoxScreen'
+import { MyCouponsScreen } from './screens/MyCouponsScreen'
+import { CouponUseScreen } from './screens/CouponUseScreen'
+import type { Coupon } from './lib/rewards'
 import { LoginBonusScreen } from './screens/LoginBonusScreen'
 import { TutorialScreen } from './screens/TutorialScreen'
 import { TutorialTour, ExpAbsorb } from './components/TutorialTour'
@@ -37,6 +44,12 @@ export type Route =
   | { name: 'reflection' }
   | { name: 'mypage' }
   | { name: 'rewards' }
+  | { name: 'sponsors' }
+  | { name: 'sponsor'; id: string }
+  | { name: 'tickets' }
+  | { name: 'reward-box' }
+  | { name: 'my-coupons' }
+  | { name: 'coupon-use'; coupon: Coupon }
   | { name: 'login-bonus' }
 
 const TAB_OF: Partial<Record<Route['name'], Tab>> = {
@@ -52,6 +65,12 @@ const TAB_OF: Partial<Record<Route['name'], Tab>> = {
   reflection: 'reflection',
   mypage: 'mypage',
   rewards: 'mypage',
+  sponsors: 'mypage',
+  sponsor: 'mypage',
+  tickets: 'mypage',
+  'reward-box': 'mypage',
+  'my-coupons': 'mypage',
+  'coupon-use': 'mypage',
   'login-bonus': 'home',
 }
 
@@ -199,7 +218,25 @@ export function App() {
       screen = <LoginBonusScreen back={back} onLevelUp={setLevelUp} />
       break
     case 'rewards':
-      screen = <RewardsScreen back={back} notify={notify} />
+      screen = <RewardsScreen go={go} back={back} notify={notify} />
+      break
+    case 'sponsors':
+      screen = <SponsorListScreen go={go} back={back} />
+      break
+    case 'sponsor':
+      screen = <SponsorDetailScreen id={route.id} back={back} />
+      break
+    case 'tickets':
+      screen = <TicketsGachaScreen go={go} back={back} notify={notify} />
+      break
+    case 'reward-box':
+      screen = <RewardBoxScreen go={go} back={back} notify={notify} />
+      break
+    case 'my-coupons':
+      screen = <MyCouponsScreen go={go} back={back} />
+      break
+    case 'coupon-use':
+      screen = <CouponUseScreen coupon={route.coupon} back={back} notify={notify} />
       break
   }
 

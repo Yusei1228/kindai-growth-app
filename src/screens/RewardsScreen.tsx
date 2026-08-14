@@ -1,53 +1,85 @@
-import { useApp } from '../store'
-import { PageHead, PointIcon } from '../components/ui'
-export function RewardsScreen({ back, notify }: { back: () => void; notify: (m: string) => void }) {
-  const { state, redeemCoupon } = useApp()
+import { useEffect, useState } from 'react'
+import { PageHead } from '../components/ui'
+import { SPONSORS } from '../data/sponsors'
+import { getSummary, rewardsAvailable, type RewardSummary } from '../lib/rewards'
+import type { Route } from '../App'
 
-  const redeem = (id: string, cost: number) => {
-    if (state.user.points < cost) {
-      notify('ポイントが足りません')
-      return
+export function RewardsScreen({ go, back }: { go: (r: Route) => void; back: () => void; notify: (m: string) => void }) {
+  const [summary, setSummary] = useState<RewardSummary | null>(null)
+  const [available, setAvailable] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    let alive = true
+    ;(async () => {
+      const ok = await rewardsAvailable()
+      if (!alive) return
+      setAvailable(ok)
+      if (ok) setSummary(await getSummary())
+    })()
+    return () => {
+      alive = false
     }
-    if (redeemCoupon(id)) notify('クーポンを引き換えました！店頭で提示してください 🎫')
-  }
+  }, [])
 
   return (
     <>
-      <PageHead title="協賛店舗・報酬" onBack={back} />
+      <PageHead title="報酬" onBack={back} />
+      <div className="muted" style={{ fontSize: 12, fontWeight: 700, marginTop: 2 }}>協賛ページ</div>
 
-      <div className="section-card row between">
-        <div>
-          <div className="muted" style={{ fontSize: 12 }}>利用可能ポイント</div>
-          <div className="bold" style={{ fontSize: 24 }}>{state.user.points.toLocaleString()} P</div>
+      {available === false && (
+        <div className="info-note" style={{ marginTop: 12 }}>
+          ⓘ 報酬機能の準備中です（サーバー設定の反映待ち）。少し時間をおいて再度お試しください。
         </div>
-        <PointIcon />
+      )}
+
+      {/* ガチャCTA（抽選券の残数） */}
+      <button className="rw-gacha-cta" onClick={() => go({ name: 'tickets' })}>
+        <div className="rw-gacha-emoji">🎰</div>
+        <div style={{ flex: 1, textAlign: 'left' }}>
+          <div className="bold" style={{ fontSize: 15 }}>抽選ガチャを回す</div>
+          <div style={{ fontSize: 12, opacity: 0.92 }}>ミッション達成で貯めた抽選券でクーポンをGET</div>
+        </div>
+        <div className="rw-ticket-badge">🎟️ {summary?.balance ?? 0}</div>
+      </button>
+
+      {/* 3タイル */}
+      <div className="rw-tiles">
+        <button className="rw-tile" onClick={() => go({ name: 'sponsors' })}>
+          <span className="rw-tile-ico">🏬</span>
+          <span>協賛店舗<br />一覧</span>
+        </button>
+        <button className="rw-tile" onClick={() => go({ name: 'tickets' })}>
+          <span className="rw-tile-ico">🎟️</span>
+          <span>所持<br />チケット</span>
+          {!!summary?.balance && <span className="rw-tile-badge">{summary.balance}</span>}
+        </button>
+        <button className="rw-tile" onClick={() => go({ name: 'reward-box' })}>
+          <span className="rw-tile-ico">🎁</span>
+          <span>受け取り<br />BOX</span>
+          {!!summary?.boxCount && <span className="rw-tile-badge">{summary.boxCount}</span>}
+        </button>
       </div>
 
-      <p className="hint">努力で貯めたポイントを、近大周辺の協賛店舗クーポンに交換できます。「頑張った人ほど学生生活が得になる」</p>
+      <button className="btn-ghost" style={{ marginTop: 12 }} onClick={() => go({ name: 'my-coupons' })}>🎫 マイクーポン（獲得したクーポン）</button>
 
-      <div className="section-title">近大周辺の協賛店舗</div>
-      {state.coupons.map((c) => {
-        const cannot = state.user.points < c.cost
-        return (
-          <div className="coupon" key={c.id}>
-            <div className="emo">{c.emoji}</div>
-            <div style={{ flex: 1 }}>
-              <div className="cname">{c.name}</div>
-              <div className="ctitle">{c.title}</div>
-              <div className="muted" style={{ fontSize: 11, marginTop: 2 }}>{c.category}・{c.distance}・{c.cost}P</div>
-            </div>
-            {c.redeemed ? (
-              <button className="cbtn redeemed" disabled>引換済 ✓</button>
-            ) : (
-              <button className="cbtn" disabled={cannot} onClick={() => redeem(c.id, c.cost)}>
-                {cannot ? '不足' : '交換'}
-              </button>
-            )}
-          </div>
-        )
-      })}
+      <div className="section-title row between">
+        <span>おすすめ協賛店舗</span>
+        <button className="rw-link" onClick={() => go({ name: 'sponsors' })}>すべて見る ›</button>
+      </div>
 
-      <p className="hint center">クーポン利用は店頭提示でカウントされ、協賛店舗の効果測定に使われます。</p>
+      <div className="rw-shop-grid">
+        {SPONSORS.slice(0, 6).map((s) => (
+          <button className="rw-shop" key={s.id} onClick={() => go({ name: 'sponsor', id: s.id })}>
+            <div className="rw-shop-emoji">{s.emoji}</div>
+            <div className="rw-shop-name">{s.name}</div>
+            <div className="rw-shop-cat">{s.category}</div>
+            <div className="rw-shop-benefit">{s.benefit}</div>
+            <div className="rw-shop-more">詳細 ›</div>
+          </button>
+        ))}
+      </div>
+
+      <p className="hint center">抽選券は「その日ミッションを1つでも達成」でもらえます（1日1枚・週最大7枚）。</p>
     </>
   )
 }

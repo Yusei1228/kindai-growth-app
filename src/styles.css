@@ -1530,3 +1530,104 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .tm-quote[data-tag="豆知識"] { background: linear-gradient(135deg, #e9f7ef, #f5fbf7); }
 .tm-quote[data-tag="豆知識"]::before { background: #16a34a; }
 .tm-quote[data-tag="豆知識"] .tm-quote-tag { color: #15a34a; }
+
+/* ===== 報酬（抽選券・ガチャ・受け取りBOX・クーポン） ===== */
+.rw-link { border: none; background: none; color: var(--blue-600); font-weight: 800; font-size: 12px; cursor: pointer; font-family: inherit; }
+
+/* ガチャCTA */
+.rw-gacha-cta { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 14px; border: none; cursor: pointer; font-family: inherit; color: #fff; text-align: left; border-radius: 18px; padding: 14px 16px;
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0) 46%), linear-gradient(135deg, #3b7bff, #6d4bff); box-shadow: 0 8px 20px rgba(59,79,255,0.32); }
+.rw-gacha-cta:active { transform: translateY(2px); }
+.rw-gacha-emoji { font-size: 30px; flex: none; }
+.rw-ticket-badge { flex: none; background: rgba(255,255,255,0.95); color: var(--blue-700); font-weight: 900; font-size: 14px; padding: 6px 12px; border-radius: 999px; }
+
+/* 3タイル */
+.rw-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+.rw-tile { position: relative; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 14px 6px; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--ink); cursor: pointer; font-family: inherit; box-shadow: var(--shadow-sm); text-align: center; line-height: 1.3; }
+.rw-tile:active { transform: translateY(2px); }
+.rw-tile-ico { font-size: 24px; }
+.rw-tile-badge { position: absolute; top: 8px; right: 10px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px; background: #ef4444; color: #fff; font-size: 11px; font-weight: 900; display: grid; place-items: center; box-shadow: 0 0 0 2px #fff; }
+
+/* 協賛店舗グリッド */
+.rw-shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+.rw-shop { text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 12px; cursor: pointer; font-family: inherit; box-shadow: var(--shadow-sm); position: relative; }
+.rw-shop:active { transform: translateY(2px); }
+.rw-shop-emoji { width: 40px; height: 40px; border-radius: 12px; background: #eef3fb; display: grid; place-items: center; font-size: 22px; margin-bottom: 8px; }
+.rw-shop-name { font-weight: 800; font-size: 14px; color: var(--ink); }
+.rw-shop-cat { font-size: 11px; color: var(--ink-soft); margin-top: 1px; }
+.rw-shop-benefit { display: inline-block; margin-top: 8px; font-size: 12px; font-weight: 800; color: var(--blue-700); background: var(--blue-50); border-radius: 8px; padding: 3px 8px; }
+.rw-shop-more { font-size: 11px; color: var(--ink-soft); font-weight: 700; margin-top: 8px; }
+
+/* 所持チケット・ガチャ */
+.rw-ticket-hero { padding-top: 18px; padding-bottom: 18px; }
+.rw-ticket-big { font-size: 40px; }
+.rw-ticket-count { font-size: 40px; font-weight: 900; line-height: 1; margin: 4px 0 6px; color: var(--ink); }
+.rw-gacha-ball { width: 120px; height: 120px; margin: 0 auto 4px; border-radius: 50%; display: grid; place-items: center; font-size: 54px;
+  background: radial-gradient(120% 120% at 50% 0%, #ffd97a 0%, #ff8fb1 45%, #6d4bff 100%); box-shadow: 0 10px 22px rgba(109,75,255,0.3), inset 0 4px 8px rgba(255,255,255,0.5), inset 0 -8px 14px rgba(0,0,0,0.18); }
+.rw-gacha-ball.spin { animation: gball 0.5s ease-in-out infinite; }
+@keyframes gball { 0%,100% { transform: rotate(-9deg) scale(1); } 50% { transform: rotate(9deg) scale(1.05); } }
+.rw-gacha-prize { animation: gprize 0.5s ease; }
+@keyframes gprize { from { transform: scale(0.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.rw-win-tag { display: inline-block; margin-top: 8px; font-size: 11px; font-weight: 900; color: #ea6a10; background: #fff1e8; border-radius: 999px; padding: 3px 12px; }
+.rw-spin-btn { font-size: 16px; }
+
+/* 受け取りBOX */
+.rw-claim-all { flex: none; border: 1px solid var(--blue-200, #bfd8fb); background: var(--blue-50); color: var(--blue-700); font-weight: 800; font-size: 12px; border-radius: 999px; padding: 7px 14px; cursor: pointer; font-family: inherit; }
+.rw-claim-all:disabled { opacity: 0.45; cursor: default; }
+.rw-box-item { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 12px; margin-top: 10px; box-shadow: var(--shadow-sm); }
+.rw-box-emoji { width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg,#fff3d6,#ffe1ec); display: grid; place-items: center; font-size: 24px; flex: none; }
+.rw-box-kind { display: inline-block; font-size: 10px; font-weight: 800; color: var(--ink-soft); background: #eef1f6; border-radius: 6px; padding: 2px 7px; margin-bottom: 3px; }
+.rw-box-exp { font-size: 11px; color: #ef7a1a; font-weight: 700; margin-top: 4px; }
+.rw-claim-btn { flex: none; align-self: center; border: none; cursor: pointer; font-family: inherit; color: #fff; font-weight: 800; font-size: 13px; border-radius: 12px; padding: 10px 14px;
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.25), rgba(255,255,255,0) 46%), linear-gradient(180deg, #3b7bff, #1e3fae); box-shadow: 0 4px 0 #17307e; }
+.rw-claim-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #17307e; }
+.rw-claim-btn:disabled { opacity: 0.5; }
+
+/* マイクーポン */
+.rw-stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+.rw-stat { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 12px 6px; text-align: center; cursor: pointer; box-shadow: var(--shadow-sm); }
+.rw-stat.on { border-color: var(--blue-400); box-shadow: 0 0 0 2px rgba(59,123,255,0.18); }
+.rw-stat-lab { font-size: 11px; color: var(--ink-soft); font-weight: 700; }
+.rw-stat-num { font-size: 22px; font-weight: 900; color: var(--ink); }
+.rw-stat-num span { font-size: 11px; font-weight: 700; color: var(--ink-soft); }
+.rw-tabs { display: flex; gap: 6px; background: #eef3fb; border-radius: 12px; padding: 4px; margin-top: 12px; }
+.rw-tab { flex: 1; border: none; background: transparent; border-radius: 9px; padding: 8px 0; font-size: 13px; font-weight: 800; color: var(--ink-soft); font-family: inherit; cursor: pointer; }
+.rw-tab.on { background: #fff; color: var(--blue-600); box-shadow: var(--shadow-sm); }
+.rw-tab-badge { display: inline-grid; place-items: center; min-width: 17px; height: 17px; margin-left: 4px; padding: 0 4px; border-radius: 999px; background: var(--blue-600); color: #fff; font-size: 10px; font-weight: 900; vertical-align: middle; }
+.rw-coupon { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 12px; margin-top: 10px; box-shadow: var(--shadow-sm); }
+.rw-coupon.dim { opacity: 0.62; }
+.rw-coupon-emoji { width: 46px; height: 46px; border-radius: 14px; background: #eef3fb; display: grid; place-items: center; font-size: 24px; flex: none; }
+.rw-use-btn { flex: none; align-self: center; border: none; cursor: pointer; font-family: inherit; color: #fff; font-weight: 800; font-size: 13px; border-radius: 12px; padding: 10px 16px;
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.25), rgba(255,255,255,0) 46%), linear-gradient(180deg, #111827, #000); box-shadow: 0 4px 0 #000; }
+.rw-use-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #000; }
+.rw-coupon-tag { flex: none; font-size: 11px; font-weight: 800; border-radius: 999px; padding: 5px 11px; }
+.rw-coupon-tag.used { background: #e6f4ea; color: #16a34a; }
+.rw-coupon-tag.expired { background: #f1f1f4; color: #9aa0aa; }
+
+/* クーポン利用（提示＋スライド） */
+.rw-present { position: relative; overflow: hidden; margin-top: 14px; border-radius: 20px; padding: 18px; color: #fff;
+  background-image: linear-gradient(135deg, #1e293b, #0f172a); box-shadow: 0 12px 26px rgba(15,23,42,0.35); }
+.rw-present .muted { color: rgba(255,255,255,0.7) !important; }
+.rw-present .bold { color: #fff; }
+.rw-present-shine { position: absolute; top: 0; bottom: 0; width: 40%; left: 0; pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.14), transparent); }
+.rw-present-badge { display: inline-block; margin-top: 10px; font-size: 15px; font-weight: 900; color: #fff; background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.3); border-radius: 12px; padding: 8px 14px; }
+.rw-present-live { margin-top: 14px; font-size: 12px; font-weight: 800; letter-spacing: 0.03em; color: #a7f3d0; display: flex; align-items: center; gap: 6px; }
+.rw-live-dot { width: 8px; height: 8px; border-radius: 50%; background: #34d399; box-shadow: 0 0 0 0 rgba(52,211,153,0.6); animation: livePulse 1s ease-out infinite; }
+@keyframes livePulse { 0% { box-shadow: 0 0 0 0 rgba(52,211,153,0.55); } 100% { box-shadow: 0 0 0 8px rgba(52,211,153,0); } }
+.rw-cond { margin: 0; padding-left: 18px; }
+.rw-cond li { font-size: 13px; color: var(--ink-soft); line-height: 1.8; }
+
+.rw-slide { position: relative; height: 60px; margin-top: 14px; border-radius: 16px; background: #eef1f6; overflow: hidden; user-select: none; touch-action: none; }
+.rw-slide-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 16px; background: linear-gradient(90deg, #34d399, #059669); transition: none; }
+.rw-slide-label { position: absolute; inset: 0; display: grid; place-items: center; font-size: 14px; font-weight: 800; color: var(--ink-soft); pointer-events: none; }
+.rw-slide-knob { position: absolute; top: 4px; left: 4px; width: 52px; height: 52px; border-radius: 12px; background: #fff; box-shadow: 0 4px 10px rgba(15,23,42,0.25); display: grid; place-items: center; font-size: 22px; cursor: grab; touch-action: none; }
+.rw-slide.busy .rw-slide-knob { cursor: default; }
+.rw-used-check { width: 66px; height: 66px; margin: 0 auto; border-radius: 50%; background: linear-gradient(135deg,#34d399,#059669); color: #fff; font-size: 36px; font-weight: 900; display: grid; place-items: center; box-shadow: 0 8px 18px rgba(5,150,105,0.35); animation: gprize 0.4s ease; }
+
+/* 店舗詳細 */
+.rw-detail-hero { height: 120px; border-radius: 18px; margin-top: 12px; display: grid; place-items: center; font-size: 54px; background: linear-gradient(135deg,#e2ecfb,#eef5ff); }
+.rw-detail-badge { flex: none; font-size: 11px; font-weight: 800; color: #fff; background: var(--blue-600); border-radius: 999px; padding: 5px 12px; }
+.rw-benefit { font-size: 18px; font-weight: 900; color: var(--ink); padding: 18px; }
+.rw-info-row { font-size: 13px; color: var(--ink); padding: 6px 0; border-bottom: 1px solid var(--line); }
+.rw-info-row:last-child { border-bottom: none; }
