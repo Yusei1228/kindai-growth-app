@@ -130,6 +130,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       opts: {
         type: 'daily' | 'self'
         title: string
+        missionKey?: string
         category: Category
         minutes: number
         comment: string
@@ -184,6 +185,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       const log = {
         id: 'l' + Date.now(),
+        missionKey: opts.missionKey,
         missionTitle: opts.title,
         category: opts.category,
         minutes: opts.minutes,
@@ -256,6 +258,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const { next, result: r } = applyReward(prev, {
           type: 'daily',
           title: mission.title,
+          missionKey: mission.id,
           category: mission.category,
           minutes,
           comment,
@@ -290,6 +293,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const { next, result: r } = applyReward(prev, {
           type: 'self',
           title: mission.title,
+          missionKey: mission.id,
           category: mission.category,
           minutes,
           comment,
@@ -356,6 +360,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const { next, result: r } = applyReward(prev, {
           type: 'daily',
           title: 'アプリの使い方（チュートリアル）',
+          missionKey: 'tutorial',
           category: '振り返り',
           minutes: 0,
           comment: '使い方を確認した',

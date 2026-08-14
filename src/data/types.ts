@@ -69,6 +69,7 @@ export interface ActiveMission {
 /** 実行ログ（振り返り・ランキング集計の元データ） */
 export interface ActivityLog {
   id: string
+  missionKey?: string // 種目の安定キー（self.id / daily.id）。8項目集計の主キー。旧ログはundefined
   missionTitle: string
   category: Category
   minutes: number

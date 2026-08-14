@@ -1449,3 +1449,26 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .exp-bar.exp-charge { box-shadow: 0 0 16px 3px rgba(96,165,250,0.95); animation: expCharge .7s ease .55s; }
 @keyframes expCharge { 0%,100% { filter: brightness(1); } 45% { filter: brightness(1.9); } }
 @media (prefers-reduced-motion: reduce) { .exp-spark { animation: none; display: none; } .tour-hole { transition: none; } }
+
+/* ===== 振り返り画面：期間トグル・8項目内訳・インサイト ===== */
+.seg-toggle { display: flex; gap: 6px; background: #eef3fb; border-radius: 14px; padding: 5px; margin-top: 12px; }
+.seg-toggle button { flex: 1; border: none; background: transparent; border-radius: 10px; padding: 10px 0; font-size: 14px; font-weight: 800; color: var(--ink-soft); font-family: inherit; cursor: pointer; transition: background .15s, color .15s, box-shadow .15s; }
+.seg-toggle button.on { background: #fff; color: var(--blue-600); box-shadow: var(--shadow-sm); }
+
+.rf-insight { margin-top: 12px; background: linear-gradient(135deg, #eef5ff, #f7fbff); border: 1px solid #dbe8fb; border-radius: 16px; padding: 13px 15px; font-size: 13px; font-weight: 700; line-height: 1.65; color: var(--ink); }
+.rf-insight b { color: var(--blue-600); }
+
+.rf-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; }
+.rf-item + .rf-item { border-top: 1px solid var(--line); }
+.rf-ico { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; font-size: 17px; flex: none; }
+.rf-main { flex: 1; min-width: 0; }
+.rf-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.rf-name { font-size: 14px; font-weight: 800; }
+.rf-meta { font-size: 11px; color: var(--ink-soft); font-weight: 700; white-space: nowrap; flex: none; }
+.rf-track { height: 7px; background: #eef1f6; border-radius: 999px; overflow: hidden; margin-top: 6px; }
+.rf-track > i { display: block; height: 100%; border-radius: 999px; transition: width .4s ease; }
+.rf-comment { font-size: 11px; color: var(--ink-soft); margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.rf-missing { display: flex; flex-wrap: wrap; gap: 8px; }
+.rf-chip { display: inline-flex; align-items: center; gap: 5px; background: #f4f6fa; border: 1px dashed #cdd6e4; border-radius: 999px; padding: 6px 11px; font-size: 12px; font-weight: 700; color: var(--ink-soft); }
+.rf-chip .e { filter: grayscale(1); opacity: .7; }
