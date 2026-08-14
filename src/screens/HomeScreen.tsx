@@ -119,33 +119,44 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
 function IconFriends() {
   return (
     <svg viewBox="0 0 24 24" fill="#fff" className="rail-glyph" aria-hidden="true">
-      <circle cx="8.5" cy="8" r="3.3" />
-      <circle cx="16.5" cy="9" r="2.7" />
-      <path d="M2.5 18.5c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5V20h-12z" />
-      <path d="M15.2 13c2.6.1 5.3 1.8 5.3 5V20h-3.8v-1.5c0-2-.7-3.7-1.9-5 .1 0 .3 0 .4 0z" />
+      {/* 後ろの人（右・小さめ） */}
+      <circle cx="15.6" cy="9" r="2.7" />
+      <path d="M10.6 19v-.7c0-3 2.1-4.9 4.9-4.9 2.6 0 4.7 1.8 4.9 4.6V19z" />
+      {/* 前の人（左・大きめ） */}
+      <circle cx="9" cy="8.2" r="3.2" />
+      <path d="M2.7 19.4v-.9c0-3.3 2.6-5.3 6.3-5.3s6.3 2 6.3 5.3v.9z" />
     </svg>
   )
 }
 function IconUniv() {
   return (
     <svg viewBox="0 0 24 24" fill="#fff" className="rail-glyph" aria-hidden="true">
-      <path d="M12 2 2.5 6.7V8.5h19V6.7z" />
-      <rect x="4.2" y="9.6" width="2.3" height="8" rx="0.4" />
-      <rect x="8.6" y="9.6" width="2.3" height="8" rx="0.4" />
-      <rect x="13" y="9.6" width="2.3" height="8" rx="0.4" />
-      <rect x="17.4" y="9.6" width="2.3" height="8" rx="0.4" />
-      <rect x="2.5" y="18.4" width="19" height="2.6" rx="0.6" />
+      {/* 屋根の上の旗 */}
+      <rect x="11.6" y="1.2" width="0.9" height="4.8" rx="0.4" />
+      <path d="M12.5 1.5 L16.6 2.8 L12.5 4.1 Z" />
+      {/* 神殿風の建物（破風・柱・基壇） */}
+      <path d="M12 4.4 L20.6 8.8 L3.4 8.8 Z" />
+      <rect x="4.2" y="9.2" width="15.6" height="1.8" rx="0.3" />
+      <rect x="5.3" y="11.3" width="2" height="6" />
+      <rect x="8.8" y="11.3" width="2" height="6" />
+      <rect x="13.2" y="11.3" width="2" height="6" />
+      <rect x="16.7" y="11.3" width="2" height="6" />
+      <rect x="3.4" y="17.5" width="17.2" height="2.2" rx="0.5" />
     </svg>
   )
 }
 function IconGift() {
   return (
     <svg viewBox="0 0 24 24" fill="#fff" className="rail-glyph" aria-hidden="true">
-      <rect x="3.5" y="10.5" width="17" height="10.5" rx="1.4" />
-      <rect x="2.3" y="7" width="19.4" height="4.2" rx="1" />
-      <rect x="10.7" y="7" width="2.6" height="14" />
-      <path d="M12 7C11 4 6.8 4.2 6.8 6.6 6.8 8.3 9.8 8.2 12 7z" />
-      <path d="M12 7c1-3 5.2-2.8 5.2-.4C17.2 8.3 14.2 8.2 12 7z" />
+      {/* フタ（左右2分割で中央にリボンの隙間） */}
+      <rect x="3" y="8.4" width="8.1" height="3.4" rx="0.8" />
+      <rect x="12.9" y="8.4" width="8.1" height="3.4" rx="0.8" />
+      {/* 箱（左右2分割＝縦リボンが背景色で透ける） */}
+      <rect x="4.5" y="12" width="6.6" height="8.4" rx="0.9" />
+      <rect x="12.9" y="12" width="6.6" height="8.4" rx="0.9" />
+      {/* 蝶結び */}
+      <path d="M11.5 8.1 C9.9 5.1 5.7 5.7 6.3 7.7 C6.7 9.1 9.3 9 11.5 8.1 Z" />
+      <path d="M12.5 8.1 C14.1 5.1 18.3 5.7 17.7 7.7 C17.3 9.1 14.7 9 12.5 8.1 Z" />
     </svg>
   )
 }

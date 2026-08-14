@@ -692,7 +692,7 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .rail-ico .badge { box-shadow: 0 2px 5px rgba(15,23,42,0.35), 0 0 0 2px #fff; font-weight: 900; }
 
 /* 右サイドボタンの白アイコン */
-.rail-ico .rail-glyph { position: relative; z-index: 1; width: 27px; height: 27px; display: block; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.28)); }
+.rail-ico .rail-glyph { position: relative; z-index: 1; width: 32px; height: 32px; display: block; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.28)); }
 
 /* ===== 中央カードをトランプが重なった立体スタックに ===== */
 .hero-stack { position: relative; width: 60%; max-width: 210px; margin: 14px auto 0; }
