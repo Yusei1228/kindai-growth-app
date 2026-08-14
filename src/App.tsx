@@ -95,7 +95,6 @@ export function App() {
   const [levelUp, setLevelUp] = useState<number | null>(null)
   const [tour, setTour] = useState(false)
   const [expFx, setExpFx] = useState<{ leveledUp: boolean; newLevel: number } | null>(null)
-  const tourStartedRef = useRef(false)
 
   // 画面遷移の履歴スタック。← ボタンで「1つ前の画面」に戻れるようにする
   const historyRef = useRef<Route[]>([])
@@ -133,14 +132,11 @@ export function App() {
     if (levelUp !== null) playSound('levelup')
   }, [levelUp])
 
-  // 登録直後（チュートリアル未完了）はホームに戻し、コーチマーク・ツアーを強制起動
-  useEffect(() => {
-    if (state.user.registered && !state.user.tutorialDone && !tourStartedRef.current) {
-      tourStartedRef.current = true
-      setRoute({ name: 'home' })
-      setTour(true)
-    }
-  }, [state.user.registered, state.user.tutorialDone])
+  // チュートリアルは「デイリーミッション → 固定ミッション」を押したら開始する（自動起動しない）
+  const beginTutorial = useCallback(() => {
+    setRoute({ name: 'home' })
+    setTour(true)
+  }, [])
 
   const finishTour = useCallback(() => {
     const res = completeTutorial()
@@ -175,7 +171,7 @@ export function App() {
       screen = <HomeScreen go={go} notify={notify} />
       break
     case 'daily':
-      screen = <DailyMissionScreen go={go} back={back} />
+      screen = <DailyMissionScreen go={go} back={back} onBeginTutorial={beginTutorial} />
       break
     case 'tutorial':
       screen = <TutorialScreen go={go} onLevelUp={setLevelUp} />

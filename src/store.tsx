@@ -5,7 +5,7 @@ import { seedState } from './data/seed'
 import { pickDailyMissions, DAILY_REWARD } from './data/dailyPool'
 import { selfMissionReward, SELF_COINS } from './data/selfMissions'
 import { loginBonusReward, loginMonthKey, LOGIN_BONUS_DAYS } from './data/loginBonus'
-import { TUTORIAL_MISSION_ID, TUTORIAL_REWARD } from './data/tutorial'
+import { TUTORIAL_MISSION_ID, TUTORIAL_REWARD, tutorialMission } from './data/tutorial'
 import { appDate } from './lib/appDate'
 import { getUserId } from './lib/session'
 import { registerProfile, syncStats, logMission, syncAvatar, flushLogOutbox } from './lib/api'
@@ -35,6 +35,9 @@ function loadState(): AppState {
     s.missionsDate = today
     s.user.dailyRewardAvailable = true
   }
+  // 初回ユーザーはデイリー先頭に「チュートリアルミッション」を差し込む（完了で消える）
+  s.missions = s.missions.filter((m) => m.id !== TUTORIAL_MISSION_ID)
+  if (!s.user.tutorialDone) s.missions = [tutorialMission(), ...s.missions]
   s.user.avatar = normalizeAvatar(s.user.avatar) // 旧データにavatarが無い場合の補正
 
   // ログインボーナス：未初期化 or 月替わりでリセット（毎月30日分）
@@ -158,7 +161,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       let missions = prev.missions
       if (opts.markMissionId) {
         missions = prev.missions.map((m) => (m.id === opts.markMissionId ? { ...m, done: true } : m))
-        if (opts.allDailyBonus && missions.length > 0 && missions.every((m) => m.done)) {
+        const dailyOnly = missions.filter((m) => m.id !== TUTORIAL_MISSION_ID)
+        if (opts.allDailyBonus && dailyOnly.length > 0 && dailyOnly.every((m) => m.done)) {
           dailyBonus = true
           gainedSP += 50
         }

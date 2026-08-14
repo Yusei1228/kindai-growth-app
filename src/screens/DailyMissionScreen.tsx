@@ -1,5 +1,6 @@
 import { PageHead } from '../components/ui'
 import { DAILY_REWARD } from '../data/dailyPool'
+import { TUTORIAL_MISSION_ID } from '../data/tutorial'
 import { useApp } from '../store'
 import type { Route } from '../App'
 import type { Category, Mission } from '../data/types'
@@ -11,47 +12,59 @@ const CAT_META: Record<Category, { emoji: string; c1: string; c2: string; edge: 
   振り返り: { emoji: '✨', c1: '#e879f9', c2: '#d946ef', edge: '#a21caf' },
 }
 
-export function DailyMissionScreen({ go, back }: { go: (r: Route) => void; back: () => void }) {
+export function DailyMissionScreen({ go, back, onBeginTutorial }: { go: (r: Route) => void; back: () => void; onBeginTutorial: () => void }) {
   const { state } = useApp()
-  const done = state.missions.filter((m) => m.done).length
-  const total = state.missions.length || 1
-  const allDone = done === state.missions.length
+  const tutMission = state.missions.find((m) => m.id === TUTORIAL_MISSION_ID)
+  const dailyMissions = state.missions.filter((m) => m.id !== TUTORIAL_MISSION_ID)
+  const done = dailyMissions.filter((m) => m.done).length
+  const total = dailyMissions.length || 1
+  const allDone = done === dailyMissions.length && dailyMissions.length > 0
+  const showTutorial = !state.user.tutorialDone && !!tutMission
 
   return (
     <>
       <PageHead title="今日のデイリーミッション" onBack={back} />
 
-      {/* 進捗 */}
+      {/* ボーナス（上部・目立つ位置） */}
+      <div className={'dm-bonus dm-bonus-top' + (allDone ? ' done' : '')}>
+        <div className="dm-bonus-ico">{allDone ? '🎉' : '🎁'}</div>
+        <div style={{ flex: 1 }}>
+          <div className="bold" style={{ fontSize: 15 }}>デイリー3つ達成でボーナス</div>
+          <div className="muted" style={{ fontSize: 12 }}>
+            {allDone ? 'ボーナス獲得！ スコア +50' : `あと ${dailyMissions.length - done} つでボーナス スコア +50`}
+          </div>
+        </div>
+        <div className="dm-bonus-amount">+50</div>
+      </div>
+
+      {/* 進捗（デイリー3件のみ） */}
       <div className="dm-progress">
         <div className="row between">
           <span className="bold" style={{ fontSize: 13 }}>達成状況</span>
-          <span className="bold" style={{ fontSize: 13 }}>{done} / {state.missions.length}</span>
+          <span className="bold" style={{ fontSize: 13 }}>{done} / {dailyMissions.length}</span>
         </div>
         <div className="progress-track" style={{ marginTop: 8 }}>
           <i style={{ width: (done / total) * 100 + '%' }} />
         </div>
       </div>
 
-      {state.missions.map((m) => (
-        <MissionCard key={m.id} m={m} go={go} />
-      ))}
+      {/* 初回：チュートリアルの導線（固定ミッション） */}
+      {showTutorial && (
+        <>
+          <div className="onboard-hint">👇 まずはこれをタップ！アプリの使い方がわかります</div>
+          <MissionCard m={tutMission!} go={go} onBeginTutorial={onBeginTutorial} onboard={!tutMission!.done} />
+        </>
+      )}
 
-      {/* ボーナス */}
-      <div className={'dm-bonus' + (allDone ? ' done' : '')}>
-        <div className="dm-bonus-ico">{allDone ? '🎉' : '🎁'}</div>
-        <div style={{ flex: 1 }}>
-          <div className="bold">3つ達成でボーナス</div>
-          <div className="muted" style={{ fontSize: 12 }}>
-            {allDone ? 'ボーナス獲得！ スコア +50' : `あと ${state.missions.length - done} つでボーナス +50`}
-          </div>
-        </div>
-        <div className="dm-bonus-star">{allDone ? '⭐' : '☆'}</div>
-      </div>
+      {/* デイリーミッション3件 */}
+      {dailyMissions.map((m) => (
+        <MissionCard key={m.id} m={m} go={go} onBeginTutorial={onBeginTutorial} />
+      ))}
     </>
   )
 }
 
-function MissionCard({ m, go }: { m: Mission; go: (r: Route) => void }) {
+function MissionCard({ m, go, onBeginTutorial, onboard }: { m: Mission; go: (r: Route) => void; onBeginTutorial: () => void; onboard?: boolean }) {
   const meta = CAT_META[m.category]
   const active = {
     kind: 'daily' as const,
@@ -64,10 +77,10 @@ function MissionCard({ m, go }: { m: Mission; go: (r: Route) => void }) {
     rewardExp: DAILY_REWARD.exp,
     statAmount: DAILY_REWARD.statAmount,
   }
-  const isTut = m.id === 'tutorial'
+  const isTut = m.id === TUTORIAL_MISSION_ID
   const start = () =>
     isTut
-      ? go({ name: 'tutorial' })
+      ? onBeginTutorial()
       : m.timed
         ? go({ name: 'timer', mission: active })
         : go({ name: 'review', mission: active, minutes: 0 })
@@ -76,7 +89,7 @@ function MissionCard({ m, go }: { m: Mission; go: (r: Route) => void }) {
     : { ['--c1' as string]: meta.c1, ['--c2' as string]: meta.c2, ['--edge' as string]: meta.edge }
 
   return (
-    <div className={'dm-card' + (isTut ? ' dm-tut' : '')} style={styleVars}>
+    <div className={'dm-card' + (isTut ? ' dm-tut' : '') + (onboard ? ' onboard-pulse' : '')} style={styleVars}>
       <div className="dm-top">
         <div className="dm-ico">{isTut ? '🎓' : meta.emoji}</div>
         <div className="dm-main">
