@@ -75,14 +75,16 @@ const TAB_OF: Partial<Record<Route['name'], Tab>> = {
 }
 
 function initialRoute(): Route {
-  const h = typeof window !== 'undefined' ? window.location.hash.replace(/^#/, '') : ''
-  if (h === 'self') return { name: 'self' }
-  if (h === 'daily') return { name: 'daily' }
-  if (h === 'ranking') return { name: 'ranking' }
-  if (h === 'mypage') return { name: 'mypage' }
-  if (h === 'reflection') return { name: 'reflection' }
-  if (h === 'login-bonus') return { name: 'login-bonus' }
-  // 明示的な遷移先が無く、進行中タイマーが残っていれば続きから再開する
+  // 起動は常にホームから（進行中タイマーが残っていれば続きから再開する）。
+  // ※以前はURLハッシュ(#mypage 等)で初期画面を決めていたが、
+  //   ハッシュが残っていると毎回その画面から始まってしまうため廃止。
+  if (typeof window !== 'undefined' && window.location.hash) {
+    try {
+      history.replaceState(null, '', window.location.pathname + window.location.search)
+    } catch {
+      /* noop */
+    }
+  }
   const timer = loadTimerSession()
   if (timer && timer.mission) return { name: 'timer', mission: timer.mission }
   return { name: 'home' }
