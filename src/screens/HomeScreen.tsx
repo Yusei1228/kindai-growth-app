@@ -1,7 +1,7 @@
 import { useApp } from '../store'
 import { expForLevel } from '../data/types'
 import { GemIcon, PointIcon } from '../components/ui'
-import { HeroAvatar, MiniAvatar } from '../components/Avatar'
+import { HeroAvatar } from '../components/Avatar'
 import { StatRing } from '../components/StatRing'
 import type { Route } from '../App'
 
@@ -24,7 +24,6 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
     <>
       {/* 上部：透明（グラス）プロフィールヘッダー */}
       <div className="home-header" data-tour="profile">
-        <div className="hh-avatar"><MiniAvatar /></div>
         <div className="hh-main">
           <div className="hh-name-row">
             <span className="hh-name">{u.name}</span>
