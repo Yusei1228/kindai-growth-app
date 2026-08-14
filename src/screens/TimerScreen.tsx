@@ -1,11 +1,24 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { PageHead } from '../components/ui'
 import type { Route } from '../App'
 import type { ActiveMission } from '../data/types'
 import { loadTimerSession, saveTimerSession, clearTimerSession, elapsedFrom } from '../lib/timerSession'
+import { isBgmEnabled, setBgmEnabled, startBgm, stopBgm } from '../lib/sound'
+import { ENCOURAGEMENTS } from '../data/encouragements'
 
 const CAT_EMOJI: Record<string, string> = { 勉強: '📘', 運動: '🏃', 生活習慣: '⚡', 振り返り: '✨' }
 const TARGETS = [0, 15, 30, 45, 60] // 分（0=なし/カウントアップ）
+const QUOTE_INTERVAL = 15000 // 応援メッセージの切替間隔（ms）
+
+/** Fisher–Yates シャッフル（毎回新鮮な応援順にする） */
+function shuffled<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
 
 export function TimerScreen({ mission, back, replace }: { mission: ActiveMission; back: () => void; replace: (r: Route) => void }) {
   // 既存セッションがあれば復元（アプリを閉じても再開できるように）
@@ -21,6 +34,26 @@ export function TimerScreen({ mission, back, replace }: { mission: ActiveMission
   const originStartRef = useRef<number>(restored ? restored.originStart : Date.now())
   const finishedRef = useRef(false)
   const [confirmBack, setConfirmBack] = useState(false)
+
+  // BGM ON/OFF（タイマー画面から直接切替）
+  const [bgmOn, setBgmOn] = useState(isBgmEnabled())
+  const toggleBgm = () => {
+    const next = !bgmOn
+    setBgmEnabled(next)
+    setBgmOn(next)
+    if (next) startBgm()
+    else stopBgm()
+  }
+
+  // 応援メッセージ：毎回シャッフルし、一定間隔＆タップで新しいメッセージに切替
+  const quotes = useMemo(() => shuffled(ENCOURAGEMENTS), [])
+  const [qi, setQi] = useState(0)
+  useEffect(() => {
+    const id = window.setInterval(() => setQi((i) => (i + 1) % quotes.length), QUOTE_INTERVAL)
+    return () => window.clearInterval(id)
+  }, [quotes.length])
+  const quote = quotes[qi]
+  const nextQuote = () => setQi((i) => (i + 1) % quotes.length)
 
   const running = segmentStart != null
   const seconds = elapsedFrom({ accumulated, segmentStart }, now)
@@ -108,9 +141,21 @@ export function TimerScreen({ mission, back, replace }: { mission: ActiveMission
   return (
     <>
       <PageHead title="タイマー" onBack={requestBack} />
-      <div className="muted" style={{ fontSize: 13, fontWeight: 700, marginTop: 4 }}>
-        {mission.kind === 'daily' ? 'デイリーミッション実行中' : 'セルフミッション実行中'}
-        {resuming && <span className="tm-resume-tag">前回の続きから再開</span>}
+      <div className="tm-subrow">
+        <div className="muted" style={{ fontSize: 13, fontWeight: 700 }}>
+          {mission.kind === 'daily' ? 'デイリーミッション実行中' : 'セルフミッション実行中'}
+          {resuming && <span className="tm-resume-tag">前回の続きから再開</span>}
+        </div>
+        <button
+          className={'tm-bgm' + (bgmOn ? ' on' : '')}
+          onClick={toggleBgm}
+          role="switch"
+          aria-checked={bgmOn}
+          aria-label="BGMのオン・オフ"
+          data-sound="none"
+        >
+          🎵 BGM {bgmOn ? 'ON' : 'OFF'}
+        </button>
       </div>
 
       {/* ミッション情報 */}
@@ -167,6 +212,16 @@ export function TimerScreen({ mission, back, replace }: { mission: ActiveMission
           <span style={{ fontSize: 11, opacity: 0.9 }}>ミッションを完了します</span>
         </button>
       </div>
+
+      {/* 応援メッセージ（タップで次へ・自動でも切替。毎回シャッフルで新鮮に） */}
+      <button className="tm-quote" data-tag={quote.tag} onClick={nextQuote} data-sound="none" aria-label="次の応援メッセージ">
+        <span className="tm-quote-tag">{quote.tag}</span>
+        <div className="tm-quote-in" key={qi}>
+          <span className="tm-quote-emoji">{quote.emoji}</span>
+          <span className="tm-quote-text">{quote.text}</span>
+        </div>
+        <span className="tm-quote-hint">タップで次のメッセージ ›</span>
+      </button>
 
       <div className="info-note" style={{ marginTop: 12 }}>
         ⓘ タイマーはバックグラウンドや画面を閉じても計測が続きます。アプリを開き直すとこの続きから再開できます。

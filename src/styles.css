@@ -1502,3 +1502,31 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .hm-legend i[data-lv="3"] { background: #40b56f; }
 .hm-legend i[data-lv="4"] { background: #1a8f4c; }
 @media (prefers-reduced-motion: reduce) { .hm-cal.in-prev, .hm-cal.in-next { animation: none; } }
+
+/* ===== タイマー：BGMトグル・応援メッセージ ===== */
+.tm-subrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 4px; }
+.tm-bgm { flex: none; border: 1px solid var(--line); background: #f6f8fb; color: var(--ink-soft); border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 800; font-family: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.tm-bgm.on { background: linear-gradient(135deg, #dbeafe, #eff6ff); border-color: #bfd8fb; color: var(--blue-600); }
+
+.tm-quote { display: block; width: 100%; text-align: left; position: relative; margin-top: 12px; border: none; cursor: pointer; font-family: inherit; border-radius: 18px; padding: 14px 16px 28px; color: var(--ink); background: linear-gradient(135deg, #eef5ff, #f7fbff); box-shadow: var(--shadow-sm); overflow: hidden; }
+.tm-quote::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--blue-500); }
+.tm-quote-tag { display: inline-block; font-size: 10px; font-weight: 900; letter-spacing: .04em; padding: 3px 10px; border-radius: 999px; background: #fff; color: var(--blue-600); box-shadow: 0 1px 3px rgba(15,23,42,.10); }
+.tm-quote-in { display: flex; gap: 10px; align-items: flex-start; margin-top: 10px; animation: quoteIn .4s ease; }
+.tm-quote-emoji { font-size: 24px; line-height: 1.15; flex: none; }
+.tm-quote-text { font-size: 14.5px; font-weight: 700; line-height: 1.7; }
+.tm-quote-hint { position: absolute; right: 14px; bottom: 9px; font-size: 10px; font-weight: 700; color: var(--ink-soft); opacity: .8; }
+@keyframes quoteIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .tm-quote-in { animation: none; } }
+
+/* タグ別アクセント（左帯・チップ・背景の色を切替） */
+.tm-quote[data-tag="継続"]::before { background: #2563eb; }
+.tm-quote[data-tag="継続"] .tm-quote-tag { color: #2563eb; }
+.tm-quote[data-tag="応援"] { background: linear-gradient(135deg, #fff1e8, #fff8f3); }
+.tm-quote[data-tag="応援"]::before { background: #f97316; }
+.tm-quote[data-tag="応援"] .tm-quote-tag { color: #ea6a10; }
+.tm-quote[data-tag="勇気"] { background: linear-gradient(135deg, #f5eefe, #fbf7ff); }
+.tm-quote[data-tag="勇気"]::before { background: #9333ea; }
+.tm-quote[data-tag="勇気"] .tm-quote-tag { color: #9333ea; }
+.tm-quote[data-tag="豆知識"] { background: linear-gradient(135deg, #e9f7ef, #f5fbf7); }
+.tm-quote[data-tag="豆知識"]::before { background: #16a34a; }
+.tm-quote[data-tag="豆知識"] .tm-quote-tag { color: #15a34a; }
