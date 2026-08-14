@@ -1472,3 +1472,26 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .rf-missing { display: flex; flex-wrap: wrap; gap: 8px; }
 .rf-chip { display: inline-flex; align-items: center; gap: 5px; background: #f4f6fa; border: 1px dashed #cdd6e4; border-radius: 999px; padding: 6px 11px; font-size: 12px; font-weight: 700; color: var(--ink-soft); }
 .rf-chip .e { filter: grayscale(1); opacity: .7; }
+
+/* ===== がんばりカレンダー（ヒートマップ） ===== */
+.hm-wrap { overflow-x: auto; padding-bottom: 2px; }
+.hm-months { display: flex; gap: 3px; margin-bottom: 4px; padding-left: 22px; }
+.hm-months .m { width: 13px; flex: none; font-size: 9px; font-weight: 700; color: var(--ink-soft); white-space: nowrap; overflow: visible; }
+.hm-body { display: flex; gap: 6px; }
+.hm-weekdays { display: flex; flex-direction: column; gap: 3px; flex: none; width: 16px; }
+.hm-weekdays span { height: 13px; line-height: 13px; font-size: 9px; font-weight: 700; color: var(--ink-soft); }
+.hm-grid { display: flex; gap: 3px; }
+.hm-col { display: flex; flex-direction: column; gap: 3px; flex: none; }
+.hm-cell { width: 13px; height: 13px; border-radius: 3px; background: #ebedf0; }
+.hm-cell.fut { background: transparent; }
+.hm-cell[data-lv="1"] { background: #c6e7d0; }
+.hm-cell[data-lv="2"] { background: #86d0a3; }
+.hm-cell[data-lv="3"] { background: #40b56f; }
+.hm-cell[data-lv="4"] { background: #1a8f4c; }
+.hm-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; }
+.hm-legend { display: flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; color: var(--ink-soft); }
+.hm-legend i { width: 12px; height: 12px; border-radius: 3px; background: #ebedf0; display: inline-block; }
+.hm-legend i[data-lv="1"] { background: #c6e7d0; }
+.hm-legend i[data-lv="2"] { background: #86d0a3; }
+.hm-legend i[data-lv="3"] { background: #40b56f; }
+.hm-legend i[data-lv="4"] { background: #1a8f4c; }

@@ -3,6 +3,7 @@ import { useApp } from '../store'
 import { PageHead } from '../components/ui'
 import { CATEGORY_TO_STAT, type Category } from '../data/types'
 import { aggregateByItem } from '../lib/activity'
+import { EffortHeatmap } from '../components/EffortHeatmap'
 
 const CAT_EMOJI: Record<Category, string> = { 勉強: '📘', 運動: '❤️', 生活習慣: '⚡', 振り返り: '✨' }
 // カテゴリ配色（アイコン背景 / 文字・バー色）
@@ -101,6 +102,12 @@ export function ReflectionScreen() {
             : <>あと <b>{insight.missNames}</b>{insight.missMore ? ' ほか' : ''} が未着手でした。</>}
         </div>
       )}
+
+      {/* がんばりカレンダー（日別ヒートマップ・全期間） */}
+      <div className="section-title">がんばりカレンダー</div>
+      <div className="section-card">
+        <EffortHeatmap logs={logs} />
+      </div>
 
       {/* 8項目の内訳 */}
       <div className="section-title">取り組みの内訳（8項目）</div>
