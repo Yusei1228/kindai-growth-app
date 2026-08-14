@@ -9,6 +9,7 @@ import { ENCOURAGEMENTS } from '../data/encouragements'
 const CAT_EMOJI: Record<string, string> = { 勉強: '📘', 運動: '🏃', 生活習慣: '⚡', 振り返り: '✨' }
 const TARGETS = [0, 15, 30, 45, 60] // 分（0=なし/カウントアップ）
 const QUOTE_INTERVAL = 15000 // 応援メッセージの切替間隔（ms）
+const TIMER_TIP_KEY = 'kindai-growth-timer-tip-seen' // 初回だけ表示するアドバイス
 
 /** Fisher–Yates シャッフル（毎回新鮮な応援順にする） */
 function shuffled<T>(arr: T[]): T[] {
@@ -34,6 +35,23 @@ export function TimerScreen({ mission, back, replace }: { mission: ActiveMission
   const originStartRef = useRef<number>(restored ? restored.originStart : Date.now())
   const finishedRef = useRef(false)
   const [confirmBack, setConfirmBack] = useState(false)
+
+  // 初回タイマー起動時のアドバイス（バックグラウンドでも動く旨。一度だけ表示）
+  const [showTip, setShowTip] = useState(() => {
+    try {
+      return localStorage.getItem(TIMER_TIP_KEY) !== 'seen'
+    } catch {
+      return false
+    }
+  })
+  const dismissTip = () => {
+    try {
+      localStorage.setItem(TIMER_TIP_KEY, 'seen')
+    } catch {
+      /* noop */
+    }
+    setShowTip(false)
+  }
 
   // BGM ON/OFF（タイマー画面から直接切替）
   const [bgmOn, setBgmOn] = useState(isBgmEnabled())
@@ -226,6 +244,23 @@ export function TimerScreen({ mission, back, replace }: { mission: ActiveMission
       <div className="info-note" style={{ marginTop: 12 }}>
         ⓘ タイマーはバックグラウンドや画面を閉じても計測が続きます。アプリを開き直すとこの続きから再開できます。
       </div>
+
+      {/* 初回タイマー起動時のアドバイス（1回だけ） */}
+      {showTip && (
+        <div className="overlay" onClick={dismissTip}>
+          <div className="confirm-card" onClick={(e) => e.stopPropagation()}>
+            <div className="confirm-ico">⏱️</div>
+            <h3 className="confirm-title">タイマーは“ながら”でOK！</h3>
+            <p className="confirm-msg">
+              このタイマーは<b>アプリを閉じても、バックグラウンドでも動き続けます</b>。<br />
+              だから<b>バイト前や部活・授業の前にスタート</b>しておけば大丈夫。終わったらアプリに戻って「終了する」を押すだけ！
+            </p>
+            <div className="confirm-btn-row">
+              <button className="confirm-stay" onClick={dismissTip} data-sound="none">わかった！</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 戻る確認ダイアログ（誤タップ防止） */}
       {confirmBack && (
