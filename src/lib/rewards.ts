@@ -34,13 +34,15 @@ export interface Coupon {
 }
 
 export interface GachaResult {
-  reward_id: string
-  kind: string
+  reward_kind: 'coupon' | 'sp' | 'exp'
+  reward_id: string | null // coupon のときのみ（受け取りBOXの行id）
+  amount: number // sp / exp のときの数量
+  kind: string // 表示タグ（協賛店舗特典 / 抽選報酬 / ボーナス報酬）
   sponsor_name: string
   title: string
   emoji: string
   description: string
-  expires_at: string
+  expires_at: string | null
   balance: number
 }
 

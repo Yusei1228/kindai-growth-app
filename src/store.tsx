@@ -96,6 +96,8 @@ interface Store {
   /** ログインボーナスを受け取る（受け取れない場合は null） */
   claimLoginBonus: () => LoginBonusResult | null
   redeemCoupon: (couponId: string) => boolean
+  /** ガチャのSP/EXP当選をゲーム状態に反映（レベルアップ対応） */
+  applyGachaReward: (kind: 'sp' | 'exp', amount: number) => { leveledUp: boolean; newLevel: number }
   /** 学内ランキング（ローカル・Supabase未設定時のフォールバック用） */
   rankingWith: (scope: 'weekly' | 'monthly', faculty?: string) => RankUser[]
   friendRanking: () => RankUser[]
@@ -406,6 +408,29 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return true
     }
 
+    const applyGachaReward: Store['applyGachaReward'] = (kind, amount) => {
+      let leveledUp = false
+      let newLevel = state.user.level
+      setState((prev) => {
+        const u = { ...prev.user, stats: { ...prev.user.stats } }
+        if (kind === 'sp') {
+          u.sp += amount
+        } else {
+          u.exp += amount
+          while (u.exp >= expForLevel(u.level)) {
+            u.exp -= expForLevel(u.level)
+            u.level += 1
+            u.points += 20
+            leveledUp = true
+          }
+        }
+        newLevel = u.level
+        if (u.userId) syncStats(u.userId, { level: u.level, exp: u.exp, totalScore: u.sp, stats: u.stats }, u.name, u.avatar)
+        return { ...prev, user: u }
+      })
+      return { leveledUp, newLevel }
+    }
+
     const meWeeklySP = () => state.logs.filter((l) => Date.now() - l.at < 7 * 86400000).reduce((s, l) => s + l.spEarned, 0)
 
     const friendRanking: Store['friendRanking'] = () => {
@@ -427,7 +452,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setState(loadState())
     }
 
-    return { state, expToNext, register, setAvatar, completeDaily, completeSelf, completeTutorial, claimDailyReward, loginBonusAvailable, claimLoginBonus, redeemCoupon, rankingWith, friendRanking, reset }
+    return { state, expToNext, register, setAvatar, completeDaily, completeSelf, completeTutorial, claimDailyReward, loginBonusAvailable, claimLoginBonus, redeemCoupon, applyGachaReward, rankingWith, friendRanking, reset }
   }, [state])
 
   return <Ctx.Provider value={store}>{children}</Ctx.Provider>

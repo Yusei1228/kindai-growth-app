@@ -227,7 +227,7 @@ export function App() {
       screen = <SponsorDetailScreen id={route.id} back={back} />
       break
     case 'tickets':
-      screen = <TicketsGachaScreen go={go} back={back} notify={notify} />
+      screen = <TicketsGachaScreen go={go} back={back} notify={notify} onLevelUp={setLevelUp} />
       break
     case 'reward-box':
       screen = <RewardBoxScreen go={go} back={back} notify={notify} />

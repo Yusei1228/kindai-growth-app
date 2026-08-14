@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useApp } from '../store'
 import { PageHead } from '../components/ui'
 import { getSummary, spinGacha, type RewardSummary, type GachaResult } from '../lib/rewards'
 import { playSound } from '../lib/sound'
 import type { Route } from '../App'
 
-export function TicketsGachaScreen({ go, back, notify }: { go: (r: Route) => void; back: () => void; notify: (m: string) => void }) {
+export function TicketsGachaScreen({ go, back, notify, onLevelUp }: { go: (r: Route) => void; back: () => void; notify: (m: string) => void; onLevelUp: (lv: number) => void }) {
+  const { applyGachaReward } = useApp()
   const [summary, setSummary] = useState<RewardSummary | null>(null)
   const [spinning, setSpinning] = useState(false)
   const [result, setResult] = useState<GachaResult | null>(null)
@@ -26,6 +28,11 @@ export function TicketsGachaScreen({ go, back, notify }: { go: (r: Route) => voi
       const [res] = await Promise.all([spinGacha(), new Promise((r) => setTimeout(r, 1400))])
       setResult(res)
       playSound('reward')
+      // SP/EXP はその場でゲーム状態に反映（クーポンは受け取りBOXへ）
+      if (res.reward_kind === 'sp' || res.reward_kind === 'exp') {
+        const { leveledUp, newLevel } = applyGachaReward(res.reward_kind, res.amount)
+        if (leveledUp) setTimeout(() => onLevelUp(newLevel), 900)
+      }
       await load()
     } catch (e) {
       const msg = (e as Error).message
@@ -57,12 +64,21 @@ export function TicketsGachaScreen({ go, back, notify }: { go: (r: Route) => voi
           <>
             <div className="rw-win-tag">{result.kind}</div>
             <div className="bold" style={{ fontSize: 18, marginTop: 4 }}>{result.title}</div>
-            <div className="muted" style={{ fontSize: 12 }}>{result.sponsor_name}</div>
-            <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>受け取りBOXに届きました 🎉</p>
-            <div className="row gap12" style={{ justifyContent: 'center', marginTop: 12 }}>
-              <button className="btn-ghost" style={{ width: 'auto', padding: '10px 16px' }} onClick={() => setResult(null)} disabled={!canSpin}>もう一度</button>
-              <button className="btn-primary" style={{ width: 'auto', padding: '10px 18px' }} onClick={() => go({ name: 'reward-box' })}>受け取りBOXへ</button>
-            </div>
+            {result.reward_kind === 'coupon' ? (
+              <>
+                <div className="muted" style={{ fontSize: 12 }}>{result.sponsor_name}</div>
+                <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>受け取りBOXに届きました 🎉</p>
+                <div className="row gap12" style={{ justifyContent: 'center', marginTop: 12 }}>
+                  <button className="btn-ghost" style={{ width: 'auto', padding: '10px 16px' }} onClick={() => setResult(null)} disabled={!canSpin}>もう一度</button>
+                  <button className="btn-primary" style={{ width: 'auto', padding: '10px 18px' }} onClick={() => go({ name: 'reward-box' })}>受け取りBOXへ</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>{result.reward_kind === 'sp' ? 'スコアに反映されました 🎉' : '経験値に反映されました 🎉'}</p>
+                <button className="btn-primary" style={{ width: 'auto', padding: '10px 20px', marginTop: 12 }} onClick={() => setResult(null)} disabled={!canSpin}>もう一度</button>
+              </>
+            )}
           </>
         ) : (
           <>
