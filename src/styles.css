@@ -1861,14 +1861,15 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 
 /* ===== LIFE QUEST MAP v3：1画面マップ＋下部固定コントロール ===== */
 .screen-scroll.lifemap-fit { display: flex; flex-direction: column; overflow: hidden; padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
-.lm-screen { display: flex; flex-direction: column; height: 100%; min-height: 0; gap: 8px; }
+.lm-screen { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; gap: 8px; height: 100%; }
 
 .lm-head-btns { display: flex; align-items: center; gap: 8px; flex: none; }
 .lm-icon-btn { width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--line); background: #fff; font-size: 16px; line-height: 1; }
 
-/* 盤面（フレックスで残り全部・地図が1画面に収まる） */
-.lm-board-area { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
-.lm-map { width: 100%; height: 100%; display: block; }
+/* 盤面（フレックスで残り全部・地図はスクロールできる） */
+.lm-board-area { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 4px 2px; }
+.lm-board-area::-webkit-scrollbar { width: 0; }
+.lm-map { width: 100%; height: auto; display: block; }
 .lm-tile text { user-select: none; }
 .lm-tile.cur circle { filter: drop-shadow(0 3px 6px rgba(15,23,42,.28)); }
 .lm-piece { animation: lmHop .22s ease; }
@@ -1933,3 +1934,10 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .fr-switch.on .fr-knob { left: 23px; }
 
 .fr-foot-date { flex: none; font-size: 11px; color: var(--ink-soft); font-weight: 700; }
+
+/* フレンド：申請タブのバッジ・送信ボタン・入力欄 */
+.fr-tab { position: relative; }
+.fr-tab-badge { position: absolute; top: 3px; right: 8px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: #ef4444; color: #fff; font-size: 10px; font-weight: 900; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+.fr-input { display: block; height: 48px; }
+.fr-send-btn { width: 100%; margin-top: 12px; padding: 14px; font-size: 16px; font-weight: 900; }
+.fr-send-btn:disabled { opacity: .5; }

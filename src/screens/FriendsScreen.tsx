@@ -145,12 +145,15 @@ export function FriendsScreen({ back, notify }: { back: () => void; notify: (m: 
       {/* タブ */}
       <div className="fr-tabs">
         {([
-          ['friends', 'ランキング'],
-          ['requests', `申請${incoming.length ? `(${incoming.length})` : ''}`],
-          ['nearby', 'すれ違い'],
-          ['foot', '足跡'],
-        ] as [Tab, string][]).map(([k, label]) => (
-          <button key={k} className={'fr-tab' + (tab === k ? ' on' : '')} onClick={() => setTab(k)} data-sound="tap">{label}</button>
+          ['friends', 'ランキング', 0],
+          ['requests', '申請', incoming.length],
+          ['nearby', 'すれ違い', 0],
+          ['foot', '足跡', 0],
+        ] as [Tab, string, number][]).map(([k, label, badge]) => (
+          <button key={k} className={'fr-tab' + (tab === k ? ' on' : '')} onClick={() => setTab(k)} data-sound="tap">
+            {label}
+            {badge > 0 && <span className="fr-tab-badge">{badge}</span>}
+          </button>
         ))}
       </div>
 
@@ -179,14 +182,22 @@ export function FriendsScreen({ back, notify }: { back: () => void; notify: (m: 
       {tab === 'requests' && (
         <div>
           <div className="section-card" style={{ marginTop: 12 }}>
-            <div className="bold" style={{ fontSize: 14 }}>IDでフレンド申請</div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-              <input className="fr-input" placeholder="相手のフレンドID（例：AB12CD）" value={codeInput} onChange={(e) => setCodeInput(e.target.value.toUpperCase())} maxLength={8} />
-              <button className="btn-primary" style={{ padding: '0 16px' }} onClick={onSendByCode}>申請</button>
-            </div>
+            <div className="bold" style={{ fontSize: 15 }}>🔎 IDでフレンド申請</div>
+            <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>相手の6桁フレンドIDを入力してください。</div>
+            <input
+              className="fr-input"
+              style={{ width: '100%', marginTop: 12 }}
+              placeholder="例：AB12CD"
+              value={codeInput}
+              onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
+              maxLength={6}
+              inputMode="text"
+              autoCapitalize="characters"
+            />
+            <button className="btn-primary fr-send-btn" onClick={onSendByCode} disabled={codeInput.trim().length < 4}>この人に申請する</button>
           </div>
 
-          <div className="section-title">届いた申請</div>
+          <div className="section-title">届いた申請{incoming.length > 0 ? `（${incoming.length}）` : ''}</div>
           {incoming.length === 0 ? (
             <p className="hint center">今は届いている申請はありません。</p>
           ) : (

@@ -7,10 +7,14 @@ import { LIFE_ROUTES, LIFE_DAILY_ROLLS, getBoard, getLifeRoute, applyVariant, is
 // 盤面は1画面に収まる“地図”（SVGの蛇行ボード）。マスの中身は止まってから判明（ミステリー）。
 // ルーレットは常に画面下に固定（スクロール不要）。課題を現実で達成すると SP/EXP/ステータス。
 
-const COLS = 6
+const COLS = 5
 const CELL = 100
-const R = 36 // マス半径
-const AR = 28 // コマ半径
+const R = 40 // マス半径
+const AR = 30 // コマ半径
+
+// 未判明マスをカラフルに見せるパステル配色（位置で巡回）
+const MYSTERY_FILL = ['#e7f0ff', '#e9fbef', '#fff6dd', '#ffeaea', '#f2ecff', '#e6fbfb', '#fff0e0', '#fdeafd']
+const MYSTERY_RING = ['#7db1ff', '#5fca86', '#f2c14e', '#ff9d9d', '#b79cff', '#5cc9d6', '#ffab6b', '#e79ce6']
 
 interface Popup {
   emoji: string
@@ -56,6 +60,7 @@ export function LifeMapScreen({ notify, onLevelUp }: { notify: (m: string) => vo
   const [rollFace, setRollFace] = useState(0)
   const [walkPos, setWalkPos] = useState<number | null>(null)
   const timers = useRef<number[]>([])
+  const boardRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => () => timers.current.forEach(clearTimeout), [])
 
@@ -77,6 +82,20 @@ export function LifeMapScreen({ notify, onLevelUp }: { notify: (m: string) => vo
 
   const focusPos = walkPos ?? pos
   const piecePt = pts[Math.max(0, focusPos)] ?? { x: CELL / 2, y: CELL / 2 }
+
+  // 現在地（コマ）が見えるよう盤面を自動スクロール
+  useEffect(() => {
+    const area = boardRef.current
+    if (!area) return
+    const svg = area.querySelector('svg')
+    if (!svg) return
+    const h = svg.clientHeight || area.scrollHeight
+    const pt = pts[Math.max(0, focusPos)]
+    if (!pt) return
+    const target = (pt.y / vbH) * h - area.clientHeight / 2
+    area.scrollTo({ top: Math.max(0, target), behavior: 'smooth' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusPos, route?.id, pickerOpen])
 
   const pick = (id: LifeRouteId) => {
     selectLifeRoute(id)
@@ -179,12 +198,26 @@ export function LifeMapScreen({ notify, onLevelUp }: { notify: (m: string) => vo
         </div>
       </div>
 
-      {/* 盤面（1画面に収まる地図） */}
-      <div className="lm-board-area">
-        <svg className="lm-map" viewBox={`-8 -8 ${vbW + 16} ${vbH + 16}`} preserveAspectRatio="xMidYMid meet" style={{ ['--rc' as string]: route.color }}>
-          {/* 道：全体（薄）＋通過済み（色） */}
-          <polyline points={roadAll} fill="none" stroke="#d7deea" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-          <polyline points={roadDone} fill="none" stroke={route.color} strokeOpacity="0.55" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
+      {/* 盤面（スクロールできる大きな地図） */}
+      <div className="lm-board-area" ref={boardRef}>
+        <svg className="lm-map" viewBox={`-16 -20 ${vbW + 32} ${vbH + 52}`} style={{ ['--rc' as string]: route.color, aspectRatio: `${vbW + 32} / ${vbH + 52}` }}>
+          <defs>
+            <linearGradient id="lmBg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#ffffff" />
+              <stop offset="1" stopColor={mix(route.color, 0.1)} />
+            </linearGradient>
+          </defs>
+          {/* 盤面パネル */}
+          <rect x={-16} y={-20} width={vbW + 32} height={vbH + 52} rx="26" fill="url(#lmBg)" stroke={mix(route.color, 0.28)} strokeWidth="2" />
+          {/* 装飾 */}
+          <text x={4} y={-2} fontSize="26" opacity="0.5">✨</text>
+          <text x={vbW - 26} y={-2} fontSize="24" opacity="0.45">🌸</text>
+          <text x={vbW - 30} y={vbH + 24} fontSize="24" opacity="0.4">🌟</text>
+          {/* 道：白ケーシング＋ベース＋通過済み */}
+          <polyline points={roadAll} fill="none" stroke="#ffffff" strokeWidth="22" strokeLinecap="round" strokeLinejoin="round" opacity="0.9" />
+          <polyline points={roadAll} fill="none" stroke="#dbe3ee" strokeWidth="13" strokeLinecap="round" strokeLinejoin="round" />
+          <polyline points={roadDone} fill="none" stroke={route.color} strokeOpacity="0.7" strokeWidth="13" strokeLinecap="round" strokeLinejoin="round" />
+          <polyline points={roadAll} fill="none" stroke="#ffffff" strokeWidth="2" strokeDasharray="2 10" strokeLinecap="round" opacity="0.8" />
           {/* マス */}
           {board.map((n, i) => {
             const p = pts[i]
@@ -192,24 +225,34 @@ export function LifeMapScreen({ notify, onLevelUp }: { notify: (m: string) => vo
             const structural = n.kind === 'goal' || n.kind === 'branch' || n.kind === 'milestone'
             const show = revealed || structural
             const mystery = !show
-            const color = mystery ? '#c6d0e0' : tileColor(n.kind, route.color)
+            const ring = mystery ? MYSTERY_RING[i % MYSTERY_RING.length] : tileColor(n.kind, route.color)
+            const fill = mystery ? MYSTERY_FILL[i % MYSTERY_FILL.length] : '#ffffff'
             const icon = mystery ? '？' : n.emoji
             const isCurrent = i === focusPos
+            const rr = isCurrent ? R + 3 : R
             return (
-              <g key={n.id} className={'lm-tile' + (isCurrent ? ' cur' : '') + (revealed ? ' done' : '')}>
-                <circle cx={p.x} cy={p.y} r={R} fill={mystery ? '#eef2f8' : '#ffffff'} stroke={color} strokeWidth={isCurrent ? 6 : 4} />
-                <text x={p.x} y={p.y} textAnchor="middle" dominantBaseline="central" fontSize={mystery ? 30 : 38} fontWeight="800" fill={mystery ? '#93a2ba' : '#1e293b'}>{icon}</text>
-                {i === 0 && <text x={p.x} y={p.y - R - 8} textAnchor="middle" fontSize="20" fontWeight="900" fill="#64748b">START</text>}
-                {n.kind === 'goal' && <text x={p.x} y={p.y + R + 22} textAnchor="middle" fontSize="20" fontWeight="900" fill="#a76b12">GOAL</text>}
+              <g key={n.id} className={'lm-tile' + (isCurrent ? ' cur' : '')}>
+                {isCurrent && <circle cx={p.x} cy={p.y} r={rr + 7} fill={ring} opacity="0.18" />}
+                <circle cx={p.x} cy={p.y + 3} r={rr} fill="rgba(15,23,42,0.10)" />
+                <circle cx={p.x} cy={p.y} r={rr} fill={fill} stroke={ring} strokeWidth={isCurrent ? 6 : 4} />
+                <text x={p.x} y={p.y} textAnchor="middle" dominantBaseline="central" fontSize={mystery ? 34 : 40} fontWeight="900" fill={mystery ? ring : '#1e293b'}>{icon}</text>
+                {revealed && !structural && (
+                  <g>
+                    <circle cx={p.x + rr * 0.72} cy={p.y - rr * 0.72} r="11" fill="#12a150" />
+                    <text x={p.x + rr * 0.72} y={p.y - rr * 0.72} textAnchor="middle" dominantBaseline="central" fontSize="14" fontWeight="900" fill="#fff">✓</text>
+                  </g>
+                )}
+                {i === 0 && <FlagLabel x={p.x} y={p.y - R - 6} text="START" color="#12a150" />}
+                {n.kind === 'goal' && <FlagLabel x={p.x} y={p.y + R + 26} text="GOAL" color="#d98a24" />}
               </g>
             )
           })}
-          {/* コマ（アバター）：マスの上にちょこんと乗る */}
+          {/* コマ（アバター） */}
           <g transform={`translate(${piecePt.x} ${piecePt.y})`}>
             <g key={'hop' + focusPos} className="lm-piece">
-              <ellipse cx="0" cy={-R - 4} rx={AR * 0.7} ry="4" fill="#0f172a" opacity="0.18" />
-              <circle cx="0" cy={-R - 6 - AR} r={AR + 4} fill="#fff" stroke={route.color} strokeWidth="3" />
-              <foreignObject x={-AR} y={-R - 6 - AR * 2} width={AR * 2} height={AR * 2}>
+              <ellipse cx="0" cy={-R + 2} rx={AR * 0.7} ry="4.5" fill="#0f172a" opacity="0.2" />
+              <circle cx="0" cy={-R - 8 - AR} r={AR + 4} fill="#fff" stroke={route.color} strokeWidth="3.5" />
+              <foreignObject x={-AR} y={-R - 8 - AR * 2} width={AR * 2} height={AR * 2}>
                 <div className="lm-piece-av"><MiniAvatar /></div>
               </foreignObject>
             </g>
@@ -317,6 +360,27 @@ export function LifeMapScreen({ notify, onLevelUp }: { notify: (m: string) => vo
         </div>
       )}
     </div>
+  )
+}
+
+// hex色を白と混ぜて薄くする（amt=色の割合 0..1）
+function mix(hex: string, amt: number): string {
+  const h = hex.replace('#', '')
+  const r = parseInt(h.slice(0, 2), 16)
+  const g = parseInt(h.slice(2, 4), 16)
+  const b = parseInt(h.slice(4, 6), 16)
+  const bl = (c: number) => Math.round(c * amt + 255 * (1 - amt))
+  return '#' + [bl(r), bl(g), bl(b)].map((x) => x.toString(16).padStart(2, '0')).join('')
+}
+
+// 盤面のSTART/GOALの旗ラベル
+function FlagLabel({ x, y, text, color }: { x: number; y: number; text: string; color: string }) {
+  const w = text.length * 11 + 20
+  return (
+    <g>
+      <rect x={x - w / 2} y={y - 12} width={w} height={24} rx={12} fill={color} stroke="#fff" strokeWidth="1.5" />
+      <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize="13" fontWeight="900" fill="#fff" letterSpacing="1">{text}</text>
+    </g>
   )
 }
 
