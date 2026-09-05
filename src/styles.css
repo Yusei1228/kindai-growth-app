@@ -1670,3 +1670,266 @@ body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; 
 .rw-benefit { font-size: 18px; font-weight: 900; color: var(--ink); padding: 18px; }
 .rw-info-row { font-size: 13px; color: var(--ink); padding: 6px 0; border-bottom: 1px solid var(--line); }
 .rw-info-row:last-child { border-bottom: none; }
+
+/* ===== LIFE QUEST MAP（大学生活すごろく） ===== */
+.lifemap-wrap { padding: 4px 2px 20px; }
+
+/* ヘッダー */
+.lm-header {
+  background: linear-gradient(180deg, #ffffff, #f7fbff);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.lm-head-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.lm-theme-chip { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.lm-theme-emoji {
+  width: 42px; height: 42px; flex: none; border-radius: 12px;
+  display: grid; place-items: center; font-size: 22px;
+  background: color-mix(in srgb, var(--rc) 16%, #fff);
+  border: 1px solid color-mix(in srgb, var(--rc) 34%, #fff);
+}
+.lm-theme-name { font-size: 16px; font-weight: 900; color: var(--ink); line-height: 1.2; }
+.lm-theme-tag { font-size: 11px; font-weight: 700; color: var(--ink-soft); }
+.lm-change {
+  flex: none; font-size: 12px; font-weight: 800; color: var(--rc);
+  background: color-mix(in srgb, var(--rc) 10%, #fff);
+  border: 1px solid color-mix(in srgb, var(--rc) 30%, #fff);
+  border-radius: 999px; padding: 7px 12px;
+}
+.lm-progress { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.lm-progress-bar { flex: 1; height: 8px; border-radius: 999px; background: #eef2f7; overflow: hidden; }
+.lm-progress-bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, color-mix(in srgb, var(--rc) 60%, #fff), var(--rc)); transition: width .5s ease; }
+.lm-progress-txt { font-size: 12px; font-weight: 800; color: var(--ink-soft); }
+
+/* ボード（中央の道＋左右のマス） */
+.lm-board { position: relative; padding: 8px 0 4px; }
+.lm-board::before {
+  content: ""; position: absolute; top: 24px; bottom: 24px; left: 50%;
+  width: 4px; transform: translateX(-50%);
+  background: repeating-linear-gradient(#cdd8e6 0 8px, transparent 8px 16px);
+  border-radius: 4px; z-index: 0;
+}
+.lm-start, .lm-goalflag {
+  position: relative; z-index: 1; width: max-content; margin: 0 auto;
+  font-size: 12px; font-weight: 900; letter-spacing: .08em; color: var(--ink-soft);
+  background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 4px 14px;
+}
+.lm-goalflag { margin-top: 4px; }
+.lm-goalflag.reached { color: #0c7a3c; border-color: #bfe6cd; background: #eefaf1; }
+
+.lm-station { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 60px 1fr; align-items: center; margin: 10px 0; }
+.lm-node {
+  grid-column: 2; justify-self: center; position: relative;
+  width: 54px; height: 54px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 24px;
+  background: #fff; border: 3px solid color-mix(in srgb, var(--rc) 55%, #fff);
+  box-shadow: 0 6px 16px rgba(15,23,42,.12);
+}
+.lm-station.goal .lm-node { border-color: #f2b03c; background: #fffdf5; }
+.lm-station.future .lm-node { filter: grayscale(.5); opacity: .55; border-color: var(--line); }
+.lm-station.done .lm-node { background: color-mix(in srgb, var(--rc) 14%, #fff); border-color: var(--rc); color: var(--rc); font-weight: 900; }
+.lm-station.current .lm-node {
+  width: 60px; height: 60px; border-color: var(--rc);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--rc) 22%, #fff), 0 10px 22px rgba(15,23,42,.18);
+  animation: lmPulse 1.8s ease-in-out infinite;
+}
+@keyframes lmPulse { 0%,100% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--rc) 20%, #fff), 0 10px 22px rgba(15,23,42,.18); } 50% { box-shadow: 0 0 0 9px color-mix(in srgb, var(--rc) 8%, #fff), 0 12px 26px rgba(15,23,42,.2); } }
+
+.lm-avatar-marker { position: absolute; top: -34px; left: 50%; transform: translateX(-50%); width: 34px; height: 34px; border-radius: 50%; overflow: hidden; border: 2px solid #fff; box-shadow: 0 4px 10px rgba(15,23,42,.25); background: #dbeafe; animation: lmDrop .45s cubic-bezier(.2,.8,.3,1.4); }
+.lm-avatar-marker .avatar-sm { width: 100%; height: 100%; border-radius: 50%; }
+@keyframes lmDrop { 0% { transform: translate(-50%, -14px) scale(.7); opacity: 0; } 100% { transform: translate(-50%, 0) scale(1); opacity: 1; } }
+
+.lm-card { background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow-sm); padding: 10px 12px; max-width: 100%; }
+.lm-station.left .lm-card { grid-column: 1; margin-right: 4px; }
+.lm-station.right .lm-card { grid-column: 3; margin-left: 4px; }
+.lm-card-title { font-size: 13.5px; font-weight: 800; color: var(--ink); line-height: 1.35; }
+.lm-card-reward { font-size: 11px; font-weight: 800; color: var(--rc); margin-top: 3px; }
+.lm-station.future .lm-card { opacity: .62; box-shadow: none; }
+.lm-station.future .lm-card-reward { color: var(--ink-soft); }
+.lm-station.done .lm-card { background: #fafcff; }
+.lm-station.current .lm-card { border-color: color-mix(in srgb, var(--rc) 45%, #fff); box-shadow: 0 8px 20px color-mix(in srgb, var(--rc) 16%, transparent); }
+
+/* 下部アクション（今のクエスト） */
+.lm-action {
+  margin-top: 14px; border-radius: var(--radius);
+  background: linear-gradient(180deg, #ffffff, #f6fbff);
+  border: 1px solid color-mix(in srgb, var(--rc) 30%, var(--line));
+  box-shadow: var(--shadow-md); padding: 14px 16px;
+}
+.lm-action-tag { font-size: 12px; font-weight: 900; color: var(--rc); }
+.lm-action-title { font-size: 17px; font-weight: 900; color: var(--ink); margin-top: 5px; line-height: 1.35; display: flex; gap: 8px; align-items: baseline; }
+.lm-action-emoji { font-size: 20px; flex: none; }
+.lm-action-hint { font-size: 12.5px; color: var(--ink-soft); font-weight: 600; margin-top: 6px; }
+.lm-do-btn {
+  width: 100%; margin-top: 12px; padding: 14px; border-radius: 14px; border: none;
+  font-size: 16px; font-weight: 900; color: #fff; cursor: pointer;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--rc) 78%, #fff), var(--rc));
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--rc) 34%, transparent);
+}
+.lm-do-btn:active { transform: translateY(1px); }
+.lm-choices { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.lm-choice {
+  flex: 1 1 40%; min-width: 120px; padding: 12px 10px; border-radius: 12px;
+  font-size: 14px; font-weight: 800; color: var(--ink); cursor: pointer;
+  background: color-mix(in srgb, var(--rc) 8%, #fff);
+  border: 1.5px solid color-mix(in srgb, var(--rc) 32%, #fff);
+}
+.lm-choice:active { transform: translateY(1px); }
+.lm-done-card { text-align: center; }
+
+/* 履歴 */
+.lm-history { margin-top: 14px; background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow-sm); padding: 4px 12px; }
+.lm-history > summary { font-size: 13px; font-weight: 800; color: var(--ink); padding: 10px 2px; cursor: pointer; list-style: none; }
+.lm-history > summary::-webkit-details-marker { display: none; }
+.lm-history-list { padding-bottom: 8px; }
+.lm-history-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-top: 1px solid var(--line); font-size: 13px; }
+.lm-history-emoji { flex: none; }
+.lm-history-title { flex: 1; min-width: 0; color: var(--ink); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lm-history-date { flex: none; font-size: 11px; color: var(--ink-soft); font-weight: 700; }
+
+/* テーマ選択 */
+.lm-picker { padding: 6px 2px 20px; }
+.lm-picker-head { position: relative; padding: 14px 16px 16px; margin-bottom: 12px; background: rgba(255,255,255,0.86); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.7); border-radius: 18px; box-shadow: var(--shadow-sm); }
+.lm-picker-kicker { font-size: 13px; font-weight: 900; letter-spacing: .06em; color: #2563eb; }
+.lm-picker-title { font-size: 24px; font-weight: 900; color: var(--ink); line-height: 1.25; margin-top: 6px; }
+.lm-picker-sub { font-size: 13px; color: var(--ink-soft); font-weight: 600; margin-top: 8px; }
+.lm-picker-close { position: absolute; top: 4px; right: 4px; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: #fff; font-size: 18px; color: var(--ink-soft); }
+.lm-theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.lm-theme-card {
+  position: relative; text-align: left; cursor: pointer;
+  background: linear-gradient(180deg, #ffffff, color-mix(in srgb, var(--rc) 7%, #fff));
+  border: 1.5px solid color-mix(in srgb, var(--rc) 26%, var(--line));
+  border-radius: 16px; padding: 14px 12px; box-shadow: var(--shadow-sm);
+  display: flex; flex-direction: column; gap: 3px; min-height: 104px;
+}
+.lm-theme-card:active { transform: translateY(1px); }
+.lm-theme-card.selected { border-color: var(--rc); box-shadow: 0 8px 20px color-mix(in srgb, var(--rc) 20%, transparent); }
+.lm-theme-card-emoji { font-size: 30px; }
+.lm-theme-card-name { font-size: 15px; font-weight: 900; color: var(--ink); }
+.lm-theme-card-tag { font-size: 11px; font-weight: 700; color: var(--ink-soft); line-height: 1.35; }
+.lm-theme-card-badge { position: absolute; top: 10px; right: 10px; font-size: 10px; font-weight: 900; color: #fff; background: var(--rc); border-radius: 999px; padding: 2px 8px; }
+
+/* サイコロ（マイターン） */
+.lm-turn-card { text-align: center; }
+.lm-die { font-size: 58px; line-height: 1; margin: 6px auto 4px; color: var(--ink); filter: drop-shadow(0 6px 10px rgba(15,23,42,.22)); }
+.lm-die.rolling { animation: lmDie .45s linear infinite; }
+@keyframes lmDie { 0% { transform: rotate(-12deg) scale(1); } 50% { transform: rotate(12deg) scale(1.12); } 100% { transform: rotate(-12deg) scale(1); } }
+.lm-do-btn:disabled { opacity: .7; }
+.lm-station.filler .lm-node { border-style: dashed; }
+.lm-station.filler .lm-card { background: #fbfdff; }
+.lm-avatar-start { position: static; display: inline-block; vertical-align: middle; margin-left: 8px; top: auto; left: auto; transform: none; }
+
+/* ===== LIFE QUEST MAP 追加（人生ゲーム版：ルーレット/ターン/占い/イベント） ===== */
+/* マイターン：残ターンのピップ */
+.lm-turns { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 2px; }
+.lm-turn-pip { width: 10px; height: 10px; border-radius: 50%; background: #d7deea; }
+.lm-turn-pip.on { background: var(--rc); box-shadow: 0 0 0 3px color-mix(in srgb, var(--rc) 18%, #fff); }
+.lm-turns-txt { font-size: 12px; font-weight: 800; color: var(--ink-soft); margin-left: 6px; }
+
+/* ルーレット */
+.lm-roulette { position: relative; width: 120px; height: 120px; margin: 12px auto 6px; }
+.lm-pointer { position: absolute; top: -3px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 9px solid transparent; border-right: 9px solid transparent; border-top: 15px solid #ef4444; z-index: 3; filter: drop-shadow(0 2px 2px rgba(0,0,0,.28)); }
+.lm-wheel { position: absolute; inset: 0; border-radius: 50%; border: 4px solid #fff; box-shadow: 0 8px 20px rgba(15,23,42,.22), inset 0 0 0 2px rgba(0,0,0,.05);
+  background: conic-gradient(#60a5fa 0 60deg, #34d399 60deg 120deg, #fbbf24 120deg 180deg, #f472b6 180deg 240deg, #a78bfa 240deg 300deg, #fb7185 300deg 360deg); }
+.lm-wheel-num { position: absolute; top: 50%; left: 50%; margin: -10px 0 0 -8px; width: 16px; text-align: center; font-size: 14px; font-weight: 900; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
+.lm-wheel-hub { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 44px; height: 44px; border-radius: 50%; background: #fff; display: grid; place-items: center; font-size: 20px; font-weight: 900; color: var(--ink); box-shadow: 0 3px 8px rgba(15,23,42,.2); z-index: 2; }
+
+/* マス種別のカード見出し＋ノード色 */
+.lm-card-kind { font-size: 10px; font-weight: 900; letter-spacing: .04em; color: var(--ink-soft); margin-bottom: 2px; }
+.lm-station.k-fortune .lm-node { border-color: #8fb8ff; background: #eef5ff; }
+.lm-station.k-event .lm-node { border-color: #c4a3ff; background: #f3ecff; }
+.lm-station.k-bonus .lm-node { border-color: #f2c14e; background: #fff7e6; }
+.lm-station.k-rest .lm-node { border-color: #9fd8c6; background: #eefaf5; }
+.lm-station.k-milestone .lm-node { border-color: #f2b03c; background: #fff6df; }
+.lm-station.k-milestone .lm-card-kind, .lm-station.k-milestone .lm-card-title { color: #a76b12; }
+.lm-station.k-event .lm-card-kind { color: #6b3fd0; }
+.lm-station.k-fortune .lm-card-kind { color: #2f6fe0; }
+.lm-station.filler.done .lm-card { opacity: .85; }
+
+/* イベント/中間ゴールのポップアップ */
+.lm-popup { background: #fff; border-radius: 22px; padding: 26px 24px; width: min(320px, 86vw); text-align: center; box-shadow: var(--shadow-lg); animation: lmPop .3s cubic-bezier(.2,.8,.3,1.3); }
+@keyframes lmPop { 0% { transform: scale(.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.lm-popup.tone-milestone { background: linear-gradient(180deg, #fffdf5, #fff3d6); }
+.lm-popup.tone-event { background: linear-gradient(180deg, #faf7ff, #f0e8ff); }
+.lm-popup-emoji { font-size: 54px; line-height: 1; }
+.lm-popup-kind { font-size: 12px; font-weight: 900; color: var(--ink-soft); margin-top: 6px; letter-spacing: .04em; }
+.lm-popup-title { font-size: 18px; font-weight: 900; color: var(--ink); margin-top: 6px; line-height: 1.4; }
+.lm-popup-sub { font-size: 14px; font-weight: 800; color: var(--green-600); margin-top: 8px; }
+
+/* ===== LIFE QUEST MAP v3：1画面マップ＋下部固定コントロール ===== */
+.screen-scroll.lifemap-fit { display: flex; flex-direction: column; overflow: hidden; padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
+.lm-screen { display: flex; flex-direction: column; height: 100%; min-height: 0; gap: 8px; }
+
+.lm-head-btns { display: flex; align-items: center; gap: 8px; flex: none; }
+.lm-icon-btn { width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--line); background: #fff; font-size: 16px; line-height: 1; }
+
+/* 盤面（フレックスで残り全部・地図が1画面に収まる） */
+.lm-board-area { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.lm-map { width: 100%; height: 100%; display: block; }
+.lm-tile text { user-select: none; }
+.lm-tile.cur circle { filter: drop-shadow(0 3px 6px rgba(15,23,42,.28)); }
+.lm-piece { animation: lmHop .22s ease; }
+@keyframes lmHop { 0% { transform: translateY(-7px); } 60% { transform: translateY(2px); } 100% { transform: translateY(0); } }
+.lm-piece-av { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; }
+.lm-piece-av .avatar-sm { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+
+/* 下部コントロール（常に見える） */
+.lm-control { flex: none; }
+.lm-spinbar { display: flex; align-items: center; gap: 12px; background: linear-gradient(180deg, #fff, #f6fbff); border: 1px solid color-mix(in srgb, var(--rc) 26%, var(--line)); border-radius: 18px; box-shadow: var(--shadow-md); padding: 12px 14px; }
+.lm-spinbar-right { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.lm-spinbar-right .lm-do-btn { margin-top: 0; padding: 12px; font-size: 15px; }
+.lm-spinbar .lm-turns { justify-content: flex-start; margin-top: 0; }
+
+.lm-roulette.sm { width: 84px; height: 84px; margin: 0; flex: none; }
+.lm-roulette.sm .lm-wheel-hub { width: 32px; height: 32px; font-size: 15px; }
+.lm-roulette.sm .lm-wheel-num { font-size: 11px; margin: -8px 0 0 -6px; }
+.lm-roulette.sm .lm-pointer { border-top-width: 11px; border-left-width: 7px; border-right-width: 7px; }
+
+.lm-actionbar, .lm-done-card { background: linear-gradient(180deg, #fff, #f6fbff); border: 1px solid color-mix(in srgb, var(--rc) 30%, var(--line)); border-radius: 18px; box-shadow: var(--shadow-md); padding: 12px 16px; }
+.lm-actionbar .lm-do-btn { margin-top: 10px; }
+.lm-done-card { text-align: center; }
+.lm-done-card .lm-choices { margin-top: 10px; }
+
+/* これまでの歩み モーダル */
+.lm-hist-modal { background: #fff; border-radius: 20px; width: min(340px, 88vw); max-height: 70vh; overflow: auto; padding: 16px 18px; box-shadow: var(--shadow-lg); }
+.lm-hist-head { display: flex; justify-content: space-between; align-items: center; font-weight: 900; font-size: 16px; color: var(--ink); margin-bottom: 8px; }
+.lm-hist-close { border: none; background: none; font-size: 22px; color: var(--ink-soft); line-height: 1; }
+.lm-hist-list .lm-history-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 13px; }
+
+/* ===== フレンド機能 ===== */
+.fr-mycode { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding: 12px 16px; border-radius: 14px; background: linear-gradient(135deg, #1a2f63, #0f1e47); color: #fff; box-shadow: var(--shadow-md); }
+.fr-mycode-lab { font-size: 11px; font-weight: 700; opacity: .85; }
+.fr-mycode-val { font-size: 26px; font-weight: 900; letter-spacing: .18em; font-family: ui-monospace, monospace; }
+.fr-copy { flex: none; font-size: 12px; font-weight: 800; color: #0f1e47; background: #fff; border: none; border-radius: 999px; padding: 8px 14px; }
+
+.fr-tabs { display: flex; gap: 6px; margin-top: 14px; background: #eef2f8; border-radius: 12px; padding: 4px; }
+.fr-tab { flex: 1; padding: 9px 4px; border: none; background: none; border-radius: 9px; font-size: 12.5px; font-weight: 800; color: var(--ink-soft); }
+.fr-tab.on { background: #fff; color: var(--ink); box-shadow: var(--shadow-sm); }
+
+.fr-rank-row, .fr-req-row, .fr-foot-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-top: 8px; background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow-sm); }
+.fr-rank-row.me { border-color: #bcd4ff; background: #f4f9ff; }
+.fr-rank-no { flex: none; width: 24px; text-align: center; font-weight: 900; color: var(--ink-soft); font-size: 15px; }
+.fr-av { flex: none; border-radius: 50%; overflow: hidden; }
+.fr-av img { width: 100%; height: 100%; object-fit: cover; }
+.fr-name { font-weight: 800; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fr-sub { font-size: 11px; color: var(--ink-soft); font-weight: 600; margin-top: 1px; }
+.fr-score { flex: none; font-size: 17px; font-weight: 900; color: var(--ink); }
+.fr-score small { font-size: 11px; font-weight: 700; color: var(--ink-soft); }
+
+.fr-input { flex: 1; min-width: 0; border: 1.5px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 15px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.fr-input:focus { outline: none; border-color: var(--blue-400); }
+
+.fr-accept { flex: none; font-size: 13px; font-weight: 900; color: #fff; background: linear-gradient(135deg, #33d97e, #12a150); border: none; border-radius: 999px; padding: 8px 16px; box-shadow: 0 4px 10px rgba(18,161,80,.3); }
+.fr-accept:disabled { opacity: .45; box-shadow: none; }
+.fr-decline { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: #fff; color: var(--ink-soft); font-size: 18px; }
+.fr-tagmini { flex: none; font-size: 11px; font-weight: 800; color: var(--ink-soft); background: #eef2f8; border-radius: 999px; padding: 6px 12px; }
+
+.fr-switch { flex: none; width: 48px; height: 28px; border-radius: 999px; background: #cbd5e1; border: none; position: relative; transition: background .2s; }
+.fr-switch.on { background: #12a150; }
+.fr-knob { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.2); transition: left .2s; }
+.fr-switch.on .fr-knob { left: 23px; }
+
+.fr-foot-date { flex: none; font-size: 11px; color: var(--ink-soft); font-weight: 700; }

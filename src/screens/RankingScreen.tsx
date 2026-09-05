@@ -16,7 +16,7 @@ interface Board {
   source: 'supabase' | 'local'
 }
 
-export function RankingScreen({ go }: { go: (r: Route) => void }) {
+export function RankingScreen({ go, back }: { go: (r: Route) => void; back?: () => void }) {
   const { state } = useApp()
   const me = state.user
   const [board, setBoard] = useState<Board | null>(null)
@@ -66,7 +66,7 @@ export function RankingScreen({ go }: { go: (r: Route) => void }) {
   if (!board) {
     return (
       <>
-        <PageHead title="ランキング" />
+        <PageHead title="ランキング" onBack={back} />
         <p className="center muted" style={{ marginTop: 40 }}>読み込み中…</p>
       </>
     )
@@ -86,7 +86,7 @@ export function RankingScreen({ go }: { go: (r: Route) => void }) {
 
   return (
     <div className="rank-theme">
-      <PageHead title="ランキング" />
+      <PageHead title="ランキング" onBack={back} />
 
       {/* 自分の順位サマリ */}
       <div className="section-card rank-summary">

@@ -10,6 +10,8 @@ import { SelfMissionScreen } from './screens/SelfMissionScreen'
 import { TimerScreen } from './screens/TimerScreen'
 import { ReviewScreen } from './screens/ReviewScreen'
 import { RankingScreen } from './screens/RankingScreen'
+import { LifeMapScreen } from './screens/LifeMapScreen'
+import { FriendsScreen } from './screens/FriendsScreen'
 import { UserProfileScreen } from './screens/UserProfileScreen'
 import { ReflectionScreen } from './screens/ReflectionScreen'
 import { MyPageScreen } from './screens/MyPageScreen'
@@ -40,6 +42,8 @@ export type Route =
   | { name: 'timer'; mission: ActiveMission }
   | { name: 'review'; mission: ActiveMission; minutes: number; startedAtMs?: number }
   | { name: 'ranking' }
+  | { name: 'friends' }
+  | { name: 'lifemap' }
   | { name: 'profile'; user: RankRow; rank: number; total: number; isMe: boolean }
   | { name: 'reflection' }
   | { name: 'mypage' }
@@ -60,8 +64,10 @@ const TAB_OF: Partial<Record<Route['name'], Tab>> = {
   self: 'home',
   timer: 'home',
   review: 'home',
-  ranking: 'ranking',
-  profile: 'ranking',
+  lifemap: 'lifemap',
+  ranking: 'home', // ランキングはホームの「大学」ボタンからの遷移（タブではない）
+  friends: 'home',
+  profile: 'home',
   reflection: 'reflection',
   mypage: 'mypage',
   rewards: 'mypage',
@@ -103,7 +109,7 @@ export function App() {
   const routeRef = useRef(route)
   routeRef.current = route
 
-  const TAB_NAMES = ['home', 'ranking', 'reflection', 'mypage']
+  const TAB_NAMES = ['home', 'lifemap', 'reflection', 'mypage']
 
   const go = useCallback((r: Route) => {
     // タブのルート画面へ移動するときは履歴をリセット（トップ階層のため）
@@ -162,7 +168,7 @@ export function App() {
 
   const onTab = (t: Tab) => {
     if (t === 'home') go({ name: 'home' })
-    if (t === 'ranking') go({ name: 'ranking' })
+    if (t === 'lifemap') go({ name: 'lifemap' })
     if (t === 'reflection') go({ name: 'reflection' })
     if (t === 'mypage') go({ name: 'mypage' })
   }
@@ -201,7 +207,13 @@ export function App() {
       )
       break
     case 'ranking':
-      screen = <RankingScreen go={go} />
+      screen = <RankingScreen go={go} back={back} />
+      break
+    case 'lifemap':
+      screen = <LifeMapScreen notify={notify} onLevelUp={setLevelUp} />
+      break
+    case 'friends':
+      screen = <FriendsScreen back={back} notify={notify} />
       break
     case 'profile':
       screen = <UserProfileScreen user={route.user} rank={route.rank} total={route.total} isMe={route.isMe} back={back} />
@@ -248,7 +260,7 @@ export function App() {
     <div className="app-shell">
       <div className={'phone tod-' + bodyTod}>
         <SceneBackground key={isRanking ? 'ranking' : 'scene'} mode={isRanking ? 'ranking' : 'scene'} />
-        <div className={'screen-scroll' + (route.name === 'home' ? ' home-fit' : '')} key={route.name}>
+        <div className={'screen-scroll' + (route.name === 'home' ? ' home-fit' : '') + (route.name === 'lifemap' ? ' lifemap-fit' : '')} key={route.name}>
           {screen}
         </div>
 

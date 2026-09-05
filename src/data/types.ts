@@ -1,5 +1,7 @@
 // ===== KINDAI GROWTH ドメイン型定義 =====
 
+import type { LifeRouteId } from './lifeMap'
+
 /** RPGステータス（努力カテゴリに対応）
  *  体力 = 運動 / 知力 = 勉強 / 活力 = 生活習慣 / 魅力 = 振り返り・継続
  */
@@ -39,7 +41,7 @@ export interface Mission {
   done: boolean
 }
 
-/** セルフミッションの定義（8種・2ステータス・時間比例報酬） */
+/** セルフミッションの定義（9種・2ステータス・時間比例報酬） */
 export interface SelfMission {
   id: string
   title: string
@@ -135,6 +137,35 @@ export interface LoginBonusState {
   lastClaimDate: string // 最後に受け取った app_date（1日1回制限）
 }
 
+/** LIFE QUEST MAP：1マス達成の履歴（大学生活アルバムの元データ） */
+export interface LifeHistoryEntry {
+  routeId: LifeRouteId
+  theme: string
+  nodeId: string
+  title: string // 置換後の実表示タイトル
+  emoji: string
+  kind: 'quest' | 'branch' | 'goal'
+  at: number // timestamp
+  date: string // app_date (yyyy-mm-dd)
+}
+
+/** LIFE QUEST MAP：ルートごとの進捗（すごろく／サイコロ進行・後でサーバー権威化しやすい形） */
+export interface LifeRouteProgress {
+  pos: number // アバターの現在マス（-1=START、0..last=盤面index）
+  awaiting: boolean // 止まったマスの解決（行動達成/分岐選択/ゴール完了）待ちか
+  variant: string | null // 選択した分岐ラベル（{v}に反映）
+  done: boolean // ゴール到達済みか
+  lastRoll?: number // 直近の出目（表示用）
+}
+
+export interface LifeMapState {
+  routeId: LifeRouteId | null // 現在のメインクエスト
+  progress: Record<string, LifeRouteProgress> // routeId -> 進捗
+  history: LifeHistoryEntry[] // 達成履歴（新しい順）
+  rollDay: string // ルーレットを回した app_date（日替わりでターン数リセット）
+  rollsUsed: number // 今日これまでに回した回数（ボーナスマスは消費しない）
+}
+
 export interface AppState {
   user: UserState
   missions: Mission[]
@@ -145,6 +176,7 @@ export interface AppState {
   coupons: CouponStore[]
   challengeDaysLeft: number
   loginBonus: LoginBonusState
+  lifeMap: LifeMapState // LIFE QUEST MAP の進捗
 }
 
 /** レベルアップに必要なEXP（レベルに応じて増加） */

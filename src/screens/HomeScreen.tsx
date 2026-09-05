@@ -1,14 +1,31 @@
+import { useEffect, useState } from 'react'
 import { useApp } from '../store'
 import { expForLevel } from '../data/types'
 import { GemIcon, PointIcon } from '../components/ui'
 import { HeroAvatar } from '../components/Avatar'
 import { StatRing } from '../components/StatRing'
+import { getSummary, rewardsAvailable } from '../lib/rewards'
 import type { Route } from '../App'
 
 export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m: string) => void }) {
   const { state, loginBonusAvailable } = useApp()
   const u = state.user
   const loginBonus = state.loginBonus
+
+  // 報酬（ガチャ抽選券）の残数をサーバーから取得。1枚以上のときだけバッジを出す。
+  const [ticketBalance, setTicketBalance] = useState(0)
+  useEffect(() => {
+    let alive = true
+    ;(async () => {
+      if (!(await rewardsAvailable())) return
+      const summary = await getSummary()
+      if (alive && summary) setTicketBalance(summary.balance)
+    })()
+    return () => {
+      alive = false
+    }
+  }, [])
+
   const need = expForLevel(u.level)
   const expPct = Math.min(100, Math.round((u.exp / need) * 100))
   const remaining = Math.max(0, need - u.exp)
@@ -68,16 +85,16 @@ export function HomeScreen({ go, notify }: { go: (r: Route) => void; notify: (m:
 
         {/* 右：サイドボタン（高品質・光沢＋立体） */}
         <div className="side-rail">
-          <button className="rail-btn" onClick={() => notify('フレンド機能（一覧・招待）は近日公開')}>
-            <span className="rail-ico rail-blue"><IconFriends /><span className="badge">1</span></span>
+          <button className="rail-btn" onClick={() => go({ name: 'friends' })}>
+            <span className="rail-ico rail-blue"><IconFriends /></span>
             <span className="rail-label">フレンド</span>
           </button>
           <button className="rail-btn" onClick={() => go({ name: 'ranking' })}>
-            <span className="rail-ico rail-red"><IconUniv /><span className="badge">1</span></span>
+            <span className="rail-ico rail-red"><IconUniv /></span>
             <span className="rail-label">大学</span>
           </button>
           <button className="rail-btn" onClick={() => go({ name: 'rewards' })}>
-            <span className="rail-ico rail-green"><IconGift /><span className="badge">2</span></span>
+            <span className="rail-ico rail-green"><IconGift />{ticketBalance > 0 && <span className="badge">{ticketBalance}</span>}</span>
             <span className="rail-label">報酬</span>
           </button>
         </div>

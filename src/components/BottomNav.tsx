@@ -1,8 +1,8 @@
-export type Tab = 'home' | 'ranking' | 'reflection' | 'mypage'
+export type Tab = 'home' | 'lifemap' | 'reflection' | 'mypage'
 
 const ITEMS: { key: Tab; label: string; ico: string; badge?: number }[] = [
   { key: 'home', label: 'ホーム', ico: '🏠' },
-  { key: 'ranking', label: 'ランキング', ico: '🏆' },
+  { key: 'lifemap', label: 'すごろく', ico: '🗺️' },
   { key: 'reflection', label: '振り返り', ico: '📈' },
   { key: 'mypage', label: 'マイページ', ico: '👤' },
 ]

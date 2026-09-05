@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import type { AppState, Category, Mission, RankUser, SelfMission, StatKey } from './data/types'
+import type { AppState, Category, LifeHistoryEntry, Mission, RankUser, SelfMission, StatKey } from './data/types'
 import { CATEGORY_TO_STAT, expForLevel } from './data/types'
+import { getLifeRoute, getBoard, isAutoNode, applyVariant, LIFE_DAILY_ROLLS, type LifeRouteId, type LifeNode } from './data/lifeMap'
 import { seedState } from './data/seed'
 import { pickDailyMissions, DAILY_REWARD } from './data/dailyPool'
 import { selfMissionReward, SELF_COINS } from './data/selfMissions'
@@ -10,6 +11,7 @@ import { appDate } from './lib/appDate'
 import { getUserId } from './lib/session'
 import { registerProfile, syncStats, logMission, syncAvatar, flushLogOutbox } from './lib/api'
 import { grantDailyTicket } from './lib/rewards'
+import { syncMyProfile } from './lib/friends'
 import { normalizeAvatar } from './data/avatars'
 
 const STORAGE_KEY = 'kindai-growth-state-v2'
@@ -44,6 +46,19 @@ function loadState(): AppState {
   const month = loginMonthKey(today)
   if (!s.loginBonus || s.loginBonus.monthKey !== month) {
     s.loginBonus = { monthKey: month, claimedDays: 0, lastClaimDate: '' }
+  }
+  // LIFE QUEST MAP：旧セーブに無ければ初期化
+  if (!s.lifeMap || typeof s.lifeMap !== 'object') {
+    s.lifeMap = { routeId: null, progress: {}, history: [], rollDay: '', rollsUsed: 0 }
+  }
+  if (!s.lifeMap.progress) s.lifeMap.progress = {}
+  if (!Array.isArray(s.lifeMap.history)) s.lifeMap.history = []
+  if (typeof s.lifeMap.rollDay !== 'string') s.lifeMap.rollDay = ''
+  if (typeof s.lifeMap.rollsUsed !== 'number') s.lifeMap.rollsUsed = 0
+  // 旧スキーマ（index基準）の進捗は、すごろく（pos基準）へ作り直す
+  for (const k of Object.keys(s.lifeMap.progress)) {
+    const p = s.lifeMap.progress[k] as { pos?: number }
+    if (!p || typeof p.pos !== 'number') s.lifeMap.progress[k] = { pos: -1, awaiting: false, variant: null, done: false }
   }
   return s
 }
@@ -80,6 +95,38 @@ interface LoginBonusResult {
   newLevel: number
 }
 
+/** LIFE MAP：ルーレットを回した結果（マイターン） */
+interface LifeRollResult {
+  ok: boolean
+  noTurns?: boolean // 今日のターンを使い切っていて回せなかった
+  roll: number // 出目（1-6）
+  from: number // 移動前マス
+  to: number // 移動後マス
+  landedKind: LifeNode['kind']
+  landedEmoji: string
+  auto: boolean // 占い/イベント/ボーナス/休憩/中間ゴール＝自動解決済みか
+  bonusSpin: boolean // 「もう1回」＝ターンを消費しなかった
+  gainedSP: number
+  gainedExp: number
+  leveledUp: boolean
+  newLevel: number
+  title: string
+  done: boolean
+}
+
+/** LIFE MAP：止まったマスの解決（行動達成/分岐選択/ゴール完了）結果 */
+interface LifeResolveResult {
+  ok: boolean
+  isBranch: boolean
+  isGoal: boolean
+  gainedSP: number
+  gainedExp: number
+  leveledUp: boolean
+  newLevel: number
+  done: boolean
+  title: string
+}
+
 interface Store {
   state: AppState
   expToNext: number
@@ -104,6 +151,16 @@ interface Store {
   /** 学内ランキング（ローカル・Supabase未設定時のフォールバック用） */
   rankingWith: (scope: 'weekly' | 'monthly', faculty?: string) => RankUser[]
   friendRanking: () => RankUser[]
+  /** LIFE MAP：今日あと何回まわせるか（日替わりリセット） */
+  lifeRollsLeft: number
+  /** LIFE MAP：メインクエスト（ルート）を選択（進捗は保持） */
+  selectLifeRoute: (routeId: LifeRouteId) => void
+  /** LIFE MAP：ルーレットを回してキャラを進める（マイターン）。forced=出目指定（演出同期用）。 */
+  rollLifeDice: (forced?: number) => LifeRollResult
+  /** LIFE MAP：止まったマスを解決（行動達成 / 分岐は choiceLabel / ゴール完了）。 */
+  resolveLifeSquare: (choiceLabel?: string) => LifeResolveResult
+  /** LIFE MAP：現在（または指定）ルートを最初からやり直す */
+  resetLifeRoute: (routeId?: LifeRouteId) => void
   reset: () => void
 }
 
@@ -121,6 +178,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const u = state.user
     if (u.registered && u.userId) {
       syncStats(u.userId, { level: u.level, exp: u.exp, totalScore: u.sp, stats: u.stats }, u.name, u.avatar)
+      // フレンドID（friend_code）を自動付与／既存アカウントにも起動時にバックフィル
+      syncMyProfile({ nickname: u.name || 'あなた', avatar: u.avatar, level: u.level, totalScore: u.sp })
     }
     // 未送信の達成ログを再送（履歴を失わない）
     flushLogOutbox()
@@ -131,6 +190,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const store: Store = useMemo(() => {
     const expToNext = expForLevel(state.user.level) - state.user.exp
+    const lmToday = appDate()
+    const lifeUsed = state.lifeMap.rollDay === lmToday ? state.lifeMap.rollsUsed : 0
+    const lifeRollsLeft = Math.max(0, LIFE_DAILY_ROLLS - lifeUsed)
 
     /** 報酬を適用した次状態と結果を返す共通ロジック */
     function applyReward(
@@ -249,6 +311,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const userId = getUserId()
       setState((prev) => ({ ...prev, user: { ...prev.user, userId, name: nickname.trim(), registered: true, facultyId, enrollmentYear } }))
       registerProfile(userId, nickname.trim(), state.user.avatar, facultyId, enrollmentYear)
+      // 登録と同時にフレンドID（friend_code）を自動作成
+      syncMyProfile({ nickname: nickname.trim(), avatar: state.user.avatar, level: state.user.level, totalScore: state.user.sp })
     }
 
     const setAvatar: Store['setAvatar'] = (file) => {
@@ -451,12 +515,156 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return [...pool].sort((a, b) => b[key] - a[key])
     }
 
+    // EXPからレベルアップを処理（複数繰り上がり対応）。u を破壊的に更新し、上がったか返す。
+    function levelUpInPlace(u: AppState['user']): boolean {
+      let leveled = false
+      while (u.exp >= expForLevel(u.level)) {
+        u.exp -= expForLevel(u.level)
+        u.level += 1
+        u.points += 20
+        leveled = true
+      }
+      return leveled
+    }
+    function lifeHist(rid: LifeRouteId, theme: string, node: LifeNode, variant: string | null): LifeHistoryEntry {
+      return { routeId: rid, theme, nodeId: node.id, title: applyVariant(node.title, variant), emoji: node.emoji, kind: node.kind === 'goal' || node.kind === 'branch' ? node.kind : 'quest', at: Date.now(), date: appDate() }
+    }
+
+    const selectLifeRoute: Store['selectLifeRoute'] = (routeId) => {
+      setState((prev) => {
+        const progress = { ...prev.lifeMap.progress }
+        if (!progress[routeId]) progress[routeId] = { pos: -1, awaiting: false, variant: null, done: false }
+        return { ...prev, lifeMap: { ...prev.lifeMap, routeId, progress } }
+      })
+    }
+
+    const rollLifeDice: Store['rollLifeDice'] = (forced) => {
+      let out: LifeRollResult = { ok: false, roll: 0, from: -1, to: -1, landedKind: 'quest', landedEmoji: '', auto: false, bonusSpin: false, gainedSP: 0, gainedExp: 0, leveledUp: false, newLevel: state.user.level, title: '', done: false }
+      setState((prev) => {
+        const rid = prev.lifeMap.routeId
+        const route = getLifeRoute(rid)
+        const board = getBoard(rid)
+        if (!rid || !route || !board.length) return prev
+        const pm = { ...prev.lifeMap.progress }
+        const p = pm[rid] ?? { pos: -1, awaiting: false, variant: null, done: false }
+        if (p.awaiting || p.done) return prev // 解決待ち/完了中は回せない
+
+        // 日替わりでターン数リセット。今日の残ターンが無ければ回せない。
+        const today = appDate()
+        const usedToday = prev.lifeMap.rollDay === today ? prev.lifeMap.rollsUsed : 0
+        if (usedToday >= LIFE_DAILY_ROLLS) {
+          out = { ...out, noTurns: true }
+          return prev
+        }
+
+        const last = board.length - 1
+        const roll = forced && forced >= 1 && forced <= 6 ? forced : 1 + Math.floor(Math.random() * 6)
+        let to = Math.min(p.pos + roll, last)
+        // 人生ゲームの分岐/チェックポイントは強制停止（飛び越えない）
+        for (let j = p.pos + 1; j <= to; j++) {
+          if (board[j].kind === 'branch' || board[j].kind === 'milestone') {
+            to = j
+            break
+          }
+        }
+        const node = board[to]
+        const auto = isAutoNode(node.kind)
+        const bonusSpin = !!node.bonusSpin
+
+        const u = { ...prev.user, stats: { ...prev.user.stats } }
+        let gainedSP = 0
+        let gainedExp = 0
+        let leveled = false
+        let history = prev.lifeMap.history
+
+        if (auto) {
+          // 占い/イベント/ボーナス/休憩/中間ゴール：自動で報酬 → 演出
+          gainedSP = node.sp
+          gainedExp = node.exp
+          u.sp += gainedSP
+          u.exp += gainedExp
+          if (node.points) u.points += node.points
+          if (node.stat) {
+            const stat = CATEGORY_TO_STAT[node.category]
+            u.stats[stat] = Math.min(100, u.stats[stat] + node.stat)
+          }
+          leveled = levelUpInPlace(u)
+          history = [lifeHist(rid, route.theme, node, p.variant), ...history].slice(0, 300)
+        }
+        // quest/branch/goal は awaiting=true（報酬は解決時に付与）
+        pm[rid] = { pos: to, awaiting: !auto, variant: p.variant, done: false, lastRoll: roll }
+
+        // ターン消費（ボーナスマスは消費しない＝もう1回）
+        const rollsUsed = bonusSpin ? usedToday : usedToday + 1
+
+        const next: AppState = { ...prev, user: u, lifeMap: { ...prev.lifeMap, progress: pm, history, rollDay: today, rollsUsed } }
+        if (auto && u.userId) syncStats(u.userId, { level: u.level, exp: u.exp, totalScore: u.sp, stats: u.stats }, u.name, u.avatar)
+        out = { ok: true, roll, from: p.pos, to, landedKind: node.kind, landedEmoji: node.emoji, auto, bonusSpin, gainedSP, gainedExp, leveledUp: leveled, newLevel: u.level, title: applyVariant(node.title, p.variant), done: false }
+        return next
+      })
+      return out
+    }
+
+    const resolveLifeSquare: Store['resolveLifeSquare'] = (choiceLabel) => {
+      let out: LifeResolveResult = { ok: false, isBranch: false, isGoal: false, gainedSP: 0, gainedExp: 0, leveledUp: false, newLevel: state.user.level, done: false, title: '' }
+      setState((prev) => {
+        const rid = prev.lifeMap.routeId
+        const route = getLifeRoute(rid)
+        const board = getBoard(rid)
+        if (!rid || !route || !board.length) return prev
+        const pm = { ...prev.lifeMap.progress }
+        const p = pm[rid]
+        if (!p || !p.awaiting) return prev
+        const node = board[p.pos]
+        if (!node) return prev
+
+        const u = { ...prev.user, stats: { ...prev.user.stats } }
+        let variant = p.variant
+        let gainedSP = 0
+        let gainedExp = 0
+
+        if (node.kind === 'branch') {
+          // 分岐：選択を記録（{v}反映）。SPなし・小EXP。
+          variant = choiceLabel ?? node.choices?.[0]?.label ?? null
+          gainedExp = node.exp
+        } else {
+          // クエスト/ゴール：現実行動の結果として SP/EXP/ステータス/コイン
+          gainedSP = node.sp
+          gainedExp = node.exp
+          const stat = CATEGORY_TO_STAT[node.category]
+          u.stats[stat] = Math.min(100, u.stats[stat] + node.stat)
+          u.points += 2
+        }
+        u.sp += gainedSP
+        u.exp += gainedExp
+        const leveled = levelUpInPlace(u)
+        const done = node.kind === 'goal' || p.pos >= board.length - 1
+
+        pm[rid] = { ...p, awaiting: false, variant, done }
+        const history = [lifeHist(rid, route.theme, node, variant), ...prev.lifeMap.history].slice(0, 300)
+        const next: AppState = { ...prev, user: u, lifeMap: { ...prev.lifeMap, progress: pm, history } }
+        if (u.userId) syncStats(u.userId, { level: u.level, exp: u.exp, totalScore: u.sp, stats: u.stats }, u.name, u.avatar)
+        out = { ok: true, isBranch: node.kind === 'branch', isGoal: node.kind === 'goal', gainedSP, gainedExp, leveledUp: leveled, newLevel: u.level, done, title: applyVariant(node.title, variant) }
+        return next
+      })
+      return out
+    }
+
+    const resetLifeRoute: Store['resetLifeRoute'] = (routeId) => {
+      setState((prev) => {
+        const rid = routeId ?? prev.lifeMap.routeId
+        if (!rid) return prev
+        const progress = { ...prev.lifeMap.progress, [rid]: { pos: -1, awaiting: false, variant: null, done: false } }
+        return { ...prev, lifeMap: { ...prev.lifeMap, progress } }
+      })
+    }
+
     const reset: Store['reset'] = () => {
       localStorage.removeItem(STORAGE_KEY)
       setState(loadState())
     }
 
-    return { state, expToNext, register, setAvatar, completeDaily, completeSelf, completeTutorial, claimDailyReward, loginBonusAvailable, claimLoginBonus, redeemCoupon, applyGachaReward, rankingWith, friendRanking, reset }
+    return { state, expToNext, register, setAvatar, completeDaily, completeSelf, completeTutorial, claimDailyReward, loginBonusAvailable, claimLoginBonus, redeemCoupon, applyGachaReward, rankingWith, friendRanking, lifeRollsLeft, selectLifeRoute, rollLifeDice, resolveLifeSquare, resetLifeRoute, reset }
   }, [state])
 
   return <Ctx.Provider value={store}>{children}</Ctx.Provider>

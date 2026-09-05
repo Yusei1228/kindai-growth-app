@@ -51,4 +51,5 @@ export const seedState: AppState = {
   ],
   challengeDaysLeft: 6,
   loginBonus: { monthKey: '', claimedDays: 0, lastClaimDate: '' },
+  lifeMap: { routeId: null, progress: {}, history: [], rollDay: '', rollsUsed: 0 },
 }
