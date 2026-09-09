@@ -134,6 +134,8 @@ interface Store {
   register: (nickname: string, facultyId?: number | null, enrollmentYear?: number | null) => void
   /** アバター画像を変更（localStorageに保存） */
   setAvatar: (file: string) => void
+  /** Instagram連携（ユーザー名・公開範囲）。null/''で解除 */
+  setInstagram: (handle: string | null, igPublic: boolean) => void
   /** デイリーミッション達成 */
   completeDaily: (p: CompleteDailyPayload) => CompleteResult
   /** セルフミッション達成 */
@@ -179,7 +181,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (u.registered && u.userId) {
       syncStats(u.userId, { level: u.level, exp: u.exp, totalScore: u.sp, stats: u.stats }, u.name, u.avatar)
       // フレンドID（friend_code）を自動付与／既存アカウントにも起動時にバックフィル
-      syncMyProfile({ nickname: u.name || 'あなた', avatar: u.avatar, level: u.level, totalScore: u.sp })
+      syncMyProfile({ nickname: u.name || 'あなた', avatar: u.avatar, level: u.level, totalScore: u.sp, instagram: u.instagram ?? null, igPublic: !!u.igPublic })
     }
     // 未送信の達成ログを再送（履歴を失わない）
     flushLogOutbox()
@@ -312,7 +314,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setState((prev) => ({ ...prev, user: { ...prev.user, userId, name: nickname.trim(), registered: true, facultyId, enrollmentYear } }))
       registerProfile(userId, nickname.trim(), state.user.avatar, facultyId, enrollmentYear)
       // 登録と同時にフレンドID（friend_code）を自動作成
-      syncMyProfile({ nickname: nickname.trim(), avatar: state.user.avatar, level: state.user.level, totalScore: state.user.sp })
+      syncMyProfile({ nickname: nickname.trim(), avatar: state.user.avatar, level: state.user.level, totalScore: state.user.sp, instagram: state.user.instagram ?? null, igPublic: !!state.user.igPublic })
     }
 
     const setAvatar: Store['setAvatar'] = (file) => {
@@ -320,6 +322,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setState((prev) => ({ ...prev, user: { ...prev.user, avatar: av } }))
       const u = state.user
       if (u.registered && u.userId) syncAvatar(u.userId, u.name, av)
+    }
+
+    const setInstagram: Store['setInstagram'] = (handle, igPublic) => {
+      setState((prev) => ({ ...prev, user: { ...prev.user, instagram: handle, igPublic } }))
+      const u = state.user
+      syncMyProfile({ nickname: u.name || 'あなた', avatar: u.avatar, level: u.level, totalScore: u.sp, instagram: handle, igPublic })
     }
 
     const completeDaily: Store['completeDaily'] = ({ missionId, minutes, rating, comment, startedAtMs }) => {
@@ -664,7 +672,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setState(loadState())
     }
 
-    return { state, expToNext, register, setAvatar, completeDaily, completeSelf, completeTutorial, claimDailyReward, loginBonusAvailable, claimLoginBonus, redeemCoupon, applyGachaReward, rankingWith, friendRanking, lifeRollsLeft, selectLifeRoute, rollLifeDice, resolveLifeSquare, resetLifeRoute, reset }
+    return { state, expToNext, register, setAvatar, setInstagram, completeDaily, completeSelf, completeTutorial, claimDailyReward, loginBonusAvailable, claimLoginBonus, redeemCoupon, applyGachaReward, rankingWith, friendRanking, lifeRollsLeft, selectLifeRoute, rollLifeDice, resolveLifeSquare, resetLifeRoute, reset }
   }, [state])
 
   return <Ctx.Provider value={store}>{children}</Ctx.Provider>

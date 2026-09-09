@@ -12,6 +12,8 @@ import {
   pingLocation,
   recentEncounters,
   footprints as fetchFootprints,
+  sanitizeInstagram,
+  instagramUrl,
   type FriendUser,
   type IncomingRequest,
   type Encounter,
@@ -20,8 +22,10 @@ import {
 type Tab = 'friends' | 'requests' | 'nearby' | 'foot'
 
 export function FriendsScreen({ back, notify }: { back: () => void; notify: (m: string) => void }) {
-  const { state } = useApp()
+  const { state, setInstagram } = useApp()
   const me = state.user
+  const [igInput, setIgInput] = useState(me.instagram || '')
+  const [igPub, setIgPub] = useState(!!me.igPublic)
   const [tab, setTab] = useState<Tab>('friends')
   const [available, setAvailable] = useState<boolean | null>(null)
   const [myCode, setMyCode] = useState<string>('')
@@ -109,6 +113,32 @@ export function FriendsScreen({ back, notify }: { back: () => void; notify: (m: 
     notify(accept ? 'フレンドになりました🎉' : '申請を辞退しました')
     await refreshAll()
   }
+  const onSaveInstagram = () => {
+    const h = sanitizeInstagram(igInput)
+    if (!h) {
+      notify('ユーザー名の形式が正しくありません（@や記号は不要・英数字と . _ のみ）')
+      return
+    }
+    setIgInput(h)
+    setInstagram(h, igPub)
+    notify('Instagramを連携しました！')
+  }
+  const onToggleIgPublic = () => {
+    const next = !igPub
+    setIgPub(next)
+    const h = sanitizeInstagram(igInput)
+    if (h) setInstagram(h, next) // 連携済みなら公開範囲を即反映
+  }
+  const onUnlinkInstagram = () => {
+    setIgInput('')
+    setIgPub(false)
+    setInstagram(null, false)
+    notify('Instagram連携を解除しました')
+  }
+  const openIg = (handle: string) => {
+    window.open(instagramUrl(handle), '_blank', 'noopener,noreferrer')
+  }
+
   const onRequestEncounter = async (u: Encounter) => {
     const r = await sendRequestToUser(u.userId)
     if (r.ok) {
@@ -160,6 +190,26 @@ export function FriendsScreen({ back, notify }: { back: () => void; notify: (m: 
       {/* フレンドランキング */}
       {tab === 'friends' && (
         <div>
+          {/* Instagram連携（任意・希望者のみ） */}
+          <div className="section-card fr-ig-card" style={{ marginTop: 12 }}>
+            <div className="row between">
+              <div className="bold" style={{ fontSize: 14 }}>📷 Instagram連携（任意）</div>
+              {me.instagram && <button className="fr-ig-unlink" onClick={onUnlinkInstagram}>解除</button>}
+            </div>
+            <div className="muted" style={{ fontSize: 12, marginTop: 4, lineHeight: 1.5 }}>
+              登録すると、フレンドがあなたのInstagramに飛べます（そこで手動フォロー）。希望者だけでOK。
+            </div>
+            <div className="fr-ig-inrow">
+              <span className="fr-ig-at">@</span>
+              <input className="fr-ig-input" placeholder="instagramのユーザー名" value={igInput} onChange={(e) => setIgInput(e.target.value)} maxLength={30} autoCapitalize="none" />
+              <button className="fr-ig-save" onClick={onSaveInstagram}>{me.instagram ? '更新' : '連携'}</button>
+            </div>
+            <button className={'fr-ig-toggle' + (igPub ? ' on' : '')} onClick={onToggleIgPublic} role="switch" aria-checked={igPub}>
+              <span className="fr-ig-toggle-box">{igPub ? '☑' : '☐'}</span>
+              すれ違った相手にも表示する（OFF＝フレンドのみ）
+            </button>
+          </div>
+
           {ranking.length <= 1 ? (
             <p className="hint center" style={{ marginTop: 20 }}>まだフレンドがいません。IDで申請するか、すれ違いから追加しよう！</p>
           ) : (
@@ -171,6 +221,7 @@ export function FriendsScreen({ back, notify }: { back: () => void; notify: (m: 
                   <div className="fr-name">{u.isMe ? `${u.nickname}（あなた）` : u.nickname} <span className="muted" style={{ fontSize: 11 }}>Lv.{u.level}</span></div>
                   <div className="fr-sub">累計スコア</div>
                 </div>
+                {u.instagram && !u.isMe && <button className="fr-ig-btn" onClick={() => openIg(u.instagram!)} aria-label="Instagram">📷</button>}
                 <div className="fr-score">{u.totalScore.toLocaleString()}<small> pt</small></div>
               </div>
             ))
@@ -243,6 +294,7 @@ export function FriendsScreen({ back, notify }: { back: () => void; notify: (m: 
                   <div className="fr-name">{u.nickname} <span className="muted" style={{ fontSize: 11 }}>Lv.{u.level}</span></div>
                   <div className="fr-sub">{u.canRequest ? '✨ たった今すれ違いました' : 'すれ違い（10分経過）'}</div>
                 </div>
+                {u.instagram && <button className="fr-ig-btn" onClick={() => openIg(u.instagram!)} aria-label="Instagram">📷</button>}
                 {u.status === 'friend' ? (
                   <span className="fr-tagmini">フレンド</span>
                 ) : u.status === 'requested' ? (

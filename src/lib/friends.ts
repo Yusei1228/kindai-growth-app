@@ -14,6 +14,7 @@ export interface FriendUser {
   avatar?: string | null
   level: number
   totalScore: number
+  instagram?: string | null
 }
 export interface IncomingRequest {
   id: string
@@ -29,6 +30,7 @@ export interface Encounter {
   at: string // すれ違った時刻
   canRequest: boolean // 10分以内か
   status: EncounterStatus
+  instagram?: string | null // 相手が公開している場合のみ
 }
 
 export interface MyProfileInput {
@@ -36,6 +38,23 @@ export interface MyProfileInput {
   avatar?: string | null
   level: number
   totalScore: number
+  instagram?: string | null
+  igPublic?: boolean
+}
+
+/** Instagram入力を正規化：URL/@/空白を除き、ユーザー名だけにする（不正なら空） */
+export function sanitizeInstagram(raw: string): string {
+  if (!raw) return ''
+  let s = raw.trim()
+  s = s.replace(/^https?:\/\/(www\.)?instagram\.com\//i, '')
+  s = s.replace(/[/?#].*$/, '') // パス以降を除去
+  s = s.replace(/^@/, '').trim()
+  if (!/^[A-Za-z0-9._]{1,30}$/.test(s)) return ''
+  return s
+}
+/** Instagramプロフィールへのリンク */
+export function instagramUrl(handle: string): string {
+  return 'https://instagram.com/' + handle.replace(/^@/, '')
 }
 
 /** 位置は約100m精度に丸める（プライバシー保護：正確な現在地は送らない） */
@@ -61,14 +80,24 @@ export async function friendsAvailable(): Promise<boolean> {
 export async function syncMyProfile(p: MyProfileInput): Promise<string | null> {
   const uid = await ready()
   if (!uid || !supabase) return localSyncMe(p)
-  const { data, error } = await supabase.rpc('friend_sync_me', {
+  // Instagram対応版(6引数)。未適用DBでは失敗するので、その場合は従来版(4引数)へフォールバック。
+  const r6 = await supabase.rpc('friend_sync_me', {
+    p_nickname: p.nickname,
+    p_avatar: p.avatar ?? null,
+    p_level: p.level,
+    p_total_score: p.totalScore,
+    p_instagram: p.instagram ?? null,
+    p_ig_public: !!p.igPublic,
+  })
+  if (!r6.error && r6.data) return r6.data.friend_code ?? null
+  const r4 = await supabase.rpc('friend_sync_me', {
     p_nickname: p.nickname,
     p_avatar: p.avatar ?? null,
     p_level: p.level,
     p_total_score: p.totalScore,
   })
-  if (error || !data) return null
-  return data.friend_code ?? null
+  if (r4.error || !r4.data) return null
+  return r4.data.friend_code ?? null
 }
 
 export async function sendRequestByCode(code: string): Promise<{ ok: boolean; error?: string }> {
@@ -146,10 +175,10 @@ export async function footprints(): Promise<Encounter[]> {
 }
 
 function mapUser(r: any): FriendUser {
-  return { userId: r.user_id, code: r.friend_code, nickname: r.nickname ?? '名無し', avatar: r.avatar, level: r.level ?? 1, totalScore: r.total_score ?? 0 }
+  return { userId: r.user_id, code: r.friend_code, nickname: r.nickname ?? '名無し', avatar: r.avatar, level: r.level ?? 1, totalScore: r.total_score ?? 0, instagram: r.instagram ?? null }
 }
 function mapEnc(r: any): Encounter {
-  return { userId: r.user_id, nickname: r.nickname ?? '名無し', avatar: r.avatar, level: r.level ?? 1, at: r.at ?? r.created_at, canRequest: !!r.can_request, status: (r.status ?? 'none') as EncounterStatus }
+  return { userId: r.user_id, nickname: r.nickname ?? '名無し', avatar: r.avatar, level: r.level ?? 1, at: r.at ?? r.created_at, canRequest: !!r.can_request, status: (r.status ?? 'none') as EncounterStatus, instagram: r.instagram ?? null }
 }
 function mapErr(code: string): string {
   switch (code) {
@@ -183,12 +212,12 @@ interface LocalState {
   requestedTo: string[]
 }
 const DEMO_POOL: FriendUser[] = [
-  { userId: 'd1', nickname: 'Sakura', avatar: null, level: 26, totalScore: 9700 },
-  { userId: 'd2', nickname: 'Haruto', avatar: null, level: 21, totalScore: 7300 },
-  { userId: 'd3', nickname: 'Mei', avatar: null, level: 19, totalScore: 6100 },
-  { userId: 'd4', nickname: 'Ren', avatar: null, level: 24, totalScore: 8600 },
-  { userId: 'd5', nickname: 'Aoi', avatar: null, level: 17, totalScore: 5200 },
-  { userId: 'd6', nickname: 'Yuki', avatar: null, level: 28, totalScore: 10200 },
+  { userId: 'd1', nickname: 'Sakura', avatar: null, level: 26, totalScore: 9700, instagram: 'sakura_kindai' },
+  { userId: 'd2', nickname: 'Haruto', avatar: null, level: 21, totalScore: 7300, instagram: null },
+  { userId: 'd3', nickname: 'Mei', avatar: null, level: 19, totalScore: 6100, instagram: 'mei.photo' },
+  { userId: 'd4', nickname: 'Ren', avatar: null, level: 24, totalScore: 8600, instagram: 'ren_gym' },
+  { userId: 'd5', nickname: 'Aoi', avatar: null, level: 17, totalScore: 5200, instagram: null },
+  { userId: 'd6', nickname: 'Yuki', avatar: null, level: 28, totalScore: 10200, instagram: 'yuki.trip' },
 ]
 function genCode(): string {
   const s = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -259,6 +288,7 @@ function localRanking(): (FriendUser & { isMe?: boolean })[] {
     avatar: myProfileCache?.avatar ?? null,
     level: myProfileCache?.level ?? 1,
     totalScore: myProfileCache?.totalScore ?? 0,
+    instagram: myProfileCache?.instagram ?? null,
     isMe: true,
   }
   return [me, ...s.friends].sort((a, b) => b.totalScore - a.totalScore)
@@ -269,7 +299,7 @@ function localPing(): number {
   const already = new Set([...s.encounters.map((e) => e.userId), ...s.friends.map((f) => f.userId)])
   const cand = DEMO_POOL.find((u) => !already.has(u.userId))
   if (cand) {
-    const enc: Encounter = { userId: cand.userId, nickname: cand.nickname, avatar: cand.avatar, level: cand.level, at: new Date().toISOString(), canRequest: true, status: 'none' }
+    const enc: Encounter = { userId: cand.userId, nickname: cand.nickname, avatar: cand.avatar, level: cand.level, at: new Date().toISOString(), canRequest: true, status: 'none', instagram: cand.instagram ?? null }
     s.encounters = [enc, ...s.encounters]
     s.footprints = [enc, ...s.footprints]
     saveLocal(s)
